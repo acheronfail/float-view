@@ -46,7 +46,9 @@
 
 <style>
   div#map {
-    height: 480px;
-    width: 640px;
+    border: 1px solid #444;
+    position: absolute;
+    width: 100%;
+    height: 100%;
   }
 </style>

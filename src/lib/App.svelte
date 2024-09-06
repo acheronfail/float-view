@@ -32,17 +32,40 @@
   let gpsPoints = $derived(data.map((x): LatLngExpression => [x.gps_latitude, x.gps_longitude]));
 
   console.log(data[0]);
+
+  const HEADER_HEIGHT = '3rem';
 </script>
 
 <!-- TODO: file picker initial view which takes you to this screen -->
 
-<h1>Float View</h1>
-<div>Data point count: {data.length}</div>
+<header
+  style:position="sticky"
+  style:z-index="10000"
+  style:top="0"
+  style:display="flex"
+  style:justify-content="space-between"
+  style:align-items="center"
+  style:background-color="#121418"
+  style:height={HEADER_HEIGHT}
+  style:padding-left="1rem"
+  style:padding-right="1rem"
+>
+  <h1>Float View</h1>
+  <div>Data point count: {data.length}</div>
+</header>
 
 <input type="range" min="0" max={gpsPoints.length - 1} bind:value={selectedIndex} />
 
-<div style="display: flex; flex-direction: column;">
-  <Map {selectedIndex} {gpsPoints} />
+<main
+  style:display="grid"
+  style:grid-template-columns="1fr 1fr 1fr"
+  style:grid-template-rows="1fr 1fr 1fr"
+  style:height="calc(100vh - {HEADER_HEIGHT})"
+  style:width="100%"
+>
+  <div style:position="relative">
+    <Map {selectedIndex} {gpsPoints} />
+  </div>
   <Chart data={[{ values: data.map((x) => x.speed), color: 'white' }]} bind:selectedIndex title="Speed" unit=" km/h" />
   <Chart data={[{ values: data.map((x) => x.duty) }]} bind:selectedIndex title="Duty cycle" unit="%" />
   <!-- TODO: allow user to select battery voltage? or put in battery specs? -->
@@ -54,7 +77,12 @@
     min={60}
     max={86}
   />
-  <Chart data={[{ values: data.map((x) => x.altitude), color: 'brown' }]} bind:selectedIndex title="Elevation" unit="m" />
+  <Chart
+    data={[{ values: data.map((x) => x.altitude), color: 'brown' }]}
+    bind:selectedIndex
+    title="Elevation"
+    unit="m"
+  />
   <Chart
     data={[
       { values: data.map((x) => x.current_motor), color: 'cyan', label: 'Motor current' },
@@ -73,7 +101,19 @@
     title="T-Mot / T-Mosfet"
     unit="°C"
   />
-</div>
+  <!-- TODO: visualize ADC sensors -->
+  <!-- TODO: visualize pitch/roll/yaw ? -->
+  <div
+    style:overflow="scroll"
+    style:height="100%"
+    style:width="100%"
+    style:grid-column="2 / 4"
+    style:place-self="center"
+  >
+    TODO: something else here? show the other values in the selected position?
+    <pre>{JSON.stringify(data[selectedIndex], null, 2)}</pre>
+  </div>
+</main>
 
 <style>
   input[type='range'] {

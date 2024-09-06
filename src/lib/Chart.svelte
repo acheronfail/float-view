@@ -70,7 +70,7 @@
 
   const MARGIN_TOP = '3rem';
   const MARGIN_RIGHT = '2rem';
-  const MARGIN_LEFT = '6rem';
+  const MARGIN_LEFT = '4rem';
   const MARGIN_BOTTOM = '3rem';
 </script>
 
@@ -79,8 +79,7 @@
   style:border="1px solid #444"
   style:box-sizing="border-box"
   style:display="flex"
-  style:height="480px"
-  style:width="640px"
+  style:overflow="hidden"
 >
   <div
     style:height="calc(100% - {MARGIN_BOTTOM} - {MARGIN_TOP})"
@@ -202,7 +201,7 @@
           style:line-height="1px"
           style:white-space="nowrap"
           style:font-size="0.8rem"
-          style:transform="translateX(-1rem)"
+          style:transform="translateX(-0.5rem)"
           style:left="0"
           style:top="{valueToYPct(value, yTickMin, yTickMax)}%"
         >
@@ -222,13 +221,15 @@
         style:transform="translateX(-50%)"
         style:white-space="nowrap"
         style:color="#000"
-        style:background-color="#aaa"
+        style:background-color="#222"
+        style:border="1px solid #888"
         style:border-radius="6px"
         style:padding="3px"
         style:text-align="center"
+        style:font-family="monospace"
       >
       {#each dataPoints as values, i}
-      <div>
+      <div style:color={data[i].color ?? '#fff'}>
         {#if data[i].label}
           {data[i].label}:
         {/if}

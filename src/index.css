@@ -19,6 +19,10 @@ body {
   min-height: 100vh;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 /**
  * Leaflet map styles
  */
