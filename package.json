@@ -1,0 +1,29 @@
+{
+  "name": "float-view",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^4.0.0-next.7",
+    "@testing-library/svelte": "^5.2.0-next.3",
+    "@tsconfig/svelte": "^5.0.4",
+    "@types/leaflet": "^1.9.12",
+    "@types/papaparse": "^5.3.14",
+    "svelte": "^5.0.0-next.243",
+    "svelte-check": "^3.8.6",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.1"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "papaparse": "^5.4.1"
+  }
+}
