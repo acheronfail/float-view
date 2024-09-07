@@ -23,7 +23,7 @@ export enum FloatControlRawHeader {
   AhCharged = 'Ah Charged',
   Wh = 'Wh',
   WhCharged = 'Wh Charged',
-  Ermp = 'ERPM',
+  Erpm = 'ERPM',
   Altitude = 'Altitude(m)',
   StateRaw = 'State(num)',
   TruePitch = 'True Pitch',
@@ -62,7 +62,7 @@ export enum FloatControlHeader {
   AhCharged = 'ah_charged',
   Wh = 'wh',
   WhCharged = 'wh_charged',
-  Ermp = 'ermp',
+  Erpm = 'erpm',
   Altitude = 'altitude',
   StateRaw = 'state_raw',
   TruePitch = 'true_pitch',
@@ -101,7 +101,7 @@ export const floatControlKeyMap: Record<FloatControlRawHeader, FloatControlHeade
   [FloatControlRawHeader.AhCharged]: FloatControlHeader.AhCharged,
   [FloatControlRawHeader.Wh]: FloatControlHeader.Wh,
   [FloatControlRawHeader.WhCharged]: FloatControlHeader.WhCharged,
-  [FloatControlRawHeader.Ermp]: FloatControlHeader.Ermp,
+  [FloatControlRawHeader.Erpm]: FloatControlHeader.Erpm,
   [FloatControlRawHeader.Altitude]: FloatControlHeader.Altitude,
   [FloatControlRawHeader.StateRaw]: FloatControlHeader.StateRaw,
   [FloatControlRawHeader.TruePitch]: FloatControlHeader.TruePitch,
@@ -127,7 +127,7 @@ export interface FloatControlRow {
   [FloatControlHeader.CurrentMotor]: number;
   [FloatControlHeader.Distance]: number;
   [FloatControlHeader.Duty]: number;
-  [FloatControlHeader.Ermp]: number;
+  [FloatControlHeader.Erpm]: number;
   [FloatControlHeader.GpsAccuracy]: number;
   [FloatControlHeader.GpsLatitude]: number;
   [FloatControlHeader.GpsLongitude]: number;

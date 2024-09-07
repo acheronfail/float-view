@@ -1,16 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { ticks } from './ChartUtils';
+  import { ticks, type TickOptions } from './ChartUtils';
+  import type { MouseEventHandler } from 'svelte/elements';
 
   interface Props {
     data: {
       color?: string;
       label?: string;
-      values: number[]
+      values: number[];
     }[];
     selectedIndex: number;
-    min?: number;
-    max?: number;
+    yAxis?: TickOptions;
     unit?: string;
     title?: string;
   }
@@ -20,13 +20,13 @@
   const valueToYPct = (y: number, min: number, max: number) => 100 - getYValueHeight(y, min, max);
   const aggMaxAbs = (acc: number, n: number) => (Math.abs(acc) > Math.abs(n) ? acc : n);
 
-  let { data, selectedIndex = $bindable(0), unit = '', title = '', min, max }: Props = $props();
+  let { data, selectedIndex = $bindable(0), unit = '', title = '', yAxis }: Props = $props();
   let dataLen = $derived(data[0].values.length);
-  if (!data.every(({values}) => values.length === dataLen)) {
+  if (!data.every(({ values }) => values.length === dataLen)) {
     throw new Error('All input data lists must be the same length');
   }
 
-  /** wrapper svg elemenet */
+  /** wrapper svg element */
   let svg = $state<SVGElement | undefined>();
   let scaleFactor = $state(1);
   /** how many data-points map to a single coord in svg space */
@@ -40,18 +40,23 @@
   let selectedDataPointIndex = $derived(Math.floor(selectedIndex / chunkSize));
   let selectedX = $derived(indexToXPct(selectedDataPointIndex) * scaleFactor);
   /** ticks for the y-axis */
-  let yTicks: [number, string][] = $derived(ticks(dataPoints[0], { min, max }).map((n) => [n, `${n}${unit}`]));
+  let yTicks: [number, string][] = $derived(ticks(dataPoints[0], yAxis).map((n) => [n, `${n}${unit}`]));
   let yTickMin = $derived(Math.min(...yTicks.map(([n]) => n)));
   let yTickMax = $derived(Math.max(...yTicks.map(([n]) => n)));
+  let minTickY = $derived((valueToYPct(yTickMin, yTickMin, yTickMax) - 0.5) * scaleFactor);
+  let maxTickY = $derived((valueToYPct(yTickMax, yTickMin, yTickMax) + 0.5) * scaleFactor);
 
   function renderChart(pixelWidth: number) {
     // TODO: what if dataLen is less than pixels?
     chunkSize = Math.floor(dataLen / pixelWidth);
     scaleFactor = pixelWidth / 100;
 
-    data.forEach(({values}, dataIndex) => {
+    data.forEach(({ values }, dataIndex) => {
       for (let i = 0; i < values.length; i += chunkSize) {
-        dataPoints[dataIndex].push(values.slice(i, i + chunkSize).reduce(aggMaxAbs));
+        const chunk = values.slice(i, i + chunkSize);
+        if (chunk.length) {
+          dataPoints[dataIndex].push(chunk.reduce(aggMaxAbs));
+        }
       }
     });
 
@@ -73,15 +78,46 @@
   const MARGIN_LEFT = '4rem';
   const MARGIN_BOTTOM = '3rem';
   const DEFAULT_COLOUR = 'red';
+  const ZERO_LINE_COLOUR = '#aaa';
+  const ZERO_LINE_DASHARRAY = '5 3';
+  const GRID_LINE_COLOUR = '#555';
+  const GRID_LINE_WIDTH = 1;
+  const GRID_LINE_DASHARRAY = '3 3';
+
+  const onmouseleave: MouseEventHandler<SVGSVGElement> = (e) => {
+    // it's hard to select the start and the end, since the mousemove events
+    // are throttled and won't always fire at the edges, so handle that here
+    const bounds = svg!.getBoundingClientRect();
+    const pixelX = e.clientX - bounds.left;
+
+    if (pixelX < 0) {
+      // exited on left
+      selectedIndex = 0;
+    } else if (pixelX > bounds.width) {
+      // exited on right
+      selectedIndex = dataLen - 1;
+    }
+  };
+
+  const onmousemove: MouseEventHandler<SVGSVGElement> = (e) => {
+    // because we scale the svg to a 1:1 pixel to viewbox point ratio, the
+    // pixel coords ARE the viewbox points
+    const bounds = svg!.getBoundingClientRect();
+    const pixelX = e.clientX - bounds.left;
+
+    selectedIndex = Math.min(Math.floor(pixelX * (dataLen / bounds.width)), dataLen - 1);
+  };
+
+  const formatValue = (value: number): string => {
+    if (typeof value !== 'number') {
+      return '';
+    }
+
+    return Number.isInteger(value) ? value.toString() : value.toFixed(1);
+  };
 </script>
 
-<div
-  style:background-color="#000"
-  style:border="1px solid #444"
-  style:box-sizing="border-box"
-  style:display="flex"
-  style:overflow="hidden"
->
+<div style:background-color="#000" style:box-sizing="border-box" style:display="flex" style:overflow="hidden">
   <div
     style:height="calc(100% - {MARGIN_BOTTOM} - {MARGIN_TOP})"
     style:width="100%"
@@ -100,56 +136,67 @@
       width="100%"
       height="100%"
       role="graphics-object"
-      onmouseleave={e => {
-        // it's hard to select the start and the end, since the mousemove events
-        // are throttled and won't always fire at the edges, so handle that here
-        const bounds = svg!.getBoundingClientRect();
-        const pixelX = e.clientX - bounds.left;
-
-        if (pixelX < 0) {
-          // exited on left
-          selectedIndex = 0;
-        } else if (pixelX > bounds.width) {
-          // exited on right
-          selectedIndex = dataLen - 1;
-        }
-      }}
-      onmousemove={(e) => {
-          // because we scale the svg to a 1:1 pixel to viewbox point ratio, the
-          // pixel coords ARE the viewbox points
-          const bounds = svg!.getBoundingClientRect();
-          const pixelX = e.clientX - bounds.left;
-
-          selectedIndex = Math.min(Math.floor(pixelX * (dataLen / bounds.width)), dataLen - 1);
-      }}
+      {onmouseleave}
+      {onmousemove}
     >
       <g>
         <!-- horizontal grid lines -->
         <g>
+          <line
+            style:stroke={GRID_LINE_COLOUR}
+            style:stroke-width={GRID_LINE_WIDTH}
+            style:stroke-dasharray={GRID_LINE_DASHARRAY}
+            x1={0}
+            x2={100 * scaleFactor}
+            y1={maxTickY}
+            y2={maxTickY}
+          />
+          <line
+            style:stroke={GRID_LINE_COLOUR}
+            style:stroke-width={GRID_LINE_WIDTH}
+            style:stroke-dasharray={GRID_LINE_DASHARRAY}
+            x1={0}
+            x2={100 * scaleFactor}
+            y1={minTickY}
+            y2={minTickY}
+          />
           {#each yTicks as [value], i (i)}
             {@const y = valueToYPct(value, yTickMin, yTickMax) * scaleFactor}
             {#if value !== 0}
-              <line style:stroke="#333" style:stroke-dasharray="3 3" x1={0} x2={100 * scaleFactor} y1={y} y2={y} />
+              {#if i === 0 || i === yTicks.length - 1}{:else}
+                <line
+                  style:stroke={GRID_LINE_COLOUR}
+                  style:stroke-width={GRID_LINE_WIDTH}
+                  style:stroke-dasharray={GRID_LINE_DASHARRAY}
+                  x1={0}
+                  x2={100 * scaleFactor}
+                  y1={y}
+                  y2={y}
+                />
+              {/if}
             {/if}
           {/each}
         </g>
 
         <!-- zero path line -->
         {#if zeroPath}
-          <path fill="none" stroke="grey" stroke-dasharray="5 3" d="M{zeroPath.map((pos) => pos.join(',')).join('L')}" />
+          <path
+            style:stroke={ZERO_LINE_COLOUR}
+            style:stroke-width={GRID_LINE_WIDTH}
+            style:stroke-dasharray={ZERO_LINE_DASHARRAY}
+            d="M{zeroPath.map((pos) => pos.join(',')).join('L')}"
+          />
         {/if}
 
         <!-- data point lines -->
         {#each dataPoints as values, i}
-        <path
-          fill="none"
-          stroke="{data[i].color ?? DEFAULT_COLOUR}"
-          d="M{values
-            .map(
-              (y, i) => `${indexToXPct(i) * scaleFactor},${valueToYPct(y, yTickMin, yTickMax) * scaleFactor}`
-            )
-            .join('L')}"
-        />
+          <path
+            fill="none"
+            stroke={data[i].color ?? DEFAULT_COLOUR}
+            d="M{values
+              .map((y, i) => `${indexToXPct(i) * scaleFactor},${valueToYPct(y, yTickMin, yTickMax) * scaleFactor}`)
+              .join('L')}"
+          />
         {/each}
 
         <!-- selected index vertical line -->
@@ -214,6 +261,7 @@
     </div>
 
     <!-- tooltip for vertical selected line -->
+    <!-- TODO: don't make this overflow past end? -->
     <div>
       <div
         style:position="absolute"
@@ -228,14 +276,27 @@
         style:padding="3px"
         style:text-align="center"
         style:font-family="monospace"
+        style:display="flex"
+        style:flex-direction="column"
+        style:justify-content="center"
+        style:align-items="center"
+        style:pointer-events="none"
       >
-      {#each dataPoints as values, i}
-      <div style:color={data[i].color ?? DEFAULT_COLOUR}>
-        {#if data[i].label}
-          {data[i].label}:
-        {/if}
-          {values[selectedDataPointIndex]}{unit}
-        </div>
+        {#each dataPoints as _, i}
+          <div
+            style:color={data[i].color ?? DEFAULT_COLOUR}
+            style:width="100%"
+            style:display="flex"
+            style:flex-direction="row"
+            style:justify-content="space-between"
+            style:align-items="center"
+            style:gap="1rem"
+          >
+            {#if data[i].label}
+              <span>{data[i].label + ':'}</span>
+            {/if}
+            <span>{formatValue(data[i].values[selectedIndex])}{unit}</span>
+          </div>
         {/each}
       </div>
     </div>

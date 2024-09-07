@@ -1,0 +1,27 @@
+<script lang="ts">
+  import type { Props } from './OtherInfo.svelte';
+
+  let { data }: Props = $props();
+</script>
+
+<svg version="1.1" viewBox="0 0 100 100" role="graphics-object" xmlns="http://www.w3.org/2000/svg" height="80%">
+  <g transform-origin="center" transform="rotate({data.roll})">
+    <path
+      stroke="white"
+      fill="none"
+      d="M 96.385647,40.477075 H 3.6143876 A 3.0916903,3.1743082 0 0 0 0.53296295,43.915914 L 1.5635392,56.613132 A 3.0916903,3.1743082 0 0 0 4.6449325,59.52292 H 95.355106 a 3.0916903,3.1743082 0 0 0 3.081401,-2.909788 l 1.03053,-12.697218 A 3.0916903,3.1743082 0 0 0 96.38561,40.477075 m -80.950725,19.045845 0.546184,6.348627 a 15.534382,40.35676 5.4233932 0 0 9.759482,23.807305 36.069718,18.400406 0 0 0 48.518899,0 40.35676,15.534382 84.576607 0 0 9.759448,-23.807305 l 0.546183,-6.348627 m 0,-19.045845 -0.546183,-6.348616 a 15.534382,40.35676 5.4233932 0 0 -9.759448,-23.80731 36.069718,18.400406 0 0 0 -48.518899,0 40.35676,15.534382 84.576607 0 0 -9.759482,23.80731 l -0.546184,6.348616 M 12.89971,46.82569 h 74.200553"
+    />
+  </g>
+</svg>
+
+<div
+  style:display="flex"
+  style:flex-direction="column"
+  style:justify-content="center"
+  style:align-items="center"
+  style:width="30%"
+  style:font-family="monospace"
+>
+  <span>{data.roll}°</span>
+  <span style:color="grey">Roll</span>
+</div>

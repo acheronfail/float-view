@@ -70,7 +70,6 @@
 
 <style>
   div#map {
-    border: 1px solid #444;
     position: absolute;
     width: 100%;
     height: 100%;

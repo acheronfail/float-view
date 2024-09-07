@@ -1,33 +1,65 @@
 <script lang="ts">
-  import csv from 'papaparse';
   import { type LatLngExpression } from 'leaflet';
   import sampleCsv from '../assets/sample.csv?raw';
-  import {
-    FloatControlHeader,
-    floatControlKeyMap,
-    FloatControlRawHeader,
-    type FloatControlRow,
-  } from './FloatControlTypes';
+  import { type FloatControlRow } from './FloatControlTypes';
   import Chart from './Chart.svelte';
   import Map, { type FaultPoint } from './Map.svelte';
+  import OtherInfo from './OtherInfo.svelte';
+  import Header, { HEADER_HEIGHT } from './Header.svelte';
+  import type { BatterySpecs } from './CommonTypes';
+  import { parse } from './Csv';
+  import Picker from './Picker.svelte';
+  import { onMount } from 'svelte';
 
-  const parsed = csv.parse<FloatControlRow>(sampleCsv.trim(), {
-    header: true,
-    transformHeader: (header) => floatControlKeyMap[header as FloatControlRawHeader],
-    transform: <C extends FloatControlHeader>(value: string, column: C): FloatControlRow[C] => {
-      switch (column) {
-        case FloatControlHeader.Duty:
-          return parseFloat(value.replace(/%/g, '')) as FloatControlRow[C];
-        case FloatControlHeader.State:
-          return value as FloatControlRow[C];
-        default:
-          return parseFloat(value) as FloatControlRow[C];
-      }
-    },
+  // TODO: import.meta.env.DEV
+  // TODO: use sample as demo, but also for dev?
+
+  let file = $state<File | undefined>();
+  onMount(() => {
+    // FIXME: when file is selected, parse it and start app
+    parse(sampleCsv).then((results) => (data = results.data.slice(1)));
   });
 
-  const data = parsed.data.slice(1);
-
+  let data = $state<FloatControlRow[]>([
+    {
+      time: 0,
+      state: 'RIDING',
+      distance: 0,
+      speed: 0,
+      duty: 0,
+      voltage: 0,
+      current_battery: 0,
+      current_motor: 0,
+      current_field_weakening: 0,
+      requested_amps: 0,
+      pitch: 0,
+      roll: 0,
+      setpoint: 0,
+      setpoint_atr: 0,
+      setpoint_carve: 0,
+      temp_mosfet: 0,
+      temp_motor: 0,
+      adc1: 0,
+      adc2: 0,
+      motor_fault: 0,
+      ah: 0,
+      ah_charged: 0,
+      wh: 0,
+      wh_charged: 0,
+      erpm: 0,
+      altitude: 0,
+      state_raw: 0,
+      true_pitch: 0,
+      setpoint_torque_tilt: 0,
+      setpoint_break_tilt: 0,
+      setpoint_remote: 0,
+      temp_battery: 0,
+      current_booster: 0,
+      gps_latitude: 0,
+      gps_longitude: 0,
+      gps_accuracy: 0,
+    },
+  ]);
   let selectedIndex = $state(0);
   let gpsPoints = $derived(data.map((x): LatLngExpression => [x.gps_latitude, x.gps_longitude]));
   let faultPoints = $derived.by(() => {
@@ -41,51 +73,53 @@
     return points;
   });
 
-  console.log(data[0]);
+  let cellCount = $state(20);
+  let cellMinVolt = $state(3.0);
+  let cellMaxVolt = $state(4.2);
+  let batterySpecs = $derived<BatterySpecs>({ cellCount, cellMinVolt, cellMaxVolt });
 
-  const HEADER_HEIGHT = '3rem';
+  // TODO: file picker initial view which takes you to this screen
+  // TODO: ability to zoom into data (when zooming map, trim data to visible points on map only??)
 </script>
 
-<!-- TODO: file picker initial view which takes you to this screen -->
+<Header dataLen={data.length} bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
 
-<header
-  style:position="sticky"
-  style:z-index="10000"
-  style:top="0"
-  style:display="flex"
-  style:justify-content="space-between"
-  style:align-items="center"
-  style:background-color="#121418"
-  style:height={HEADER_HEIGHT}
-  style:padding-left="1rem"
-  style:padding-right="1rem"
->
-  <h1>Float View</h1>
-  <div>Data point count: {data.length}</div>
-</header>
-
-<input type="range" min="0" max={gpsPoints.length - 1} bind:value={selectedIndex} />
+{#if !file}
+  <Picker bind:file />
+{/if}
 
 <main
   style:display="grid"
   style:grid-template-columns="1fr 1fr 1fr"
   style:grid-template-rows="1fr 1fr 1fr"
+  style:grid-gap="1px"
+  style:background-color="#444"
   style:height="calc(100vh - {HEADER_HEIGHT})"
   style:width="100%"
 >
   <div style:position="relative">
     <Map bind:selectedIndex {gpsPoints} {faultPoints} />
   </div>
+  <div
+    style:overflow="hidden"
+    style:height="100%"
+    style:width="100%"
+    style:grid-column="2 / 4"
+    style:place-self="center"
+  >
+    <OtherInfo data={data[selectedIndex]} {batterySpecs} />
+  </div>
   <Chart data={[{ values: data.map((x) => x.speed), color: 'white' }]} bind:selectedIndex title="Speed" unit=" km/h" />
   <Chart data={[{ values: data.map((x) => x.duty) }]} bind:selectedIndex title="Duty cycle" unit="%" />
-  <!-- TODO: allow user to select battery voltage? or put in battery specs? -->
   <Chart
     data={[{ values: data.map((x) => x.voltage), color: 'green' }]}
     bind:selectedIndex
     title="Battery Voltage"
     unit="V"
-    min={60}
-    max={86}
+    yAxis={{
+      suggestedMin: batterySpecs.cellCount * batterySpecs.cellMinVolt,
+      suggestedMax: batterySpecs.cellCount * batterySpecs.cellMaxVolt,
+    }}
   />
   <Chart
     data={[{ values: data.map((x) => x.altitude), color: 'brown' }]}
@@ -111,25 +145,4 @@
     title="T-Mot / T-Mosfet"
     unit="°C"
   />
-  <!-- TODO: visualize ADC sensors -->
-  <!-- TODO: visualize pitch/roll/yaw ? -->
-  <div
-    style:overflow="scroll"
-    style:height="100%"
-    style:width="100%"
-    style:grid-column="2 / 4"
-    style:place-self="center"
-  >
-    TODO: something else here? show the other values in the selected position?
-    <pre>{JSON.stringify(data[selectedIndex], null, 2)}</pre>
-  </div>
 </main>
-
-<style>
-  input[type='range'] {
-    width: 80vw;
-    position: fixed;
-    bottom: 1vh;
-    left: 10vw;
-  }
-</style>

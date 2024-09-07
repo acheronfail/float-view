@@ -1,13 +1,12 @@
-export const ticks = (
-  values: number[],
-  opts: {
-    min?: number;
-    max?: number;
-    suggestedMin?: number;
-    suggestedMax?: number;
-    maxTicks?: number;
-  } = {}
-) => {
+export interface TickOptions {
+  min?: number;
+  max?: number;
+  suggestedMin?: number;
+  suggestedMax?: number;
+  maxTicks?: number;
+}
+
+export const ticks = (values: number[], opts: TickOptions = {}) => {
   const min = opts.min ?? Math.min(...values, ...(opts.suggestedMin !== undefined ? [opts.suggestedMin] : []));
   const max = opts.max ?? Math.max(...values, ...(opts.suggestedMax !== undefined ? [opts.suggestedMax] : []));
   const maxTicks = opts.maxTicks ?? 10;
