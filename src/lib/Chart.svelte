@@ -72,6 +72,7 @@
   const MARGIN_RIGHT = '2rem';
   const MARGIN_LEFT = '4rem';
   const MARGIN_BOTTOM = '3rem';
+  const DEFAULT_COLOUR = 'red';
 </script>
 
 <div
@@ -142,7 +143,7 @@
         {#each dataPoints as values, i}
         <path
           fill="none"
-          stroke="{data[i].color ?? 'red'}"
+          stroke="{data[i].color ?? DEFAULT_COLOUR}"
           d="M{values
             .map(
               (y, i) => `${indexToXPct(i) * scaleFactor},${valueToYPct(y, yTickMin, yTickMax) * scaleFactor}`
@@ -229,7 +230,7 @@
         style:font-family="monospace"
       >
       {#each dataPoints as values, i}
-      <div style:color={data[i].color ?? '#fff'}>
+      <div style:color={data[i].color ?? DEFAULT_COLOUR}>
         {#if data[i].label}
           {data[i].label}:
         {/if}

@@ -9,7 +9,7 @@
     type FloatControlRow,
   } from './FloatControlTypes';
   import Chart from './Chart.svelte';
-  import Map from './Map.svelte';
+  import Map, { type FaultPoint } from './Map.svelte';
 
   const parsed = csv.parse<FloatControlRow>(sampleCsv.trim(), {
     header: true,
@@ -30,6 +30,16 @@
 
   let selectedIndex = $state(0);
   let gpsPoints = $derived(data.map((x): LatLngExpression => [x.gps_latitude, x.gps_longitude]));
+  let faultPoints = $derived.by(() => {
+    const points: FaultPoint[] = [];
+    data.forEach((x, index) => {
+      if (x.state_raw !== 1) {
+        points.push({ index, fault: x.state, id: x.state_raw });
+      }
+    });
+
+    return points;
+  });
 
   console.log(data[0]);
 
@@ -64,7 +74,7 @@
   style:width="100%"
 >
   <div style:position="relative">
-    <Map {selectedIndex} {gpsPoints} />
+    <Map bind:selectedIndex {gpsPoints} {faultPoints} />
   </div>
   <Chart data={[{ values: data.map((x) => x.speed), color: 'white' }]} bind:selectedIndex title="Speed" unit=" km/h" />
   <Chart data={[{ values: data.map((x) => x.duty) }]} bind:selectedIndex title="Duty cycle" unit="%" />
