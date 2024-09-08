@@ -1,65 +1,28 @@
 <script lang="ts">
   import { type LatLngExpression } from 'leaflet';
-  import sampleCsv from '../assets/sample.csv?raw';
   import { type FloatControlRow } from './FloatControlTypes';
   import Chart from './Chart.svelte';
   import Map, { type FaultPoint } from './Map.svelte';
   import OtherInfo from './OtherInfo.svelte';
   import Header, { HEADER_HEIGHT } from './Header.svelte';
   import type { BatterySpecs } from './CommonTypes';
-  import { parse } from './Csv';
+  import { parse, demoData } from './Csv';
   import Picker from './Picker.svelte';
-  import { onMount } from 'svelte';
 
-  // TODO: import.meta.env.DEV
-  // TODO: use sample as demo, but also for dev?
+  let data = $state<FloatControlRow[]>(demoData());
 
   let file = $state<File | undefined>();
-  onMount(() => {
-    // FIXME: when file is selected, parse it and start app
-    parse(sampleCsv).then((results) => (data = results.data.slice(1)));
+  $effect(() => {
+    if (file) {
+      parse(file).then((results) => {
+        // TODO: handle parse errors
+        // TODO: is the first GPS value from FloatControl always (0, 0)?
+        selectedIndex = 0;
+        data = results.data.slice(1);
+      });
+    }
   });
 
-  let data = $state<FloatControlRow[]>([
-    {
-      time: 0,
-      state: 'RIDING',
-      distance: 0,
-      speed: 0,
-      duty: 0,
-      voltage: 0,
-      current_battery: 0,
-      current_motor: 0,
-      current_field_weakening: 0,
-      requested_amps: 0,
-      pitch: 0,
-      roll: 0,
-      setpoint: 0,
-      setpoint_atr: 0,
-      setpoint_carve: 0,
-      temp_mosfet: 0,
-      temp_motor: 0,
-      adc1: 0,
-      adc2: 0,
-      motor_fault: 0,
-      ah: 0,
-      ah_charged: 0,
-      wh: 0,
-      wh_charged: 0,
-      erpm: 0,
-      altitude: 0,
-      state_raw: 0,
-      true_pitch: 0,
-      setpoint_torque_tilt: 0,
-      setpoint_break_tilt: 0,
-      setpoint_remote: 0,
-      temp_battery: 0,
-      current_booster: 0,
-      gps_latitude: 0,
-      gps_longitude: 0,
-      gps_accuracy: 0,
-    },
-  ]);
   let selectedIndex = $state(0);
   let gpsPoints = $derived(data.map((x): LatLngExpression => [x.gps_latitude, x.gps_longitude]));
   let faultPoints = $derived.by(() => {
@@ -78,11 +41,21 @@
   let cellMaxVolt = $state(4.2);
   let batterySpecs = $derived<BatterySpecs>({ cellCount, cellMinVolt, cellMaxVolt });
 
+  // event handlers to step left and right in data
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') {
+      selectedIndex = Math.min(data.length - 1, selectedIndex + 1);
+    }
+    if (e.key === 'ArrowLeft') {
+      selectedIndex = Math.max(0, selectedIndex - 1);
+    }
+  });
+
   // TODO: file picker initial view which takes you to this screen
   // TODO: ability to zoom into data (when zooming map, trim data to visible points on map only??)
 </script>
 
-<Header dataLen={data.length} bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
+<Header bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
 
 {#if !file}
   <Picker bind:file />
@@ -109,6 +82,7 @@
   >
     <OtherInfo data={data[selectedIndex]} {batterySpecs} />
   </div>
+
   <Chart data={[{ values: data.map((x) => x.speed), color: 'white' }]} bind:selectedIndex title="Speed" unit=" km/h" />
   <Chart data={[{ values: data.map((x) => x.duty) }]} bind:selectedIndex title="Duty cycle" unit="%" />
   <Chart

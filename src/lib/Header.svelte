@@ -4,14 +4,19 @@
   export const HEADER_HEIGHT = '3rem';
 
   export interface Props extends BatterySpecs {
-    dataLen: number;
+    file: File | undefined;
   }
 </script>
 
 <script lang="ts">
   import Input from './Input.svelte';
 
-  let { dataLen, cellCount = $bindable(), cellMaxVolt = $bindable(), cellMinVolt = $bindable() }: Props = $props();
+  let {
+    file = $bindable(),
+    cellCount = $bindable(),
+    cellMaxVolt = $bindable(),
+    cellMinVolt = $bindable(),
+  }: Props = $props();
 </script>
 
 <header
@@ -29,6 +34,9 @@
   style:padding-right="1rem"
 >
   <h1 style:flex-grow="1">Float View</h1>
+  {#if file}
+    <button onclick={() => (file = undefined)}>close ride</button>
+  {/if}
   <Input id="cell_count" label="Cell Count" type="number" bind:value={cellCount} style="width:4rem" />
   <Input
     id="cell_min_v"
@@ -46,5 +54,4 @@
     bind:value={cellMaxVolt}
     style="width:4rem"
   />
-  <div>Data point count: {dataLen}</div>
 </header>

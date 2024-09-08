@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { ticks, type TickOptions } from './ChartUtils';
   import type { MouseEventHandler } from 'svelte/elements';
+  import { assert } from './Utils';
 
   interface Props {
     data: {
@@ -22,9 +23,10 @@
 
   let { data, selectedIndex = $bindable(0), unit = '', title = '', yAxis }: Props = $props();
   let dataLen = $derived(data[0].values.length);
-  if (!data.every(({ values }) => values.length === dataLen)) {
-    throw new Error('All input data lists must be the same length');
-  }
+  assert(
+    data.every(({ values }) => values.length === dataLen),
+    'All input data lists must be the same length'
+  );
 
   /** wrapper svg element */
   let svg = $state<SVGElement | undefined>();
@@ -47,30 +49,39 @@
   let maxTickY = $derived((valueToYPct(yTickMax, yTickMin, yTickMax) + 0.5) * scaleFactor);
 
   function renderChart(pixelWidth: number) {
-    // TODO: what if dataLen is less than pixels?
-    chunkSize = Math.floor(dataLen / pixelWidth);
+    chunkSize = Math.max(1, Math.floor(dataLen / pixelWidth));
     scaleFactor = pixelWidth / 100;
 
-    data.forEach(({ values }, dataIndex) => {
+    dataPoints = data.map(({ values }) => {
+      const aggregated: number[] = [];
       for (let i = 0; i < values.length; i += chunkSize) {
         const chunk = values.slice(i, i + chunkSize);
         if (chunk.length) {
-          dataPoints[dataIndex].push(chunk.reduce(aggMaxAbs));
+          aggregated.push(chunk.reduce(aggMaxAbs));
         }
       }
+
+      return aggregated;
     });
 
     const yZero = valueToYPct(0, yTickMin, yTickMax);
     if (0 >= yTickMin && 0 <= yTickMax) {
       zeroPath = [
-        [indexToXPct(0) * scaleFactor, yZero * scaleFactor],
+        [indexToXPct(-1) * scaleFactor, yZero * scaleFactor],
         [indexToXPct(dataPointsLen) * scaleFactor, yZero * scaleFactor],
       ];
+    } else {
+      zeroPath = undefined;
     }
   }
 
-  onMount(() => {
-    renderChart(svg!.getBoundingClientRect().width);
+  $effect(() => {
+    if (data) {
+      // HACK: this is wrapped in a setTimeout so that svelte doesn't track changes,
+      // otherwise this causes an infinite loop - I don't think this is the right way
+      // to do this...
+      setTimeout(() => renderChart(svg!.getBoundingClientRect().width));
+    }
   });
 
   const MARGIN_TOP = '3rem';

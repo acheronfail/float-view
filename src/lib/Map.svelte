@@ -23,6 +23,14 @@
 
   let { selectedIndex = $bindable(), gpsPoints, faultPoints }: Props = $props();
 
+  let node = $state<HTMLDivElement | undefined>();
+
+  $effect(() => {
+    if (node && gpsPoints) {
+      renderMap(node);
+    }
+  })
+
   $effect(() => {
     if (map) {
       if (riderMarker) {
@@ -35,7 +43,12 @@
 
   const stateToClass = (state: string) => state.toLowerCase().replace(/\s+/g, '_');
 
-  function createMap(node: HTMLDivElement) {
+  function renderMap(node: HTMLDivElement) {
+    // cleanup
+    if (map) {
+      map.remove();
+    }
+
     // create map
     map = Leaflet.map(node, { preferCanvas: true });
 
@@ -66,7 +79,7 @@
   }
 </script>
 
-<div id="map" use:createMap></div>
+<div id="map" bind:this={node}></div>
 
 <style>
   div#map {

@@ -6,7 +6,7 @@ export interface TickOptions {
   maxTicks?: number;
 }
 
-export const ticks = (values: number[], opts: TickOptions = {}) => {
+export const ticks = (values: number[], opts: TickOptions = {}): number[] => {
   const min = opts.min ?? Math.min(...values, ...(opts.suggestedMin !== undefined ? [opts.suggestedMin] : []));
   const max = opts.max ?? Math.max(...values, ...(opts.suggestedMax !== undefined ? [opts.suggestedMax] : []));
   const maxTicks = opts.maxTicks ?? 10;
@@ -33,5 +33,10 @@ export const ticks = (values: number[], opts: TickOptions = {}) => {
   }
   if (max > niceMax) result.push(n);
   while (min < result[0]) result.unshift(result[0] - tickSpacing);
+
+  if (!result.length) {
+    return [0, 100];
+  }
+
   return result;
 };

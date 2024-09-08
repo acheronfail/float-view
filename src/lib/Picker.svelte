@@ -7,24 +7,37 @@
 <script lang="ts">
   import type { ChangeEventHandler } from 'svelte/elements';
 
-  // let { file = $bindable() }: Props = $props();
+  let { file = $bindable() }: Props = $props();
 
-  // const onchange: ChangeEventHandler<HTMLInputElement> = (e) => {
-  //   const { files } = e.currentTarget;
-  //   if (files && files.length > 0) {
-  //     file = files[0];
-  //   }
-  // };
+  let hidden = $state(false);
+  $effect(() => {
+    if (file) {
+      hidden = false;
+    }
+  });
+
+  const onchange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    const { files } = e.currentTarget;
+    if (files && files.length > 0) {
+      file = files[0];
+    }
+  };
 </script>
 
-<div class="overlay"></div>
-<div class="modal-container">
-  <div class="modal">
-    <h1>Welcome!</h1>
-    <p>Please select an exported CSV file from Float Control to get started.</p>
-    <!-- <input type="file" {onchange} /> -->
+{#if !hidden}
+  <div class="overlay"></div>
+  <div class="modal-container">
+    <div class="modal">
+      <h1>Welcome!</h1>
+      <p>Please select an exported CSV file from Float Control to get started.</p>
+      <input type="file" {onchange} />
+
+      <!-- TODO: better styling? -->
+      <!-- TODO: how to show again to pick a file? -->
+      <button onclick={() => (hidden = true)}>hide</button>
+    </div>
   </div>
-</div>
+{/if}
 
 <style>
   .overlay {
