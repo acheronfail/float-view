@@ -10,6 +10,7 @@
   import Picker from './Picker.svelte';
 
   let data = $state<FloatControlRow[]>(demoData());
+  let demo = $state(false);
 
   let file = $state<File | undefined>();
   $effect(() => {
@@ -55,10 +56,10 @@
   // TODO: ability to zoom into data (when zooming map, trim data to visible points on map only??)
 </script>
 
-<Header {selectedIndex} bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
+<Header {selectedIndex} bind:demo bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
 
 {#if !file}
-  <Picker bind:file />
+  <Picker bind:demo bind:file />
 {/if}
 
 <main

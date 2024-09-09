@@ -1,12 +1,12 @@
 <script lang="ts" context="module">
   import type { BatterySpecs } from './CommonTypes';
-  import type { FloatControlRow } from './FloatControlTypes';
 
   export const HEADER_HEIGHT = '3rem';
 
   export interface Props extends BatterySpecs {
     selectedIndex: number | undefined;
     file: File | undefined;
+    demo: boolean;
   }
 </script>
 
@@ -15,6 +15,7 @@
 
   let {
     selectedIndex,
+    demo = $bindable(),
     file = $bindable(),
     cellCount = $bindable(),
     cellMaxVolt = $bindable(),
@@ -36,7 +37,12 @@
   style:padding-left="1rem"
   style:padding-right="1rem"
 >
-  <h1 style:flex-grow="1">Float View</h1>
+  <h1 style:flex-grow="1">
+    Float View
+    {#if demo}
+      <span style:font-size="1rem" style:font-family="monospace">(demo ride)</span>
+    {/if}
+  </h1>
   {#if typeof selectedIndex === 'number'}
     <div
       style:font-family="monospace"
@@ -48,6 +54,9 @@
       <span>Selected:</span>
       <span style:flex-grow="1" style:text-align="right">{selectedIndex}</span>
     </div>
+  {/if}
+  {#if demo}
+    <button onclick={() => (demo = false)}>open a ride</button>
   {/if}
   {#if file}
     <button onclick={() => (file = undefined)}>close ride</button>

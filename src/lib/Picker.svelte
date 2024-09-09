@@ -1,13 +1,14 @@
 <script lang="ts" context="module">
   export interface Props {
     file?: File;
+    demo: boolean;
   }
 </script>
 
 <script lang="ts">
   import type { ChangeEventHandler } from 'svelte/elements';
 
-  let { file = $bindable() }: Props = $props();
+  let { demo = $bindable(), file = $bindable() }: Props = $props();
 
   const onchange: ChangeEventHandler<HTMLInputElement> = (e) => {
     const { files } = e.currentTarget;
@@ -17,14 +18,26 @@
   };
 </script>
 
-<div class="overlay"></div>
-<div class="modal-container">
-  <div class="modal">
-    <h1>Welcome!</h1>
-    <p>Please select an exported CSV file from Float Control to get started.</p>
-    <input type="file" {onchange} />
+{#if !demo}
+  <div class="overlay"></div>
+  <div class="modal-container">
+    <div
+      class="modal"
+      style:display="flex"
+      style:flex-direction="column"
+      style:justify-content="space-between"
+      style:align-items="center"
+    >
+      <h1>Welcome!</h1>
+      <div>
+        <p>Please select an exported CSV file from Float Control to get started.</p>
+        <input type="file" {onchange} />
+      </div>
+
+      <button onclick={() => (demo = !demo)}>just let me see the demo</button>
+    </div>
   </div>
-</div>
+{/if}
 
 <style>
   .overlay {
