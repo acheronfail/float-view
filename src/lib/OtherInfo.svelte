@@ -15,6 +15,21 @@
   import Roll from './Roll.svelte';
 
   let { data, batterySpecs }: Props = $props();
+
+  const getStateColor = (state: string): string | undefined => {
+    switch (state.toLowerCase()) {
+      case 'startup':
+        return 'grey';
+      case 'riding':
+        return 'yellowgreen';
+      case 'stop half':
+      case 'wheelslip':
+        return 'orange';
+      case 'stop full':
+      case 'stop angle':
+        return 'red';
+    }
+  };
 </script>
 
 <div
@@ -45,6 +60,8 @@
         { label: 'Speed', value: `${data.speed} km/h` },
         { label: 'ERPM', value: `${data.erpm}` },
         { label: 'Distance', value: `${data.distance} km` },
+        '-',
+        { label: 'State', value: data.state, color: getStateColor(data.state) },
       ]}
     />
   </div>
@@ -52,7 +69,7 @@
   <div class="item">
     <List
       items={[
-        { label: 'Duty', value: `${data.duty}%` },
+        { label: 'Duty', value: `${data.duty}%`, color: data.duty > 80 ? 'red' : undefined },
         { label: 'Motor Current', value: `${data.current_motor} A` },
         { label: 'Field Weakening', value: `${data.current_field_weakening} A` },
         '-',
