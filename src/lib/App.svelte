@@ -4,27 +4,30 @@
   import Chart from './Chart.svelte';
   import Map, { type FaultPoint } from './Map.svelte';
   import OtherInfo from './OtherInfo.svelte';
-  import Header, { HEADER_HEIGHT } from './Header.svelte';
+  import Header from './Header.svelte';
   import type { BatterySpecs } from './CommonTypes';
-  import { parse, demoData } from './Csv';
+  import { demoFile, demoRows, parse } from './Csv';
   import Picker from './Picker.svelte';
 
-  let data = $state<FloatControlRow[]>(demoData());
-  let demo = $state(false);
+  let cellCount = $state(20);
+  let cellMinVolt = $state(3.0);
+  let cellMaxVolt = $state(4.2);
+  let batterySpecs = $derived<BatterySpecs>({ cellCount, cellMinVolt, cellMaxVolt });
 
-  let file = $state<File | undefined>();
+  let selectedIndex = $state(0);
+  let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
+  let data = $state<FloatControlRow[]>(demoRows);
+
   $effect(() => {
     if (file) {
       parse(file).then((results) => {
         // TODO: handle parse errors
-        // TODO: is the first GPS value from FloatControl always (0, 0)?
+        data = results.data;
         selectedIndex = 0;
-        data = results.data.slice(1);
       });
     }
   });
 
-  let selectedIndex = $state(0);
   let gpsPoints = $derived(data.map((x): LatLngExpression => [x.gps_latitude, x.gps_longitude]));
   let faultPoints = $derived.by(() => {
     const points: FaultPoint[] = [];
@@ -37,11 +40,6 @@
     return points;
   });
 
-  let cellCount = $state(20);
-  let cellMinVolt = $state(3.0);
-  let cellMaxVolt = $state(4.2);
-  let batterySpecs = $derived<BatterySpecs>({ cellCount, cellMinVolt, cellMaxVolt });
-
   // event handlers to step left and right in data
   window.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') {
@@ -52,72 +50,131 @@
     }
   });
 
-  // TODO: file picker initial view which takes you to this screen
-  // TODO: ability to zoom into data (when zooming map, trim data to visible points on map only??)
+  // TODO: ability to zoom into data (when zooming map, trim data to visible points on map only?)
 </script>
 
-<Header {selectedIndex} bind:demo bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
+<Header {selectedIndex} bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
 
 {#if !file}
-  <Picker bind:demo bind:file />
+  <Picker bind:file />
 {/if}
 
 <main
   style:display="grid"
-  style:grid-template-columns="1fr 1fr 1fr"
-  style:grid-template-rows="1fr 1fr 1fr"
+  style:grid-auto-flow="dense"
   style:grid-gap="1px"
   style:background-color="#444"
-  style:height="calc(100vh - {HEADER_HEIGHT})"
   style:width="100%"
+  class="grid-container"
 >
-  <div style:position="relative">
+  <div style:position="relative" class="map-container">
     <Map bind:selectedIndex {gpsPoints} {faultPoints} />
   </div>
   <div
     style:overflow="hidden"
     style:height="100%"
     style:width="100%"
-    style:grid-column="2 / 4"
     style:place-self="center"
+    class="column-2-to-row-2"
   >
-    <OtherInfo data={data[selectedIndex]} {batterySpecs} />
+    <OtherInfo data={data[selectedIndex]} {selectedIndex} {batterySpecs} />
   </div>
 
-  <Chart data={[{ values: data.map((x) => x.speed), color: 'white' }]} bind:selectedIndex title="Speed" unit=" km/h" />
-  <Chart data={[{ values: data.map((x) => x.duty) }]} bind:selectedIndex title="Duty cycle" unit="%" />
-  <Chart
-    data={[{ values: data.map((x) => x.voltage), color: 'green' }]}
-    bind:selectedIndex
-    title="Battery Voltage"
-    unit="V"
-    yAxis={{
-      suggestedMin: batterySpecs.cellCount * batterySpecs.cellMinVolt,
-      suggestedMax: batterySpecs.cellCount * batterySpecs.cellMaxVolt,
-    }}
-  />
-  <Chart
-    data={[{ values: data.map((x) => x.altitude), color: 'brown' }]}
-    bind:selectedIndex
-    title="Elevation"
-    unit="m"
-  />
-  <Chart
-    data={[
-      { values: data.map((x) => x.current_motor), color: 'cyan', label: 'Motor current' },
-      { values: data.map((x) => x.current_battery), color: 'azure', label: 'Battery current' },
-    ]}
-    bind:selectedIndex
-    title="I-Mot / I-Batt"
-    unit="A"
-  />
-  <Chart
-    data={[
-      { values: data.map((x) => x.temp_motor), color: 'orange', label: 'Motor temp' },
-      { values: data.map((x) => x.temp_mosfet), color: 'yellow', label: 'Mosfet temp' },
-    ]}
-    bind:selectedIndex
-    title="T-Mot / T-Mosfet"
-    unit="°C"
-  />
+  <div class="chart">
+    <Chart
+      data={[{ values: data.map((x) => x.speed), color: 'white' }]}
+      bind:selectedIndex
+      title="Speed"
+      unit=" km/h"
+    />
+  </div>
+  <div class="chart">
+    <Chart data={[{ values: data.map((x) => x.duty) }]} bind:selectedIndex title="Duty cycle" unit="%" />
+  </div>
+  <div class="chart">
+    <Chart
+      data={[{ values: data.map((x) => x.voltage), color: 'green' }]}
+      bind:selectedIndex
+      title="Battery Voltage"
+      unit="V"
+      yAxis={{
+        suggestedMin: batterySpecs.cellCount * batterySpecs.cellMinVolt,
+        suggestedMax: batterySpecs.cellCount * batterySpecs.cellMaxVolt,
+      }}
+    />
+  </div>
+  <div class="chart">
+    <Chart
+      data={[{ values: data.map((x) => x.altitude), color: 'brown' }]}
+      bind:selectedIndex
+      title="Elevation"
+      unit="m"
+    />
+  </div>
+  <div class="chart">
+    <Chart
+      data={[
+        { values: data.map((x) => x.current_motor), color: 'cyan', label: 'Motor current' },
+        { values: data.map((x) => x.current_battery), color: 'azure', label: 'Battery current' },
+      ]}
+      bind:selectedIndex
+      title="I-Mot / I-Batt"
+      unit="A"
+    />
+  </div>
+  <div class="chart">
+    <Chart
+      data={[
+        { values: data.map((x) => x.temp_motor), color: 'orange', label: 'Motor temp' },
+        { values: data.map((x) => x.temp_mosfet), color: 'yellow', label: 'Mosfet temp' },
+      ]}
+      bind:selectedIndex
+      title="T-Mot / T-Mosfet"
+      unit="°C"
+    />
+  </div>
 </main>
+
+<style>
+  .column-2-to-row-2 {
+    grid-column: span 2;
+    grid-row: unset;
+  }
+
+  .grid-container {
+    grid-template-columns: repeat(3, 1fr);
+    height: calc(100vh - var(--header-height));
+  }
+
+  .chart {
+    background-color: #000;
+    box-sizing: border-box;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* TODO: preprocessor to save all media query constants */
+  @media (width <= 600px) {
+    .column-2-to-row-2 {
+      grid-row: span 2;
+      grid-column: unset;
+    }
+
+    .grid-container {
+      height: unset;
+      grid-template-columns: repeat(auto-fit, minmax(var(--grid-width), 1fr));
+    }
+
+    .map-container {
+      height: var(--grid-width);
+      position: sticky !important;
+      top: var(--header-height);
+      z-index: 100;
+      border-bottom: 1px solid #333;
+    }
+
+    .chart {
+      height: var(--grid-width);
+    }
+  }
+</style>

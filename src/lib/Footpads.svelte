@@ -1,4 +1,5 @@
 <script lang="ts">
+  import List from './List.svelte';
   import type { Props } from './OtherInfo.svelte';
 
   let { data }: Props = $props();
@@ -11,11 +12,10 @@
 
 <svg
   version="1.1"
-  preserveAspectRatio="none"
   role="graphics-object"
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 100 80"
-  height="100%"
+  height="50%"
 >
   <path
     stroke="white"
@@ -33,13 +33,24 @@
 </svg>
 
 <div
+  style:height="100%"
+  style:width="40%"
   style:display="flex"
-  style:flex-direction="column"
-  style:justify-content="center"
   style:align-items="center"
-  style:width="30%"
-  style:font-family="monospace"
+  style:justify-content="center"
 >
-  <span style:color={adc1Enabled ? 'yellowgreen' : goingSlow ? 'grey' : 'red'}>ADC1: {data.adc1.toFixed(2)}V</span>
-  <span style:color={adc2Enabled ? 'yellowgreen' : goingSlow ? 'grey' : 'red'}>ADC2: {data.adc2.toFixed(2)}V</span>
+  <List
+    items={[
+      {
+        label: 'ADC1',
+        value: data.adc1.toFixed(2),
+        color: adc1Enabled ? 'yellowgreen' : goingSlow ? 'grey' : 'red',
+      },
+      {
+        label: 'ADC2',
+        value: data.adc2.toFixed(2),
+        color: adc2Enabled ? 'yellowgreen' : goingSlow ? 'grey' : 'red',
+      },
+    ]}
+  />
 </div>

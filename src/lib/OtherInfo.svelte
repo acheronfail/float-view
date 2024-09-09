@@ -4,6 +4,7 @@
 
   export interface Props {
     data: FloatControlRow;
+    selectedIndex: number;
     batterySpecs: BatterySpecs;
   }
 </script>
@@ -14,7 +15,7 @@
   import Pitch from './Pitch.svelte';
   import Roll from './Roll.svelte';
 
-  let { data, batterySpecs }: Props = $props();
+  let { data, batterySpecs, selectedIndex }: Props = $props();
 
   const getStateColor = (state: string): string | undefined => {
     switch (state.toLowerCase()) {
@@ -36,22 +37,23 @@
   style:height="100%"
   style:width="100%"
   style:display="grid"
-  style:grid-template-columns="minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)"
-  style:grid-template-rows="minmax(0, 1fr) minmax(0, 1fr)"
+  style:grid-template-columns="repeat(3, minmax(0, 1fr))"
+  style:grid-template-rows="repeat(2, minmax(0, 1fr))"
   style:grid-gap="1px"
   style:background-color="#333"
   style:place-items="center"
+  class="transpose-grid"
 >
   <div class="item">
-    <Footpads {data} {batterySpecs} />
+    <Footpads {data} {selectedIndex} {batterySpecs} />
   </div>
 
   <div class="item">
-    <Pitch {data} {batterySpecs} />
+    <Pitch {data} {selectedIndex} {batterySpecs} />
   </div>
 
   <div class="item">
-    <Roll {data} {batterySpecs} />
+    <Roll {data} {selectedIndex} {batterySpecs} />
   </div>
 
   <div class="item">
@@ -62,6 +64,7 @@
         { label: 'Distance', value: `${data.distance} km` },
         '-',
         { label: 'State', value: data.state, color: getStateColor(data.state) },
+        { label: 'Index', value: selectedIndex.toString(), htmlTitle: 'Selected line from the CSV file' },
       ]}
     />
   </div>
@@ -102,5 +105,12 @@
     align-items: center;
     width: 100%;
     height: 100%;
+  }
+
+  @media (width < 600px) {
+    .transpose-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+    }
   }
 </style>

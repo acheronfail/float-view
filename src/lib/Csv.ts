@@ -19,25 +19,25 @@ const transform = <C extends FloatControlHeader>(value: string, column: C): Floa
   }
 };
 
+const parseOptions = {
+  header: true,
+  skipEmptyLines: true,
+  transformHeader,
+  transform,
+};
+
 export function parse(input: string | File): Promise<ParseResult<FloatControlRow>> {
   return new Promise((resolve) => {
     csv.parse<FloatControlRow>(input, {
-      complete: (results) => resolve(results),
-      header: true,
-      skipEmptyLines: true,
-      transformHeader,
-      transform,
+      ...parseOptions,
+      complete: (results) => {
+        // TODO: is the first GPS value from FloatControl always (0, 0)?
+        results.data = results.data.slice(1);
+        resolve(results);
+      },
     });
   });
 }
 
-export function demoData(): FloatControlRow[] {
-  return csv
-    .parse<FloatControlRow>(demoCsv, {
-      header: true,
-      skipEmptyLines: true,
-      transformHeader,
-      transform,
-    })
-    .data.slice(1);
-}
+export const demoFile = new File([demoCsv], 'demo.csv');
+export const demoRows = csv.parse<FloatControlRow>(demoCsv, parseOptions).data.slice(1);

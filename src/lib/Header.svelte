@@ -1,26 +1,33 @@
 <script lang="ts" context="module">
   import type { BatterySpecs } from './CommonTypes';
-
-  export const HEADER_HEIGHT = '3rem';
+  import { demoFile } from './Csv';
 
   export interface Props extends BatterySpecs {
     selectedIndex: number | undefined;
     file: File | undefined;
-    demo: boolean;
   }
 </script>
 
 <script lang="ts">
   import Input from './Input.svelte';
+  import Modal from './Modal.svelte';
 
   let {
-    selectedIndex,
-    demo = $bindable(),
     file = $bindable(),
     cellCount = $bindable(),
     cellMaxVolt = $bindable(),
     cellMinVolt = $bindable(),
   }: Props = $props();
+
+  let open = $state(false);
+
+  const closeRide = () => {
+    file = undefined;
+    open = false;
+  };
+
+  // FIXME: mobile view
+  // TODO: button for explaining keyboard shortcuts and such
 </script>
 
 <header
@@ -33,34 +40,31 @@
   style:gap="1rem"
   style:background-color="#121418"
   style:border-bottom="1px solid #333"
-  style:height={HEADER_HEIGHT}
+  style:height="var(--header-height)"
   style:padding-left="1rem"
   style:padding-right="1rem"
+  style:white-space="nowrap"
 >
-  <h1 style:flex-grow="1">
+  <h1 style:flex-grow="1" style:display="flex" style:flex-direction="row" style:justify-content="start">
     Float View
-    {#if demo}
-      <span style:font-size="1rem" style:font-family="monospace">(demo ride)</span>
+    {#if file === demoFile}
+      <span
+        style:width="1px"
+        style:font-size="0.8rem"
+        style:font-family="monospace"
+        style:color="magenta"
+      >
+        (demo)
+      </span>
     {/if}
   </h1>
-  {#if typeof selectedIndex === 'number'}
-    <div
-      style:font-family="monospace"
-      style:display="flex"
-      style:flex-direction="row"
-      style:justify-content="space-between"
-      style:width="7rem"
-    >
-      <span>Selected:</span>
-      <span style:flex-grow="1" style:text-align="right">{selectedIndex}</span>
-    </div>
-  {/if}
-  {#if demo}
-    <button onclick={() => (demo = false)}>open a ride</button>
-  {/if}
   {#if file}
-    <button onclick={() => (file = undefined)}>close ride</button>
+    <button onclick={closeRide}>close ride</button>
   {/if}
+  <button onclick={() => (open = true)}>configure</button>
+</header>
+
+<Modal bind:open title="Settings">
   <Input id="cell_count" label="Cell Count" type="number" bind:value={cellCount} style="width:4rem" />
   <Input
     id="cell_min_v"
@@ -78,4 +82,4 @@
     bind:value={cellMaxVolt}
     style="width:4rem"
   />
-</header>
+</Modal>

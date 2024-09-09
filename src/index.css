@@ -23,6 +23,14 @@ body {
   box-sizing: border-box;
 }
 
+/* TODO: use tailwind to clean up all the inline styles */
+
+:root {
+  --grid-width: 300px;
+  --grid-collapse-width: 600px;
+  --header-height: 3rem;
+}
+
 /**
  * Leaflet map styles
  */

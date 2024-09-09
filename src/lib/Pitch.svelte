@@ -4,7 +4,7 @@
   let { data }: Props = $props();
 </script>
 
-<svg version="1.1" viewBox="0 0 100 100" role="graphics-object" xmlns="http://www.w3.org/2000/svg" height="100%">
+<svg version="1.1" viewBox="0 0 100 100" role="graphics-object" xmlns="http://www.w3.org/2000/svg" height="60%">
   <g transform-origin="center" transform="rotate({data.pitch})">
     <path
     stroke="white"

@@ -1,5 +1,12 @@
 <script lang="ts" context="module">
-  export type ListItem = { label: string; value: string; color?: string } | '-';
+  export type ListItem =
+    | {
+        label: string;
+        value: string;
+        color?: string;
+        htmlTitle?: string;
+      }
+    | '-';
 
   export interface Props {
     items: ListItem[];
@@ -10,7 +17,7 @@
   let { items }: Props = $props();
 </script>
 
-<div style:display="flex" style:width="60%" style:flex-direction="column" style:font-family="monospace">
+<div style:display="flex" style:width="90%" style:flex-direction="column" style:font-family="monospace">
   {#each items as item, i (i)}
     <div
       style:display="flex"
@@ -21,10 +28,16 @@
       {#if typeof item === 'string'}
         <hr style:width="75%" style:border-color="#333" />
       {:else}
-        <div style:color="grey">
+        <div
+          title={item.htmlTitle ?? item.label}
+          style:color="grey"
+          style:text-overflow="ellipsis"
+          style:white-space="nowrap"
+          style:overflow="hidden"
+        >
           {item.label}:
         </div>
-        <div style:color={item.color}>
+        <div style:color={item.color} style:flex-grow="1" style:white-space="nowrap" style:text-align="right">
           {item.value}
         </div>
       {/if}

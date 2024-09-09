@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { ticks, type TickOptions } from './ChartUtils';
   import type { MouseEventHandler } from 'svelte/elements';
   import { assert } from './Utils';
+
+  // FIXME: on resize, grid lines get quite thick? (or is this just with smaller sizes?)
+  // FIXME: sometimes a grid line is drawn at/near zero, which interferes with zero line
 
   interface Props {
     data: {
@@ -130,188 +132,186 @@
   };
 </script>
 
-<div style:background-color="#000" style:box-sizing="border-box" style:display="flex" style:overflow="hidden">
-  <div
-    style:height="calc(100% - {MARGIN_BOTTOM} - {MARGIN_TOP})"
-    style:width="100%"
-    style:position="relative"
-    style:margin-left={MARGIN_LEFT}
-    style:margin-right={MARGIN_RIGHT}
-    style:margin-top={MARGIN_TOP}
-    style:margin-bottom={MARGIN_TOP}
+<div
+  style:height="calc(100% - {MARGIN_BOTTOM} - {MARGIN_TOP})"
+  style:width="100%"
+  style:position="relative"
+  style:margin-left={MARGIN_LEFT}
+  style:margin-right={MARGIN_RIGHT}
+  style:margin-top={MARGIN_TOP}
+  style:margin-bottom={MARGIN_TOP}
+>
+  <!-- svg line -->
+  <svg
+    bind:this={svg}
+    version="1.1"
+    viewBox="0 0 {100 * scaleFactor} {100 * scaleFactor}"
+    preserveAspectRatio="none"
+    width="100%"
+    height="100%"
+    role="graphics-object"
+    {onmouseleave}
+    {onmousemove}
   >
-    <!-- svg line -->
-    <svg
-      bind:this={svg}
-      version="1.1"
-      viewBox="0 0 {100 * scaleFactor} {100 * scaleFactor}"
-      preserveAspectRatio="none"
-      width="100%"
-      height="100%"
-      role="graphics-object"
-      {onmouseleave}
-      {onmousemove}
-    >
+    <g>
+      <!-- horizontal grid lines -->
       <g>
-        <!-- horizontal grid lines -->
-        <g>
-          <line
-            style:stroke={GRID_LINE_COLOUR}
-            style:stroke-width={GRID_LINE_WIDTH}
-            style:stroke-dasharray={GRID_LINE_DASHARRAY}
-            x1={0}
-            x2={100 * scaleFactor}
-            y1={maxTickY}
-            y2={maxTickY}
-          />
-          <line
-            style:stroke={GRID_LINE_COLOUR}
-            style:stroke-width={GRID_LINE_WIDTH}
-            style:stroke-dasharray={GRID_LINE_DASHARRAY}
-            x1={0}
-            x2={100 * scaleFactor}
-            y1={minTickY}
-            y2={minTickY}
-          />
-          {#each yTicks as [value], i (i)}
-            {@const y = valueToYPct(value, yTickMin, yTickMax) * scaleFactor}
-            {#if value !== 0}
-              {#if i === 0 || i === yTicks.length - 1}{:else}
-                <line
-                  style:stroke={GRID_LINE_COLOUR}
-                  style:stroke-width={GRID_LINE_WIDTH}
-                  style:stroke-dasharray={GRID_LINE_DASHARRAY}
-                  x1={0}
-                  x2={100 * scaleFactor}
-                  y1={y}
-                  y2={y}
-                />
-              {/if}
+        <line
+          style:stroke={GRID_LINE_COLOUR}
+          style:stroke-width={GRID_LINE_WIDTH}
+          style:stroke-dasharray={GRID_LINE_DASHARRAY}
+          x1={0}
+          x2={100 * scaleFactor}
+          y1={maxTickY}
+          y2={maxTickY}
+        />
+        <line
+          style:stroke={GRID_LINE_COLOUR}
+          style:stroke-width={GRID_LINE_WIDTH}
+          style:stroke-dasharray={GRID_LINE_DASHARRAY}
+          x1={0}
+          x2={100 * scaleFactor}
+          y1={minTickY}
+          y2={minTickY}
+        />
+        {#each yTicks as [value], i (i)}
+          {@const y = valueToYPct(value, yTickMin, yTickMax) * scaleFactor}
+          {#if value !== 0}
+            {#if i === 0 || i === yTicks.length - 1}{:else}
+              <line
+                style:stroke={GRID_LINE_COLOUR}
+                style:stroke-width={GRID_LINE_WIDTH}
+                style:stroke-dasharray={GRID_LINE_DASHARRAY}
+                x1={0}
+                x2={100 * scaleFactor}
+                y1={y}
+                y2={y}
+              />
             {/if}
-          {/each}
-        </g>
-
-        <!-- zero path line -->
-        {#if zeroPath}
-          <path
-            style:stroke={ZERO_LINE_COLOUR}
-            style:stroke-width={GRID_LINE_WIDTH}
-            style:stroke-dasharray={ZERO_LINE_DASHARRAY}
-            d="M{zeroPath.map((pos) => pos.join(',')).join('L')}"
-          />
-        {/if}
-
-        <!-- data point lines -->
-        {#each dataPoints as values, i}
-          <path
-            fill="none"
-            stroke={data[i].color ?? DEFAULT_COLOUR}
-            d="M{values
-              .map((y, i) => `${indexToXPct(i) * scaleFactor},${valueToYPct(y, yTickMin, yTickMax) * scaleFactor}`)
-              .join('L')}"
-          />
+          {/if}
         {/each}
+      </g>
 
-        <!-- selected index vertical line -->
+      <!-- zero path line -->
+      {#if zeroPath}
+        <path
+          style:stroke={ZERO_LINE_COLOUR}
+          style:stroke-width={GRID_LINE_WIDTH}
+          style:stroke-dasharray={ZERO_LINE_DASHARRAY}
+          d="M{zeroPath.map((pos) => pos.join(',')).join('L')}"
+        />
+      {/if}
+
+      <!-- data point lines -->
+      {#each dataPoints as values, i}
         <path
           fill="none"
-          stroke="#aaa"
-          d="M{[
-            [selectedX, 0],
-            [selectedX, 100 * scaleFactor],
-          ]
-            .map((pos) => pos.join(','))
+          stroke={data[i].color ?? DEFAULT_COLOUR}
+          d="M{values
+            .map((y, i) => `${indexToXPct(i) * scaleFactor},${valueToYPct(y, yTickMin, yTickMax) * scaleFactor}`)
             .join('L')}"
         />
-      </g>
-    </svg>
+      {/each}
 
-    <!-- title -->
-    <div>
-      <div
-        style:position="absolute"
-        style:top="-{MARGIN_TOP}"
-        style:left="-{MARGIN_LEFT}"
-        style:right="-{MARGIN_RIGHT}"
-        style:padding="0.5rem"
-        style:font-weight="bold"
-        style:text-align="center"
-      >
-        {title}
-      </div>
+      <!-- selected index vertical line -->
+      <path
+        fill="none"
+        stroke="#aaa"
+        d="M{[
+          [selectedX, 0],
+          [selectedX, 100 * scaleFactor],
+        ]
+          .map((pos) => pos.join(','))
+          .join('L')}"
+      />
+    </g>
+  </svg>
+
+  <!-- title -->
+  <div>
+    <div
+      style:position="absolute"
+      style:top="-{MARGIN_TOP}"
+      style:left="-{MARGIN_LEFT}"
+      style:right="-{MARGIN_RIGHT}"
+      style:padding="0.5rem"
+      style:font-weight="bold"
+      style:text-align="center"
+    >
+      {title}
     </div>
+  </div>
 
-    <!-- y-axis ticks -->
-    <div>
+  <!-- y-axis ticks -->
+  <div>
+    <div
+      style:position="absolute"
+      style:bottom="100%"
+      style:right="100%"
+      style:text-align="right"
+      style:margin-bottom="1rem"
+      style:margin-right="1rem"
+      style:font-weight="bold"
+    >
+      <!-- tick title can go here -->
+    </div>
+    {#each yTicks as [value, label] (value)}
       <div
         style:position="absolute"
-        style:bottom="100%"
-        style:right="100%"
-        style:text-align="right"
-        style:margin-bottom="1rem"
-        style:margin-right="1rem"
-        style:font-weight="bold"
+        style:width="1px"
+        style:height="1px"
+        style:line-height="1px"
+        style:white-space="nowrap"
+        style:font-size="0.8rem"
+        style:transform="translateX(-0.5rem)"
+        style:left="0"
+        style:top="{valueToYPct(value, yTickMin, yTickMax)}%"
       >
-        <!-- tick title can go here -->
+        <div style:float="right">
+          {label}
+        </div>
       </div>
-      {#each yTicks as [value, label] (value)}
+    {/each}
+  </div>
+
+  <!-- tooltip for vertical selected line -->
+  <!-- TODO: don't make this overflow past end? -->
+  <div>
+    <div
+      style:position="absolute"
+      style:top="50%"
+      style:left="{indexToXPct(selectedDataPointIndex)}%"
+      style:transform="translateX(-50%)"
+      style:white-space="nowrap"
+      style:color="#000"
+      style:background-color="#222"
+      style:border="1px solid #888"
+      style:border-radius="6px"
+      style:padding="3px"
+      style:text-align="center"
+      style:font-family="monospace"
+      style:display="flex"
+      style:flex-direction="column"
+      style:justify-content="center"
+      style:align-items="center"
+      style:pointer-events="none"
+    >
+      {#each dataPoints as _, i}
         <div
-          style:position="absolute"
-          style:width="1px"
-          style:height="1px"
-          style:line-height="1px"
-          style:white-space="nowrap"
-          style:font-size="0.8rem"
-          style:transform="translateX(-0.5rem)"
-          style:left="0"
-          style:top="{valueToYPct(value, yTickMin, yTickMax)}%"
+          style:color={data[i].color ?? DEFAULT_COLOUR}
+          style:width="100%"
+          style:display="flex"
+          style:flex-direction="row"
+          style:justify-content="space-between"
+          style:align-items="center"
+          style:gap="1rem"
         >
-          <div style:float="right">
-            {label}
-          </div>
+          {#if data[i].label}
+            <span>{data[i].label + ':'}</span>
+          {/if}
+          <span>{formatValue(data[i].values[selectedIndex])}{unit}</span>
         </div>
       {/each}
-    </div>
-
-    <!-- tooltip for vertical selected line -->
-    <!-- TODO: don't make this overflow past end? -->
-    <div>
-      <div
-        style:position="absolute"
-        style:top="50%"
-        style:left="{indexToXPct(selectedDataPointIndex)}%"
-        style:transform="translateX(-50%)"
-        style:white-space="nowrap"
-        style:color="#000"
-        style:background-color="#222"
-        style:border="1px solid #888"
-        style:border-radius="6px"
-        style:padding="3px"
-        style:text-align="center"
-        style:font-family="monospace"
-        style:display="flex"
-        style:flex-direction="column"
-        style:justify-content="center"
-        style:align-items="center"
-        style:pointer-events="none"
-      >
-        {#each dataPoints as _, i}
-          <div
-            style:color={data[i].color ?? DEFAULT_COLOUR}
-            style:width="100%"
-            style:display="flex"
-            style:flex-direction="row"
-            style:justify-content="space-between"
-            style:align-items="center"
-            style:gap="1rem"
-          >
-            {#if data[i].label}
-              <span>{data[i].label + ':'}</span>
-            {/if}
-            <span>{formatValue(data[i].values[selectedIndex])}{unit}</span>
-          </div>
-        {/each}
-      </div>
     </div>
   </div>
 </div>
