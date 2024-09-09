@@ -6,6 +6,8 @@
   // FIXME: on resize, grid lines get quite thick? (or is this just with smaller sizes?)
   // FIXME: sometimes a grid line is drawn at/near zero, which interferes with zero line
 
+  // TODO: vertical lines showing gaps in visibleIndices?
+
   interface Props {
     data: {
       color?: string;

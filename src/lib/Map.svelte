@@ -16,8 +16,6 @@
   import Leaflet, { type LatLngExpression } from 'leaflet';
   import riderIconSvg from '../assets/rider-icon.svg?raw';
 
-  // TODO: button to reset to bounds
-
   let map: Leaflet.Map | null = null;
   let polyline: Leaflet.Polyline | null = null;
   let riderMarker: Leaflet.Marker | null = null;
@@ -47,15 +45,33 @@
   const stateToClass = (state: string) => state.toLowerCase().replace(/\s+/g, '_');
 
   function setVisibleIndices() {
-      // SAFETY: only called when a valid map has been created
-      const bounds = map!.getBounds();
-      // SAFETY: only called when a valid line has been created
-      if (bounds.contains(polyline!.getBounds())) {
-        visibleIndices = new Array(gpsPoints.length).fill(true);
-      } else {
-        visibleIndices = gpsPoints.map(point => bounds.contains(point));
-      }
+    // SAFETY: only called when a valid map has been created
+    const bounds = map!.getBounds();
+    // SAFETY: only called when a valid line has been created
+    if (bounds.contains(polyline!.getBounds())) {
+      visibleIndices = new Array(gpsPoints.length).fill(true);
+    } else {
+      visibleIndices = gpsPoints.map(point => bounds.contains(point));
     }
+  }
+
+  const ResetButton = Leaflet.Control.extend({
+    options: { position: 'bottomright' },
+    onAdd: () => {
+      const el = Leaflet.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+      el.style.backgroundColor = 'black';
+      el.style.border = '1px solid #333';
+      el.style.padding = '2px 4px';
+      el.style.cursor = 'pointer';
+      el.textContent = 'reset';
+      // SAFETY: can't be clicked without these existing
+      el.onclick = () => {
+        map!.fitBounds(polyline!.getBounds());
+        selectedIndex = 0;
+      }
+      return el;
+    }
+  });
 
   function renderMap(node: HTMLDivElement) {
     // cleanup
@@ -79,6 +95,9 @@
 
     // fit ride in map
     map.fitBounds(polyline.getBounds());
+
+    // add a reset zoom button
+    map.addControl(new ResetButton());
 
     // add fault markers
     for (const { index, fault } of faultPoints) {
