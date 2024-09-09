@@ -48,15 +48,16 @@
   // either find a way to make it faster, or fix it some other way
   let selectedDataPointIndex = $derived.by(() => {
     // translate selected index to visible index
-    let visibleIndex = -1;
-    for (let i = 0; i < visibleIndices.length; i++) {
-      if (visibleIndices[i]) {
-        visibleIndex++;
-        if (i === selectedIndex) {
-          break;
-        }
-      }
-    }
+    let visibleIndex = selectedIndex;
+    // let visibleIndex = -1;
+    // for (let i = 0; i < visibleIndices.length; i++) {
+    //   if (visibleIndices[i]) {
+    //     visibleIndex++;
+    //     if (i === selectedIndex) {
+    //       break;
+    //     }
+    //   }
+    // }
 
     // translate visible index to our chart resolution index
     return Math.floor(visibleIndex / chunkSize);

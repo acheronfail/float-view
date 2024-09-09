@@ -60,11 +60,12 @@
   }
 
   const ResetButton = Leaflet.Control.extend({
-    options: { position: 'bottomright' },
+    options: { position: 'topright' },
     onAdd: () => {
-      const el = Leaflet.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+      const el = Leaflet.DomUtil.create('div');
       el.style.backgroundColor = 'black';
       el.style.border = '1px solid #333';
+      el.style.borderRadius = '3px';
       el.style.padding = '2px 4px';
       el.style.cursor = 'pointer';
       el.textContent = 'reset';
@@ -129,6 +130,7 @@
     width: 100%;
     height: 100%;
     border: 1px solid transparent;
+    outline: none;
   }
 
   div#map:focus-within {

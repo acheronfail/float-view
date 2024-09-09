@@ -24,8 +24,8 @@
       style:justify-content="space-between"
       style:align-items="center"
     >
-      <div>{title}</div>
-      <div>
+      <h2>{title}</h2>
+      <div style:flex-grow="1">
         {@render children()}
       </div>
       <div>
