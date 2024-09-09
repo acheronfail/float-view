@@ -52,7 +52,6 @@
     }
   });
 
-  // TODO: ability to zoom into data (when zooming map, trim data to visible points on map only?)
 </script>
 
 <Header {selectedIndex} bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt />

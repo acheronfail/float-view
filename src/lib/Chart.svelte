@@ -44,7 +44,23 @@
   /** start and end coordinates of where 0 is on the x axis */
   let zeroPath = $state<[[number, number], [number, number]] | undefined>();
   /** x coordinate of where the vertical line indicator should be */
-  let selectedDataPointIndex = $derived(Math.floor(selectedIndex / chunkSize));
+  // FIXME: this is too slow, and seems to hang everything on normally sized datasets
+  // either find a way to make it faster, or fix it some other way
+  let selectedDataPointIndex = $derived.by(() => {
+    // translate selected index to visible index
+    let visibleIndex = -1;
+    for (let i = 0; i < visibleIndices.length; i++) {
+      if (visibleIndices[i]) {
+        visibleIndex++;
+        if (i === selectedIndex) {
+          break;
+        }
+      }
+    }
+
+    // translate visible index to our chart resolution index
+    return Math.floor(visibleIndex / chunkSize);
+  });
   let selectedX = $derived(indexToXPct(selectedDataPointIndex) * scaleFactor);
   /** ticks for the y-axis */
   let yTicks: [number, string][] = $derived(
@@ -239,16 +255,18 @@
       {/each}
 
       <!-- selected index vertical line -->
-      <path
-        fill="none"
-        stroke="#aaa"
-        d="M{[
-          [selectedX, 0],
-          [selectedX, 100 * scaleFactor],
-        ]
-          .map((pos) => pos.join(','))
-          .join('L')}"
-      />
+      {#if visibleIndices[selectedIndex]}
+        <path
+          fill="none"
+          stroke="#aaa"
+          d="M{[
+            [selectedX, 0],
+            [selectedX, 100 * scaleFactor],
+          ]
+            .map((pos) => pos.join(','))
+            .join('L')}"
+        />
+      {/if}
     </g>
   </svg>
 
@@ -301,42 +319,44 @@
 
   <!-- tooltip for vertical selected line -->
   <!-- TODO: don't make this overflow past end? -->
-  <div>
-    <div
-      style:position="absolute"
-      style:top="50%"
-      style:left="{indexToXPct(selectedDataPointIndex)}%"
-      style:transform="translateX(-50%)"
-      style:white-space="nowrap"
-      style:color="#000"
-      style:background-color="#222"
-      style:border="1px solid #888"
-      style:border-radius="6px"
-      style:padding="3px"
-      style:text-align="center"
-      style:font-family="monospace"
-      style:display="flex"
-      style:flex-direction="column"
-      style:justify-content="center"
-      style:align-items="center"
-      style:pointer-events="none"
-    >
-      {#each dataPoints as _, i}
-        <div
-          style:color={data[i].color ?? DEFAULT_COLOUR}
-          style:width="100%"
-          style:display="flex"
-          style:flex-direction="row"
-          style:justify-content="space-between"
-          style:align-items="center"
-          style:gap="1rem"
-        >
-          {#if data[i].label}
-            <span>{data[i].label + ':'}</span>
-          {/if}
-          <span>{formatValue(data[i].values[selectedIndex])}{unit}</span>
-        </div>
-      {/each}
+  {#if visibleIndices[selectedIndex]}
+    <div>
+      <div
+        style:position="absolute"
+        style:top="50%"
+        style:left="{indexToXPct(selectedDataPointIndex)}%"
+        style:transform="translateX(-50%)"
+        style:white-space="nowrap"
+        style:color="#000"
+        style:background-color="#222"
+        style:border="1px solid #888"
+        style:border-radius="6px"
+        style:padding="3px"
+        style:text-align="center"
+        style:font-family="monospace"
+        style:display="flex"
+        style:flex-direction="column"
+        style:justify-content="center"
+        style:align-items="center"
+        style:pointer-events="none"
+      >
+        {#each data as _, i}
+          <div
+            style:color={data[i].color ?? DEFAULT_COLOUR}
+            style:width="100%"
+            style:display="flex"
+            style:flex-direction="row"
+            style:justify-content="space-between"
+            style:align-items="center"
+            style:gap="1rem"
+          >
+            {#if data[i].label}
+              <span>{data[i].label + ':'}</span>
+            {/if}
+            <span>{formatValue(data[i].values[selectedDataPointIndex])}{unit}</span>
+          </div>
+        {/each}
+      </div>
     </div>
-  </div>
+  {/if}
 </div>

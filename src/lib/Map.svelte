@@ -45,6 +45,10 @@
   const stateToClass = (state: string) => state.toLowerCase().replace(/\s+/g, '_');
 
   function setVisibleIndices() {
+    // FIXME: disabled since computed selected index in charts is too slow
+    // see `selectedDataPointIndex` in `Chart.svelte`
+    return visibleIndices = new Array(gpsPoints.length).fill(true);
+
     // SAFETY: only called when a valid map has been created
     const bounds = map!.getBounds();
     // SAFETY: only called when a valid line has been created
@@ -124,6 +128,11 @@
     position: absolute;
     width: 100%;
     height: 100%;
+    border: 1px solid transparent;
+  }
+
+  div#map:focus-within {
+    border-color: #008c9c;
   }
 
   :global(.fault-icon) {
