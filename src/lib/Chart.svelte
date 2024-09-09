@@ -13,6 +13,7 @@
       values: number[];
     }[];
     selectedIndex: number;
+    visibleIndices: boolean[];
     yAxis?: TickOptions;
     unit?: string;
     title?: string;
@@ -23,7 +24,7 @@
   const valueToYPct = (y: number, min: number, max: number) => 100 - getYValueHeight(y, min, max);
   const aggMaxAbs = (acc: number, n: number) => (Math.abs(acc) > Math.abs(n) ? acc : n);
 
-  let { data, selectedIndex = $bindable(0), unit = '', title = '', yAxis }: Props = $props();
+  let { data, selectedIndex = $bindable(0), visibleIndices, unit = '', title = '', yAxis }: Props = $props();
   let dataLen = $derived(data[0].values.length);
   assert(
     data.every(({ values }) => values.length === dataLen),
@@ -106,11 +107,21 @@
     const pixelX = e.clientX - bounds.left;
 
     if (pixelX < 0) {
-      // exited on left
-      selectedIndex = 0;
+      // exited on left, find first visible index
+      for (let i = 0; i < visibleIndices.length; i++) {
+        if (visibleIndices[i]) {
+          selectedIndex = i;
+          break;
+        }
+      }
     } else if (pixelX > bounds.width) {
-      // exited on right
-      selectedIndex = dataLen - 1;
+      // exited on right, find last visible index
+      for (let i = visibleIndices.length; i > 0; i--) {
+        if (visibleIndices[i]) {
+          selectedIndex = i;
+          break;
+        }
+      }
     }
   };
 
@@ -120,7 +131,19 @@
     const bounds = svg!.getBoundingClientRect();
     const pixelX = e.clientX - bounds.left;
 
-    selectedIndex = Math.min(Math.floor(pixelX * (dataLen / bounds.width)), dataLen - 1);
+    // translate from visible indices to real indices
+    const selectedVisible = Math.min(Math.floor(pixelX * (dataLen / bounds.width)), dataLen - 1);
+    let i = 0;
+    for (let current = -1; i < visibleIndices.length; i++) {
+      if (visibleIndices[i]) {
+        if (++current === selectedVisible) {
+          selectedIndex = i;
+          break;
+        }
+      }
+    }
+
+    selectedIndex = i;
   };
 
   const formatValue = (value: number): string => {

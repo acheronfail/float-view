@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export interface FaultPoint {
     index: number;
     fault: string;
@@ -6,6 +6,7 @@
 
   export interface Props {
     selectedIndex: number;
+    visibleIndices: boolean[];
     gpsPoints: LatLngExpression[];
     faultPoints: FaultPoint[];
   }
@@ -15,12 +16,15 @@
   import Leaflet, { type LatLngExpression } from 'leaflet';
   import riderIconSvg from '../assets/rider-icon.svg?raw';
 
+  // TODO: button to reset to bounds
+
   let map: Leaflet.Map | null = null;
+  let polyline: Leaflet.Polyline | null = null;
   let riderMarker: Leaflet.Marker | null = null;
   let riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderIconSvg });
   let faultIcon = Leaflet.divIcon({ className: 'fault-icon' });
 
-  let { selectedIndex = $bindable(), gpsPoints, faultPoints }: Props = $props();
+  let { selectedIndex = $bindable(), visibleIndices = $bindable(), gpsPoints, faultPoints }: Props = $props();
 
   let node = $state<HTMLDivElement | undefined>();
 
@@ -42,9 +46,22 @@
 
   const stateToClass = (state: string) => state.toLowerCase().replace(/\s+/g, '_');
 
+  function setVisibleIndices() {
+      // SAFETY: only called when a valid map has been created
+      const bounds = map!.getBounds();
+      // SAFETY: only called when a valid line has been created
+      if (bounds.contains(polyline!.getBounds())) {
+        visibleIndices = new Array(gpsPoints.length).fill(true);
+      } else {
+        visibleIndices = gpsPoints.map(point => bounds.contains(point));
+      }
+    }
+
   function renderMap(node: HTMLDivElement) {
     // cleanup
     if (map) {
+      map.removeEventListener('zoomend', setVisibleIndices);
+      map.removeEventListener('moveend', setVisibleIndices);
       map.remove();
     }
 
@@ -58,14 +75,13 @@
     }).addTo(map);
 
     // create line
-    const polyline = Leaflet.polyline(gpsPoints).addTo(map);
+    polyline = Leaflet.polyline(gpsPoints).addTo(map);
 
     // fit ride in map
     map.fitBounds(polyline.getBounds());
 
     // add fault markers
     for (const { index, fault } of faultPoints) {
-      // TODO: onclick of fault, move index to fault
       const marker = Leaflet.marker(gpsPoints[index], { icon: faultIcon, title: fault }).addTo(map);
       const element = marker.getElement();
       if (element) {
@@ -75,6 +91,10 @@
         });
       }
     }
+
+    map.addEventListener('zoomend', setVisibleIndices);
+    map.addEventListener('moveend', setVisibleIndices);
+    setVisibleIndices();
   }
 </script>
 

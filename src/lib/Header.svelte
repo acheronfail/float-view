@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   import type { BatterySpecs } from './CommonTypes';
   import { demoFile } from './Csv';
 

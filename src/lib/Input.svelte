@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   import type { HTMLInputAttributes } from 'svelte/elements';
   export interface Props extends HTMLInputAttributes {
     id: string;

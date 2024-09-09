@@ -17,6 +17,8 @@
   let selectedIndex = $state(0);
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
   let data = $state<FloatControlRow[]>(demoRows);
+  let visibleIndices = $state<boolean[]>([]);
+  let visibleData = $derived(data.filter((_, i) => visibleIndices[i]));
 
   $effect(() => {
     if (file) {
@@ -68,7 +70,7 @@
   class="grid-container"
 >
   <div style:position="relative" class="map-container">
-    <Map bind:selectedIndex {gpsPoints} {faultPoints} />
+    <Map bind:selectedIndex bind:visibleIndices {gpsPoints} {faultPoints} />
   </div>
   <div
     style:overflow="hidden"
@@ -82,19 +84,27 @@
 
   <div class="chart">
     <Chart
-      data={[{ values: data.map((x) => x.speed), color: 'white' }]}
+      data={[{ values: visibleData.map((x) => x.speed), color: 'white' }]}
       bind:selectedIndex
+      {visibleIndices}
       title="Speed"
       unit=" km/h"
     />
   </div>
   <div class="chart">
-    <Chart data={[{ values: data.map((x) => x.duty) }]} bind:selectedIndex title="Duty cycle" unit="%" />
+    <Chart
+      data={[{ values: visibleData.map((x) => x.duty) }]}
+      bind:selectedIndex
+      {visibleIndices}
+      title="Duty cycle"
+      unit="%"
+    />
   </div>
   <div class="chart">
     <Chart
-      data={[{ values: data.map((x) => x.voltage), color: 'green' }]}
+      data={[{ values: visibleData.map((x) => x.voltage), color: 'green' }]}
       bind:selectedIndex
+      {visibleIndices}
       title="Battery Voltage"
       unit="V"
       yAxis={{
@@ -105,8 +115,9 @@
   </div>
   <div class="chart">
     <Chart
-      data={[{ values: data.map((x) => x.altitude), color: 'brown' }]}
+      data={[{ values: visibleData.map((x) => x.altitude), color: 'brown' }]}
       bind:selectedIndex
+      {visibleIndices}
       title="Elevation"
       unit="m"
     />
@@ -114,10 +125,11 @@
   <div class="chart">
     <Chart
       data={[
-        { values: data.map((x) => x.current_motor), color: 'cyan', label: 'Motor current' },
-        { values: data.map((x) => x.current_battery), color: 'azure', label: 'Battery current' },
+        { values: visibleData.map((x) => x.current_motor), color: 'cyan', label: 'Motor current' },
+        { values: visibleData.map((x) => x.current_battery), color: 'azure', label: 'Battery current' },
       ]}
       bind:selectedIndex
+      {visibleIndices}
       title="I-Mot / I-Batt"
       unit="A"
     />
@@ -125,10 +137,11 @@
   <div class="chart">
     <Chart
       data={[
-        { values: data.map((x) => x.temp_motor), color: 'orange', label: 'Motor temp' },
-        { values: data.map((x) => x.temp_mosfet), color: 'yellow', label: 'Mosfet temp' },
+        { values: visibleData.map((x) => x.temp_motor), color: 'orange', label: 'Motor temp' },
+        { values: visibleData.map((x) => x.temp_mosfet), color: 'yellow', label: 'Mosfet temp' },
       ]}
       bind:selectedIndex
+      {visibleIndices}
       title="T-Mot / T-Mosfet"
       unit="°C"
     />

@@ -1,9 +1,9 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   import type { BatterySpecs } from './CommonTypes';
   import type { FloatControlRow } from './FloatControlTypes';
 
   export interface Props {
-    data: FloatControlRow;
+    data: FloatControlRow | undefined;
     selectedIndex: number;
     batterySpecs: BatterySpecs;
   }
@@ -14,8 +14,9 @@
   import List from './List.svelte';
   import Pitch from './Pitch.svelte';
   import Roll from './Roll.svelte';
+  import { empty,  } from './FloatControlTypes';
 
-  let { data, batterySpecs, selectedIndex }: Props = $props();
+  let { data = empty, batterySpecs, selectedIndex }: Props = $props();
 
   const getStateColor = (state: string): string | undefined => {
     switch (state.toLowerCase()) {
@@ -45,15 +46,15 @@
   class="transpose-grid"
 >
   <div class="item">
-    <Footpads {data} {selectedIndex} {batterySpecs} />
+    <Footpads {data} />
   </div>
 
   <div class="item">
-    <Pitch {data} {selectedIndex} {batterySpecs} />
+    <Pitch {data} />
   </div>
 
   <div class="item">
-    <Roll {data} {selectedIndex} {batterySpecs} />
+    <Roll {data} />
   </div>
 
   <div class="item">

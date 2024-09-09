@@ -1,8 +1,8 @@
 <script lang="ts">
+  import type { FloatControlRow } from './FloatControlTypes';
   import List from './List.svelte';
-  import type { Props } from './OtherInfo.svelte';
 
-  let { data }: Props = $props();
+  let { data }: { data: FloatControlRow } = $props();
   let goingSlow = $derived(data.speed < 2);
   let adc1Enabled = $derived(data.adc1 > 2);
   let adc2Enabled = $derived(data.adc2 > 2);
