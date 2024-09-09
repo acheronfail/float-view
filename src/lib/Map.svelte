@@ -1,7 +1,6 @@
 <script lang="ts" context="module">
   export interface FaultPoint {
     index: number;
-    id: number;
     fault: string;
   }
 

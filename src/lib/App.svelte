@@ -28,8 +28,8 @@
   let faultPoints = $derived.by(() => {
     const points: FaultPoint[] = [];
     data.forEach((x, index) => {
-      if (x.state_raw !== 1) {
-        points.push({ index, fault: x.state, id: x.state_raw });
+      if (x.state !== 'RIDING') {
+        points.push({ index, fault: x.state });
       }
     });
 

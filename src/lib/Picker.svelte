@@ -9,13 +9,6 @@
 
   let { file = $bindable() }: Props = $props();
 
-  let hidden = $state(false);
-  $effect(() => {
-    if (file) {
-      hidden = false;
-    }
-  });
-
   const onchange: ChangeEventHandler<HTMLInputElement> = (e) => {
     const { files } = e.currentTarget;
     if (files && files.length > 0) {
@@ -24,20 +17,14 @@
   };
 </script>
 
-{#if !hidden}
-  <div class="overlay"></div>
-  <div class="modal-container">
-    <div class="modal">
-      <h1>Welcome!</h1>
-      <p>Please select an exported CSV file from Float Control to get started.</p>
-      <input type="file" {onchange} />
-
-      <!-- TODO: better styling? -->
-      <!-- TODO: how to show again to pick a file? -->
-      <button onclick={() => (hidden = true)}>hide</button>
-    </div>
+<div class="overlay"></div>
+<div class="modal-container">
+  <div class="modal">
+    <h1>Welcome!</h1>
+    <p>Please select an exported CSV file from Float Control to get started.</p>
+    <input type="file" {onchange} />
   </div>
-{/if}
+</div>
 
 <style>
   .overlay {
