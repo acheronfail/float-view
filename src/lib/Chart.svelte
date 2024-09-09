@@ -45,7 +45,11 @@
   let zeroPath = $state<[[number, number], [number, number]] | undefined>();
   /** x coordinate of where the vertical line indicator should be */
   // FIXME: this is too slow, and seems to hang everything on normally sized datasets
-  // either find a way to make it faster, or fix it some other way
+  // either find a way to make it faster, or fix it some other way...
+  // Some ideas:
+  //  - since all charts are the same width, lift up pruning of data into App and manage there
+  //  - keep track of app index mappings, to easily translate between them
+  //  - something else?
   let selectedDataPointIndex = $derived.by(() => {
     // translate selected index to visible index
     let visibleIndex = selectedIndex;

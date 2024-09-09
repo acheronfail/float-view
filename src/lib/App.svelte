@@ -8,6 +8,7 @@
   import type { BatterySpecs } from './CommonTypes';
   import { demoFile, demoRows, parse } from './Csv';
   import Picker from './Picker.svelte';
+  import { filterMap } from './Utils';
 
   let cellCount = $state(20);
   let cellMinVolt = $state(3.0);
@@ -18,7 +19,7 @@
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
   let data = $state<FloatControlRow[]>(demoRows);
   let visibleIndices = $state<boolean[]>([]);
-  let visibleData = $derived(data.filter((_, i) => visibleIndices[i]));
+  let visibleData = $derived(filterMap(data, (x, i) => visibleIndices[i] ? x : null));
 
   $effect(() => {
     if (file) {
@@ -51,7 +52,6 @@
       selectedIndex = Math.max(0, selectedIndex - 1);
     }
   });
-
 </script>
 
 <Header {selectedIndex} bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
