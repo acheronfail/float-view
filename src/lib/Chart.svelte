@@ -2,6 +2,7 @@
   import { ticks, type TickOptions } from './ChartUtils';
   import type { MouseEventHandler } from 'svelte/elements';
   import { assert } from './Utils';
+  import { untrack } from 'svelte';
 
   // FIXME: on resize, grid lines get quite thick? (or is this just with smaller sizes?)
   // FIXME: sometimes a grid line is drawn at/near zero, which interferes with zero line
@@ -15,7 +16,7 @@
       values: number[];
     }[];
     selectedIndex: number;
-    visibleIndices: boolean[];
+    setSelectedIdx: (index: number) => void;
     yAxis?: TickOptions;
     unit?: string;
     title?: string;
@@ -26,7 +27,7 @@
   const valueToYPct = (y: number, min: number, max: number) => 100 - getYValueHeight(y, min, max);
   const aggMaxAbs = (acc: number, n: number) => (Math.abs(acc) > Math.abs(n) ? acc : n);
 
-  let { data, selectedIndex = $bindable(0), visibleIndices, unit = '', title = '', yAxis }: Props = $props();
+  let { data, selectedIndex, setSelectedIdx, unit = '', title = '', yAxis }: Props = $props();
   let dataLen = $derived(data[0].values.length);
   assert(
     data.every(({ values }) => values.length === dataLen),
@@ -105,10 +106,7 @@
 
   $effect(() => {
     if (data) {
-      // HACK: this is wrapped in a setTimeout so that svelte doesn't track changes,
-      // otherwise this causes an infinite loop - I don't think this is the right way
-      // to do this...
-      setTimeout(() => renderChart(svg!.getBoundingClientRect().width));
+      untrack(() => renderChart(svg!.getBoundingClientRect().width));
     }
   });
 
@@ -131,20 +129,10 @@
 
     if (pixelX < 0) {
       // exited on left, find first visible index
-      for (let i = 0; i < visibleIndices.length; i++) {
-        if (visibleIndices[i]) {
-          selectedIndex = i;
-          break;
-        }
-      }
+      setSelectedIdx(0);
     } else if (pixelX > bounds.width) {
       // exited on right, find last visible index
-      for (let i = visibleIndices.length; i > 0; i--) {
-        if (visibleIndices[i]) {
-          selectedIndex = i;
-          break;
-        }
-      }
+      setSelectedIdx(dataLen - 1);
     }
   };
 
@@ -155,18 +143,7 @@
     const pixelX = e.clientX - bounds.left;
 
     // translate from visible indices to real indices
-    const selectedVisible = Math.min(Math.floor(pixelX * (dataLen / bounds.width)), dataLen - 1);
-    let i = 0;
-    for (let current = -1; i < visibleIndices.length; i++) {
-      if (visibleIndices[i]) {
-        if (++current === selectedVisible) {
-          selectedIndex = i;
-          break;
-        }
-      }
-    }
-
-    selectedIndex = i;
+    setSelectedIdx(Math.min(Math.floor(pixelX * (dataLen / bounds.width)), dataLen - 1));
   };
 
   const formatValue = (value: number): string => {
@@ -260,18 +237,16 @@
       {/each}
 
       <!-- selected index vertical line -->
-      {#if visibleIndices[selectedIndex]}
-        <path
-          fill="none"
-          stroke="#aaa"
-          d="M{[
-            [selectedX, 0],
-            [selectedX, 100 * scaleFactor],
-          ]
-            .map((pos) => pos.join(','))
-            .join('L')}"
-        />
-      {/if}
+      <path
+        fill="none"
+        stroke="#aaa"
+        d="M{[
+          [selectedX, 0],
+          [selectedX, 100 * scaleFactor],
+        ]
+          .map((pos) => pos.join(','))
+          .join('L')}"
+      />
     </g>
   </svg>
 
@@ -324,7 +299,7 @@
 
   <!-- tooltip for vertical selected line -->
   <!-- TODO: don't make this overflow past end? -->
-  {#if visibleIndices[selectedIndex]}
+  {#if selectedDataPointIndex > -1}
     <div>
       <div
         style:position="absolute"

@@ -1,3 +1,5 @@
+import type { FloatControlRowWithIndex } from "./Csv";
+
 export enum FloatControlRawHeader {
   Time = 'Time(s)',
   State = 'State',
@@ -154,7 +156,8 @@ export interface FloatControlRow {
   [FloatControlHeader.WhCharged]: number;
 }
 
-export const empty: FloatControlRow = {
+export const empty: FloatControlRowWithIndex = {
+  index: -1,
   time: 0,
   state: 'STARTUP',
   distance: 0,

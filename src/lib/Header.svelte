@@ -3,7 +3,6 @@
   import { demoFile } from './Csv';
 
   export interface Props extends BatterySpecs {
-    selectedIndex: number | undefined;
     file: File | undefined;
   }
 </script>

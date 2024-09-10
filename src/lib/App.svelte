@@ -6,47 +6,70 @@
   import OtherInfo from './OtherInfo.svelte';
   import Header from './Header.svelte';
   import type { BatterySpecs } from './CommonTypes';
-  import { demoFile, demoRows, parse } from './Csv';
+  import { demoFile, demoRows, parse, type FloatControlRowWithIndex } from './Csv';
   import Picker from './Picker.svelte';
-  import { filterMap } from './Utils';
 
+  // battery specs
   let cellCount = $state(20);
   let cellMinVolt = $state(3.0);
   let cellMaxVolt = $state(4.2);
   let batterySpecs = $derived<BatterySpecs>({ cellCount, cellMinVolt, cellMaxVolt });
 
-  let selectedIndex = $state(0);
+  /** selected file */
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
-  let data = $state<FloatControlRow[]>(demoRows);
-  let visibleIndices = $state<boolean[]>([]);
-  let visibleData = $derived(filterMap(data, (x, i) => visibleIndices[i] ? x : null));
+  /** parsed csv data from Float Control */
+  let rows = $state<FloatControlRowWithIndex[]>(demoRows);
+  /** selected index of `rows` */
+  let selectedRowIndex = $state(0);
+  /** entire view of gps points from `rows` */
+  let gpsPoints = $derived(rows.map((x): LatLngExpression => [x.gps_latitude, x.gps_longitude]));
+  /** entire list of faults from `rows` */
+  let faultPoints = $derived.by(() => {
+    const points: FaultPoint[] = [];
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].state !== 'RIDING') {
+        points.push({ index: i, fault: rows[i].state });
+      }
+    }
 
+    return points;
+  });
+
+  /** array-as-map of whether particular rows are visible or not */
+  let visible = $state<boolean[]>([]);
+  /** filtered visible rows */
+  let visibleRows = $derived(rows.filter((_, i) => visible[i]));
+  /** selected index of `visibleRows` */
+  let selectedIndex = $state(0);
+
+  const updateSelectedRowIdx = () => {
+    if (!visible[selectedRowIndex]) {
+      // it's not the best, but try to find a point on the line that's somewhat in the middle
+      // this doesn't really work well if there are multiple lines going in different directions
+      selectedRowIndex = visibleRows[Math.floor(visibleRows.length / 2)]?.index ?? 0;
+    }
+  };
+
+  const setSelectedIdx = (index: number) => {
+    selectedIndex = index;
+    selectedRowIndex = visibleRows[selectedIndex]?.index ?? 0;
+  };
+
+  // parse csv when file is selected
   $effect(() => {
     if (file) {
       parse(file).then((results) => {
         // TODO: handle parse errors
-        data = results.data;
+        rows = results.data;
         selectedIndex = 0;
       });
     }
   });
 
-  let gpsPoints = $derived(data.map((x): LatLngExpression => [x.gps_latitude, x.gps_longitude]));
-  let faultPoints = $derived.by(() => {
-    const points: FaultPoint[] = [];
-    data.forEach((x, index) => {
-      if (x.state !== 'RIDING') {
-        points.push({ index, fault: x.state });
-      }
-    });
-
-    return points;
-  });
-
   // event handlers to step left and right in data
   window.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') {
-      selectedIndex = Math.min(data.length - 1, selectedIndex + 1);
+      selectedIndex = Math.min(visibleRows.length - 1, selectedIndex + 1);
     }
     if (e.key === 'ArrowLeft') {
       selectedIndex = Math.max(0, selectedIndex - 1);
@@ -54,7 +77,7 @@
   });
 </script>
 
-<Header {selectedIndex} bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
+<Header bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
 
 {#if !file}
   <Picker bind:file />
@@ -69,7 +92,16 @@
   class="grid-container"
 >
   <div style:position="relative" class="map-container">
-    <Map bind:selectedIndex bind:visibleIndices {gpsPoints} {faultPoints} />
+    <Map
+      bind:visible
+      bind:selectedIndex
+      {setSelectedIdx}
+      {updateSelectedRowIdx}
+      {selectedRowIndex}
+      {visibleRows}
+      {gpsPoints}
+      {faultPoints}
+    />
   </div>
   <div
     style:overflow="hidden"
@@ -78,32 +110,32 @@
     style:place-self="center"
     class="column-2-to-row-2"
   >
-    <OtherInfo data={data[selectedIndex]} {selectedIndex} {batterySpecs} />
+    <OtherInfo data={visibleRows[selectedIndex]} {batterySpecs} />
   </div>
 
   <div class="chart">
     <Chart
-      data={[{ values: visibleData.map((x) => x.speed), color: 'white' }]}
-      bind:selectedIndex
-      {visibleIndices}
+      data={[{ values: visibleRows.map((x) => x.speed), color: 'white' }]}
+      {selectedIndex}
+      {setSelectedIdx}
       title="Speed"
       unit=" km/h"
     />
   </div>
   <div class="chart">
     <Chart
-      data={[{ values: visibleData.map((x) => x.duty) }]}
-      bind:selectedIndex
-      {visibleIndices}
+      data={[{ values: visibleRows.map((x) => x.duty) }]}
+      {selectedIndex}
+      {setSelectedIdx}
       title="Duty cycle"
       unit="%"
     />
   </div>
   <div class="chart">
     <Chart
-      data={[{ values: visibleData.map((x) => x.voltage), color: 'green' }]}
-      bind:selectedIndex
-      {visibleIndices}
+      data={[{ values: visibleRows.map((x) => x.voltage), color: 'green' }]}
+      {selectedIndex}
+      {setSelectedIdx}
       title="Battery Voltage"
       unit="V"
       yAxis={{
@@ -114,9 +146,9 @@
   </div>
   <div class="chart">
     <Chart
-      data={[{ values: visibleData.map((x) => x.altitude), color: 'brown' }]}
-      bind:selectedIndex
-      {visibleIndices}
+      data={[{ values: visibleRows.map((x) => x.altitude), color: 'brown' }]}
+      {selectedIndex}
+      {setSelectedIdx}
       title="Elevation"
       unit="m"
     />
@@ -124,11 +156,11 @@
   <div class="chart">
     <Chart
       data={[
-        { values: visibleData.map((x) => x.current_motor), color: 'cyan', label: 'Motor current' },
-        { values: visibleData.map((x) => x.current_battery), color: 'azure', label: 'Battery current' },
+        { values: visibleRows.map((x) => x.current_motor), color: 'cyan', label: 'Motor current' },
+        { values: visibleRows.map((x) => x.current_battery), color: 'azure', label: 'Battery current' },
       ]}
-      bind:selectedIndex
-      {visibleIndices}
+      {selectedIndex}
+      {setSelectedIdx}
       title="I-Mot / I-Batt"
       unit="A"
     />
@@ -136,11 +168,11 @@
   <div class="chart">
     <Chart
       data={[
-        { values: visibleData.map((x) => x.temp_motor), color: 'orange', label: 'Motor temp' },
-        { values: visibleData.map((x) => x.temp_mosfet), color: 'yellow', label: 'Mosfet temp' },
+        { values: visibleRows.map((x) => x.temp_motor), color: 'orange', label: 'Motor temp' },
+        { values: visibleRows.map((x) => x.temp_mosfet), color: 'yellow', label: 'Mosfet temp' },
       ]}
-      bind:selectedIndex
-      {visibleIndices}
+      {selectedIndex}
+      {setSelectedIdx}
       title="T-Mot / T-Mosfet"
       unit="°C"
     />

@@ -3,8 +3,7 @@
   import type { FloatControlRow } from './FloatControlTypes';
 
   export interface Props {
-    data: FloatControlRow | undefined;
-    selectedIndex: number;
+    data: FloatControlRowWithIndex | undefined;
     batterySpecs: BatterySpecs;
   }
 </script>
@@ -14,9 +13,10 @@
   import List from './List.svelte';
   import Pitch from './Pitch.svelte';
   import Roll from './Roll.svelte';
-  import { empty,  } from './FloatControlTypes';
+  import { empty } from './FloatControlTypes';
+  import type { FloatControlRowWithIndex } from './Csv';
 
-  let { data = empty, batterySpecs, selectedIndex }: Props = $props();
+  let { data = empty, batterySpecs }: Props = $props();
 
   const getStateColor = (state: string): string | undefined => {
     switch (state.toLowerCase()) {
@@ -65,7 +65,7 @@
         { label: 'Distance', value: `${data.distance} km` },
         '-',
         { label: 'State', value: data.state, color: getStateColor(data.state) },
-        { label: 'Index', value: selectedIndex.toString(), htmlTitle: 'Selected line from the CSV file' },
+        { label: 'Index', value: data.index.toString(), htmlTitle: 'Selected line from the CSV file' },
       ]}
     />
   </div>

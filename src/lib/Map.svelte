@@ -5,8 +5,12 @@
   }
 
   export interface Props {
+    visible: boolean[];
+    visibleRows: FloatControlRowWithIndex[];
     selectedIndex: number;
-    visibleIndices: boolean[];
+    setSelectedIdx: (index: number) => void;
+    selectedRowIndex: number;
+    updateSelectedRowIdx: () => void;
     gpsPoints: LatLngExpression[];
     faultPoints: FaultPoint[];
   }
@@ -15,6 +19,8 @@
 <script lang="ts">
   import Leaflet, { type LatLngExpression } from 'leaflet';
   import riderIconSvg from '../assets/rider-icon.svg?raw';
+  import type { FloatControlRowWithIndex } from './Csv';
+  import { untrack } from 'svelte';
 
   let map: Leaflet.Map | null = null;
   let polyline: Leaflet.Polyline | null = null;
@@ -22,13 +28,13 @@
   let riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderIconSvg });
   let faultIcon = Leaflet.divIcon({ className: 'fault-icon' });
 
-  let { selectedIndex = $bindable(), visibleIndices = $bindable(), gpsPoints, faultPoints }: Props = $props();
+  let { selectedIndex = $bindable(), setSelectedIdx, selectedRowIndex, updateSelectedRowIdx, visible = $bindable(), visibleRows, gpsPoints, faultPoints }: Props = $props();
 
   let node = $state<HTMLDivElement | undefined>();
 
   $effect(() => {
     if (node && gpsPoints) {
-      renderMap(node);
+      untrack(() => renderMap(node!));
     }
   })
 
@@ -38,25 +44,26 @@
         riderMarker.remove();
       }
 
-      riderMarker = Leaflet.marker(gpsPoints[selectedIndex], { icon: riderIcon }).addTo(map);
+      const location = gpsPoints[selectedRowIndex];
+      if (location) {
+        riderMarker = Leaflet.marker(location, { icon: riderIcon }).addTo(map);
+      }
     }
   });
 
   const stateToClass = (state: string) => state.toLowerCase().replace(/\s+/g, '_');
 
   function setVisibleIndices() {
-    // FIXME: disabled since computed selected index in charts is too slow
-    // see `selectedDataPointIndex` in `Chart.svelte`
-    return visibleIndices = new Array(gpsPoints.length).fill(true);
-
     // SAFETY: only called when a valid map has been created
     const bounds = map!.getBounds();
     // SAFETY: only called when a valid line has been created
     if (bounds.contains(polyline!.getBounds())) {
-      visibleIndices = new Array(gpsPoints.length).fill(true);
+      visible = new Array(gpsPoints.length).fill(true);
     } else {
-      visibleIndices = gpsPoints.map(point => bounds.contains(point));
+      visible = gpsPoints.map(point => bounds.contains(point));
     }
+
+    updateSelectedRowIdx();
   }
 
   const ResetButton = Leaflet.Control.extend({
@@ -72,7 +79,7 @@
       // SAFETY: can't be clicked without these existing
       el.onclick = () => {
         map!.fitBounds(polyline!.getBounds());
-        selectedIndex = 0;
+        setSelectedIdx(0);
       }
       return el;
     }
@@ -111,7 +118,14 @@
       if (element) {
         element.classList.add(stateToClass(fault));
         element.addEventListener('click', () => {
-          selectedIndex = index;
+          // find the point in `visibleRows`, if it was clicked it was visible, so it must
+          // be in this list
+          for (let i = 0; i < visibleRows.length; i++) {
+            if (visibleRows[i].index === index) {
+              setSelectedIdx(i);
+              break;
+            }
+          }
         });
       }
     }
