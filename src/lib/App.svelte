@@ -7,6 +7,7 @@
   import type { BatterySpecs } from './CommonTypes';
   import { demoFile, demoRows, parse, type FloatControlRowWithIndex } from './Csv';
   import Picker from './Picker.svelte';
+  import type { EventHandler } from 'svelte/elements';
 
   // battery specs
   let cellCount = $state(20);
@@ -81,13 +82,42 @@
     }
   });
 
+  const stepNext = () => setSelectedIdx((selectedIndex + 1) % visibleRows.length);
+  const stepPrev = () => setSelectedIdx(selectedIndex ? selectedIndex - 1 : visibleRows.length - 1);
+
+  let heldDown = false;
+  let timeout = -1;
+  const repeat = (fn: () => void) => {
+    const loop = () => {
+      if (!heldDown) return;
+      fn();
+      requestAnimationFrame(loop);
+    };
+
+    requestAnimationFrame(loop);
+  };
+  const onInteractStart =
+    (fn: () => void): EventHandler =>
+    (e) => {
+      e.stopPropagation();
+      heldDown = true;
+      timeout = window.setTimeout(() => repeat(fn), 300);
+    };
+  const onInteractEnd: EventHandler = (e) => {
+    e.stopPropagation();
+    heldDown = false;
+    clearTimeout(timeout);
+  };
+
+  const initButtons = (node: HTMLDivElement) => node.addEventListener('contextmenu', (e) => e.preventDefault());
+
   // event handlers to step left and right in data
   window.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') {
-      selectedIndex = Math.min(visibleRows.length - 1, selectedIndex + 1);
+      stepNext();
     }
     if (e.key === 'ArrowLeft') {
-      selectedIndex = Math.max(0, selectedIndex - 1);
+      stepPrev();
     }
   });
 </script>
@@ -191,6 +221,37 @@
   </div>
 </main>
 
+<div
+  style:position="fixed"
+  style:right="1rem"
+  style:bottom="1rem"
+  style:flex-direction="row"
+  style:justify-content="center"
+  style:align-items="center"
+  style:gap="1rem"
+  class="buttons"
+  use:initButtons
+>
+  <button
+    onclick={stepPrev}
+    ontouchstart={onInteractStart(stepPrev)}
+    onmousedown={onInteractStart(stepPrev)}
+    ontouchend={onInteractEnd}
+    onmouseup={onInteractEnd}
+  >
+    ←
+  </button>
+  <button
+    onclick={stepNext}
+    ontouchstart={onInteractStart(stepNext)}
+    onmousedown={onInteractStart(stepNext)}
+    ontouchend={onInteractEnd}
+    onmouseup={onInteractEnd}
+  >
+    →
+  </button>
+</div>
+
 <style>
   .column-2-to-row-2 {
     grid-column: span 2;
@@ -207,6 +268,15 @@
     box-sizing: border-box;
     display: flex;
     overflow: hidden;
+  }
+
+  .buttons {
+    display: none;
+  }
+  .buttons button {
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    touch-action: manipulation;
   }
 
   /* TODO: preprocessor to save all media query constants */
@@ -231,6 +301,10 @@
 
     .chart {
       height: var(--grid-width);
+    }
+
+    .buttons {
+      display: flex;
     }
   }
 </style>
