@@ -39,6 +39,21 @@
   let visible = $state<boolean[]>([]);
   /** filtered visible rows */
   let visibleRows = $derived(rows.filter((_, i) => visible[i]));
+  /** indices of gaps between non-contiguous ranges in `visibleRows` */
+  let gapIndices = $derived.by(() => {
+    let gaps: number[] = [];
+    let prev = visibleRows[0]?.index ?? 0;
+    for (let i = 1; i < visibleRows.length; i++) {
+      const { index } = visibleRows[i];
+      if (prev < index - 1) {
+        gaps.push(i);
+      }
+
+      prev = index;
+    }
+
+    return gaps;
+  });
   /** selected index of `visibleRows` */
   let selectedIndex = $state(0);
 
@@ -118,6 +133,7 @@
       data={[{ values: visibleRows.map((x) => x.speed), color: 'white' }]}
       {selectedIndex}
       {setSelectedIdx}
+      {gapIndices}
       title="Speed"
       unit=" km/h"
     />
@@ -127,6 +143,7 @@
       data={[{ values: visibleRows.map((x) => x.duty) }]}
       {selectedIndex}
       {setSelectedIdx}
+      {gapIndices}
       title="Duty cycle"
       unit="%"
     />
@@ -136,6 +153,7 @@
       data={[{ values: visibleRows.map((x) => x.voltage), color: 'green' }]}
       {selectedIndex}
       {setSelectedIdx}
+      {gapIndices}
       title="Battery Voltage"
       unit="V"
       yAxis={{
@@ -149,6 +167,7 @@
       data={[{ values: visibleRows.map((x) => x.altitude), color: 'brown' }]}
       {selectedIndex}
       {setSelectedIdx}
+      {gapIndices}
       title="Elevation"
       unit="m"
     />
@@ -161,6 +180,7 @@
       ]}
       {selectedIndex}
       {setSelectedIdx}
+      {gapIndices}
       title="I-Mot / I-Batt"
       unit="A"
     />
@@ -173,6 +193,7 @@
       ]}
       {selectedIndex}
       {setSelectedIdx}
+      {gapIndices}
       title="T-Mot / T-Mosfet"
       unit="°C"
     />

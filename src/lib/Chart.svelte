@@ -4,10 +4,26 @@
   import { assert } from './Utils';
   import { untrack } from 'svelte';
 
-  // FIXME: on resize, grid lines get quite thick? (or is this just with smaller sizes?)
-  // FIXME: sometimes a grid line is drawn at/near zero, which interferes with zero line
+  // TODO: on resize, grid lines get quite thick? (or is this just with smaller sizes?)
+  // TODO: sometimes a grid line is drawn at/near zero, which interferes with zero line
 
-  // TODO: vertical lines showing gaps in visibleIndices?
+  const DEFAULT_COLOUR = 'red';
+
+  const MARGIN_TOP = '3rem';
+  const MARGIN_RIGHT = '2rem';
+  const MARGIN_LEFT = '4rem';
+  const MARGIN_BOTTOM = '3rem';
+
+  const ZERO_LINE_COLOUR = '#aaa';
+  const ZERO_LINE_DASHARRAY = '5 3';
+
+  const GRID_LINE_COLOUR = '#555';
+  const GRID_LINE_WIDTH = 1;
+  const GRID_LINE_DASHARRAY = '3 3';
+
+  const GAP_LINE_COLOUR = '#555';
+  const GAP_LINE_WIDTH = 1;
+  const GAP_LINE_DASHARRAY = '1 1';
 
   interface Props {
     data: {
@@ -17,6 +33,8 @@
     }[];
     selectedIndex: number;
     setSelectedIdx: (index: number) => void;
+    gapIndices: number[];
+
     yAxis?: TickOptions;
     unit?: string;
     title?: string;
@@ -27,7 +45,7 @@
   const valueToYPct = (y: number, min: number, max: number) => 100 - getYValueHeight(y, min, max);
   const aggMaxAbs = (acc: number, n: number) => (Math.abs(acc) > Math.abs(n) ? acc : n);
 
-  let { data, selectedIndex, setSelectedIdx, unit = '', title = '', yAxis }: Props = $props();
+  let { data, selectedIndex, setSelectedIdx, gapIndices, unit = '', title = '', yAxis }: Props = $props();
   let dataLen = $derived(data[0].values.length);
   assert(
     data.every(({ values }) => values.length === dataLen),
@@ -45,28 +63,7 @@
   /** start and end coordinates of where 0 is on the x axis */
   let zeroPath = $state<[[number, number], [number, number]] | undefined>();
   /** x coordinate of where the vertical line indicator should be */
-  // FIXME: this is too slow, and seems to hang everything on normally sized datasets
-  // either find a way to make it faster, or fix it some other way...
-  // Some ideas:
-  //  - since all charts are the same width, lift up pruning of data into App and manage there
-  //  - keep track of app index mappings, to easily translate between them
-  //  - something else?
-  let selectedDataPointIndex = $derived.by(() => {
-    // translate selected index to visible index
-    let visibleIndex = selectedIndex;
-    // let visibleIndex = -1;
-    // for (let i = 0; i < visibleIndices.length; i++) {
-    //   if (visibleIndices[i]) {
-    //     visibleIndex++;
-    //     if (i === selectedIndex) {
-    //       break;
-    //     }
-    //   }
-    // }
-
-    // translate visible index to our chart resolution index
-    return Math.floor(visibleIndex / chunkSize);
-  });
+  let selectedDataPointIndex = $derived(Math.floor(selectedIndex / chunkSize));
   let selectedX = $derived(indexToXPct(selectedDataPointIndex) * scaleFactor);
   /** ticks for the y-axis */
   let yTicks: [number, string][] = $derived(
@@ -109,17 +106,6 @@
       untrack(() => renderChart(svg!.getBoundingClientRect().width));
     }
   });
-
-  const MARGIN_TOP = '3rem';
-  const MARGIN_RIGHT = '2rem';
-  const MARGIN_LEFT = '4rem';
-  const MARGIN_BOTTOM = '3rem';
-  const DEFAULT_COLOUR = 'red';
-  const ZERO_LINE_COLOUR = '#aaa';
-  const ZERO_LINE_DASHARRAY = '5 3';
-  const GRID_LINE_COLOUR = '#555';
-  const GRID_LINE_WIDTH = 1;
-  const GRID_LINE_DASHARRAY = '3 3';
 
   const onmouseleave: MouseEventHandler<SVGSVGElement> = (e) => {
     // it's hard to select the start and the end, since the mousemove events
@@ -232,6 +218,23 @@
           stroke={data[i].color ?? DEFAULT_COLOUR}
           d="M{values
             .map((y, i) => `${indexToXPct(i) * scaleFactor},${valueToYPct(y, yTickMin, yTickMax) * scaleFactor}`)
+            .join('L')}"
+        />
+      {/each}
+
+      <!-- lines indicating gaps in data -->
+      {#each gapIndices as gapIndex}
+        {@const x = indexToXPct(Math.floor(gapIndex / chunkSize)) * scaleFactor}
+        <path
+          fill="none"
+          stroke={GAP_LINE_COLOUR}
+          stroke-width={GAP_LINE_WIDTH}
+          stroke-dasharray={GAP_LINE_DASHARRAY}
+          d="M{[
+            [x, 0],
+            [x, 100 * scaleFactor],
+          ]
+            .map((pos) => pos.join(','))
             .join('L')}"
         />
       {/each}
