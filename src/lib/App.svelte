@@ -63,7 +63,7 @@
       // this doesn't really work well if there are multiple lines going in different directions
       selectedRowIndex = visibleRows[Math.floor(visibleRows.length / 2)]?.index ?? 0;
     }
-  }
+  };
 
   const setSelectedIdx = (index: number) => {
     selectedIndex = index;
@@ -107,14 +107,7 @@
   class="grid-container"
 >
   <div style:position="relative" class="map-container">
-    <Map
-      {setSelectedIdx}
-      {setVisible}
-      {selectedRowIndex}
-      {visibleRows}
-      {gpsPoints}
-      {faultPoints}
-    />
+    <Map {setSelectedIdx} {setVisible} {selectedRowIndex} {visibleRows} {gpsPoints} {faultPoints} />
   </div>
   <div
     style:overflow="hidden"

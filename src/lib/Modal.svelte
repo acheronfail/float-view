@@ -81,6 +81,7 @@
   @media (width <= 600px) {
     .modal {
       width: 80vw;
+      height: 80vw;
     }
   }
 </style>

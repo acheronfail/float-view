@@ -24,10 +24,19 @@
     file = undefined;
     open = false;
   };
-
-  // FIXME: mobile view
-  // TODO: button for explaining keyboard shortcuts and such
 </script>
+
+<div
+  style:position="fixed"
+  style:z-index="1"
+  style:height="calc(var(--header-height) + 1000px)"
+  style:top="-1000px"
+  style:left="0"
+  style:right="0"
+  style:background-color="#121418"
+>
+  <!-- hack to stop mobiles with notches from showing content as they scroll -->
+</div>
 
 <header
   style:position="sticky"
@@ -40,6 +49,7 @@
   style:background-color="#121418"
   style:border-bottom="1px solid #333"
   style:height="var(--header-height)"
+  style:margin-top="calc(var(--header-height) * -3)"
   style:padding-left="1rem"
   style:padding-right="1rem"
   style:white-space="nowrap"

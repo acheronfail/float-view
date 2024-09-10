@@ -26,14 +26,7 @@
   let riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderIconSvg });
   let faultIcon = Leaflet.divIcon({ className: 'fault-icon' });
 
-  let {
-    setSelectedIdx,
-    selectedRowIndex,
-    setVisible,
-    visibleRows,
-    gpsPoints,
-    faultPoints,
-  }: Props = $props();
+  let { setSelectedIdx, selectedRowIndex, setVisible, visibleRows, gpsPoints, faultPoints }: Props = $props();
 
   let node = $state<HTMLDivElement | undefined>();
 

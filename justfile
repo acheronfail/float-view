@@ -1,2 +1,2 @@
-dev:
-  npm run dev
+dev *args:
+  npm run dev -- {{args}}
