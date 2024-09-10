@@ -1,6 +1,5 @@
 <script lang="ts">
   import { type LatLngExpression } from 'leaflet';
-  import { type FloatControlRow } from './FloatControlTypes';
   import Chart from './Chart.svelte';
   import Map, { type FaultPoint } from './Map.svelte';
   import OtherInfo from './OtherInfo.svelte';
@@ -57,13 +56,14 @@
   /** selected index of `visibleRows` */
   let selectedIndex = $state(0);
 
-  const updateSelectedRowIdx = () => {
+  const setVisible = (arrayAsMap: boolean[]) => {
+    visible = arrayAsMap;
     if (!visible[selectedRowIndex]) {
       // it's not the best, but try to find a point on the line that's somewhat in the middle
       // this doesn't really work well if there are multiple lines going in different directions
       selectedRowIndex = visibleRows[Math.floor(visibleRows.length / 2)]?.index ?? 0;
     }
-  };
+  }
 
   const setSelectedIdx = (index: number) => {
     selectedIndex = index;
@@ -108,10 +108,8 @@
 >
   <div style:position="relative" class="map-container">
     <Map
-      bind:visible
-      bind:selectedIndex
       {setSelectedIdx}
-      {updateSelectedRowIdx}
+      {setVisible}
       {selectedRowIndex}
       {visibleRows}
       {gpsPoints}

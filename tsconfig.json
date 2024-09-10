@@ -15,6 +15,7 @@
     "checkJs": true,
     "isolatedModules": true,
     "strict": true,
+    "noUnusedLocals": true,
     "moduleDetection": "force"
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],

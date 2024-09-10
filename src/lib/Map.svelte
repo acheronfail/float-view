@@ -5,12 +5,10 @@
   }
 
   export interface Props {
-    visible: boolean[];
     visibleRows: FloatControlRowWithIndex[];
-    selectedIndex: number;
+    setVisible: (visible: boolean[]) => void;
     setSelectedIdx: (index: number) => void;
     selectedRowIndex: number;
-    updateSelectedRowIdx: () => void;
     gpsPoints: LatLngExpression[];
     faultPoints: FaultPoint[];
   }
@@ -29,11 +27,9 @@
   let faultIcon = Leaflet.divIcon({ className: 'fault-icon' });
 
   let {
-    selectedIndex = $bindable(),
     setSelectedIdx,
     selectedRowIndex,
-    updateSelectedRowIdx,
-    visible = $bindable(),
+    setVisible,
     visibleRows,
     gpsPoints,
     faultPoints,
@@ -67,12 +63,10 @@
     const bounds = map!.getBounds();
     // SAFETY: only called when a valid line has been created
     if (bounds.contains(polyline!.getBounds())) {
-      visible = new Array(gpsPoints.length).fill(true);
+      setVisible(new Array(gpsPoints.length).fill(true));
     } else {
-      visible = gpsPoints.map((point) => bounds.contains(point));
+      setVisible(gpsPoints.map((point) => bounds.contains(point)));
     }
-
-    updateSelectedRowIdx();
   }
 
   const ResetButton = Leaflet.Control.extend({

@@ -1,6 +1,5 @@
 <script lang="ts" module>
   import type { BatterySpecs } from './CommonTypes';
-  import type { FloatControlRow } from './FloatControlTypes';
 
   export interface Props {
     data: FloatControlRowWithIndex | undefined;
