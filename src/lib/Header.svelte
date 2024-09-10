@@ -49,7 +49,6 @@
   style:background-color="#121418"
   style:border-bottom="1px solid #333"
   style:height="var(--header-height)"
-  style:margin-top="calc(var(--header-height) * -3)"
   style:padding-left="1rem"
   style:padding-right="1rem"
   style:white-space="nowrap"
