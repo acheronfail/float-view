@@ -49,7 +49,7 @@
   let dataLen = $derived(data[0].values.length);
   assert(
     data.every(({ values }) => values.length === dataLen),
-    'All input data lists must be the same length'
+    'All input data lists must be the same length',
   );
 
   /** wrapper svg element */
@@ -67,7 +67,7 @@
   let selectedX = $derived(indexToXPct(selectedDataPointIndex) * scaleFactor);
   /** ticks for the y-axis */
   let yTicks: [number, string][] = $derived(
-    ticks(dataPoints[0], yAxis).map((n) => [n, `${Number.isInteger(n) ? n : n.toFixed(1)}${unit}`])
+    ticks(dataPoints[0], yAxis).map((n) => [n, `${Number.isInteger(n) ? n : n.toFixed(1)}${unit}`]),
   );
   let yTickMin = $derived(Math.min(...yTicks.map(([n]) => n)));
   let yTickMax = $derived(Math.max(...yTicks.map(([n]) => n)));

@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.0-next.7",
@@ -16,6 +18,8 @@
     "@tsconfig/svelte": "^5.0.4",
     "@types/leaflet": "^1.9.12",
     "@types/papaparse": "^5.3.14",
+    "prettier": "^3.3.3",
+    "prettier-plugin-svelte": "^3.2.6",
     "svelte": "^5.0.0-next.243",
     "svelte-check": "^3.8.6",
     "tslib": "^2.6.3",

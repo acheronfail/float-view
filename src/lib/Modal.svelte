@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { Snippet } from "svelte";
+  import type { Snippet } from 'svelte';
 
   export interface Props {
     open?: boolean;
@@ -11,7 +11,13 @@
 </script>
 
 <script lang="ts">
-  let { open = $bindable(false),  closeHandler = () => (open = false), closeText = 'close', title, children }: Props = $props();
+  let {
+    open = $bindable(false),
+    closeHandler = () => (open = false),
+    closeText = 'close',
+    title,
+    children,
+  }: Props = $props();
 </script>
 
 {#if open}
@@ -34,7 +40,6 @@
     </div>
   </div>
 {/if}
-
 
 <style>
   .overlay {

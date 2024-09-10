@@ -65,7 +65,7 @@
         { label: 'Distance', value: `${data.distance} km` },
         '-',
         { label: 'State', value: data.state, color: getStateColor(data.state) },
-        { label: 'CSV Row', value: (data.index+1).toString(), htmlTitle: 'Selected line from the CSV file' },
+        { label: 'CSV Row', value: (data.index + 1).toString(), htmlTitle: 'Selected line from the CSV file' },
       ]}
     />
   </div>

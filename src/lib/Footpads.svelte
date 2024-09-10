@@ -10,13 +10,7 @@
   const ACTIVE_COLOUR = '#6aa';
 </script>
 
-<svg
-  version="1.1"
-  role="graphics-object"
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 100 80"
-  height="50%"
->
+<svg version="1.1" role="graphics-object" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80" height="50%">
   <path
     stroke="white"
     fill="none"

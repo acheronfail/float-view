@@ -47,12 +47,7 @@
   <h1 style:flex-grow="1" style:display="flex" style:flex-direction="row" style:justify-content="start">
     Float View
     {#if file === demoFile}
-      <span
-        style:width="1px"
-        style:font-size="0.8rem"
-        style:font-family="monospace"
-        style:color="magenta"
-      >
+      <span style:width="1px" style:font-size="0.8rem" style:font-family="monospace" style:color="magenta">
         (demo)
       </span>
     {/if}
@@ -65,15 +60,16 @@
 
 <Modal bind:open title="Settings">
   <div
-  style:height="100%"
-  style:width="100%"
-  style:display="flex"
-  style:flex-direction="column"
-  style:justify-content="start"
-  style:align-items="center"
+    style:height="100%"
+    style:width="100%"
+    style:display="flex"
+    style:flex-direction="column"
+    style:justify-content="start"
+    style:align-items="center"
   >
     <p>
-      The following options help with calculating the voltage per cell, as well as configuring the voltage chart's axis limits.
+      The following options help with calculating the voltage per cell, as well as configuring the voltage chart's axis
+      limits.
     </p>
     <Input id="cell_count" label="Cell Count" type="number" bind:value={cellCount} style="width:4rem" />
     <Input
@@ -103,7 +99,7 @@
       <p>
         <strong>TIP:</strong> use the left and right arrows to step through one data point at a time!
       </p>
-  </div>
+    </div>
   </div>
 </Modal>
 

@@ -28,7 +28,16 @@
   let riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderIconSvg });
   let faultIcon = Leaflet.divIcon({ className: 'fault-icon' });
 
-  let { selectedIndex = $bindable(), setSelectedIdx, selectedRowIndex, updateSelectedRowIdx, visible = $bindable(), visibleRows, gpsPoints, faultPoints }: Props = $props();
+  let {
+    selectedIndex = $bindable(),
+    setSelectedIdx,
+    selectedRowIndex,
+    updateSelectedRowIdx,
+    visible = $bindable(),
+    visibleRows,
+    gpsPoints,
+    faultPoints,
+  }: Props = $props();
 
   let node = $state<HTMLDivElement | undefined>();
 
@@ -36,7 +45,7 @@
     if (node && gpsPoints) {
       untrack(() => renderMap(node!));
     }
-  })
+  });
 
   $effect(() => {
     if (map) {
@@ -60,7 +69,7 @@
     if (bounds.contains(polyline!.getBounds())) {
       visible = new Array(gpsPoints.length).fill(true);
     } else {
-      visible = gpsPoints.map(point => bounds.contains(point));
+      visible = gpsPoints.map((point) => bounds.contains(point));
     }
 
     updateSelectedRowIdx();
@@ -80,9 +89,9 @@
       el.onclick = () => {
         map!.fitBounds(polyline!.getBounds());
         setSelectedIdx(0);
-      }
+      };
       return el;
-    }
+    },
   });
 
   function renderMap(node: HTMLDivElement) {

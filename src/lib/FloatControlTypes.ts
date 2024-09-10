@@ -1,4 +1,4 @@
-import type { FloatControlRowWithIndex } from "./Csv";
+import type { FloatControlRowWithIndex } from './Csv';
 
 export enum FloatControlRawHeader {
   Time = 'Time(s)',
