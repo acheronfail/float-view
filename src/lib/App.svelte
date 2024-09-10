@@ -229,6 +229,7 @@
   style:justify-content="center"
   style:align-items="center"
   style:gap="1rem"
+  style:user-select="none"
   class="buttons"
   use:initButtons
 >
