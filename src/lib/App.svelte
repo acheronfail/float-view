@@ -75,7 +75,7 @@
   $effect(() => {
     if (file) {
       parse(file).then((results) => {
-        // TODO: handle parse errors
+        // FIXME: handle parse errors
         rows = results.data;
         selectedIndex = 0;
       });

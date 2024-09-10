@@ -5,7 +5,7 @@
 </script>
 
 <script lang="ts">
-  import type { ChangeEventHandler, MouseEventHandler } from 'svelte/elements';
+  import type { ChangeEventHandler } from 'svelte/elements';
   import Modal from './Modal.svelte';
   import { demoFile } from './Csv';
 
@@ -22,6 +22,6 @@
 <Modal open={!file} closeHandler={() => (file = demoFile)} closeText="view demo ride" title="Welcome!">
   <div style:display="flex" style:flex-direction="column">
     <p>Please select an exported CSV file from Float Control to get started.</p>
-    <input type="file" {onchange} />
+    <input type="file" {onchange} accept="text/csv" />
   </div>
 </Modal>
