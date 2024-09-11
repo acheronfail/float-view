@@ -8,12 +8,15 @@
   import { demoFile, demoRows, parse, type FloatControlRowWithIndex } from './Csv';
   import Picker from './Picker.svelte';
   import type { EventHandler } from 'svelte/elements';
+  import { State } from './FloatControlTypes';
 
   // battery specs
   let cellCount = $state(20);
   let cellMinVolt = $state(3.0);
   let cellMaxVolt = $state(4.2);
   let batterySpecs = $derived<BatterySpecs>({ cellCount, cellMinVolt, cellMaxVolt });
+  // map settings
+  let hiddenFaults = $state<State[]>([State.Startup, State.StopHalf]);
 
   /** selected file */
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
@@ -27,8 +30,24 @@
   let faultPoints = $derived.by(() => {
     const points: FaultPoint[] = [];
     for (let i = 0; i < rows.length; i++) {
-      if (rows[i].state !== 'RIDING') {
-        points.push({ index: i, fault: rows[i].state });
+      const row = rows[i];
+
+      let fault: string | undefined;
+      if (row.state !== 'riding') {
+        fault = row.state;
+      } else if (row.speed > 2) {
+        const combinedAdcVoltage = row.adc1 + row.adc2;
+        if (combinedAdcVoltage < 2) {
+          fault = State.Custom_NoFootpadsAtSpeed;
+        } else if (combinedAdcVoltage < 4) {
+          fault = State.Custom_OneFootpadAtSpeed;
+        }
+      }
+
+      // SAFETY: since the enum is non-exhaustive, just check it's not in here so
+      // any ones we don't know about are shown
+      if (fault && !hiddenFaults.includes(fault as State)) {
+        points.push({ index: i, fault });
       }
     }
 
@@ -98,18 +117,21 @@
   };
   const onInteractStart =
     (fn: () => void): EventHandler =>
-    (e) => {
-      e.stopPropagation();
+    () => {
       heldDown = true;
       timeout = window.setTimeout(() => repeat(fn), 300);
     };
-  const onInteractEnd: EventHandler = (e) => {
-    e.stopPropagation();
+  const onInteractEnd: EventHandler = () => {
     heldDown = false;
     clearTimeout(timeout);
   };
 
-  const initButtons = (node: HTMLDivElement) => node.addEventListener('contextmenu', (e) => e.preventDefault());
+  const initButtons = (node: HTMLDivElement) => {
+    // prevent tap-and-hold firing context menu
+    node.addEventListener('contextmenu', (e) => e.preventDefault(), { passive: false });
+    // prevent tap-and-hold showing magnifying glass
+    node.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+  };
 
   // event handlers to step left and right in data
   window.addEventListener('keydown', (e) => {
@@ -122,7 +144,7 @@
   });
 </script>
 
-<Header bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt />
+<Header bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt bind:hiddenFaults />
 
 {#if !file}
   <Picker bind:file />

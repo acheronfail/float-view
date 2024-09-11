@@ -31,7 +31,7 @@
       style:align-items="center"
     >
       <h2>{title}</h2>
-      <div style:flex-grow="1">
+      <div style:flex-grow="1" style:display="flex" style:flex-direction="column">
         {@render children()}
       </div>
       <div>
@@ -70,7 +70,8 @@
 
   .modal {
     width: 50vw;
-    height: 50vh;
+    height: 80vh;
+    overflow-y: scroll;
     background-color: #333;
     border: 1px solid #888;
     border-radius: 6px;
@@ -78,10 +79,13 @@
     text-align: center;
   }
 
+  /* TODO: preprocessor to save all media query constants */
   @media (width <= 600px) {
     .modal {
-      width: 80vw;
-      height: 80vw;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      border-radius: 0;
     }
   }
 </style>

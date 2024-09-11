@@ -156,6 +156,20 @@ export interface FloatControlRow {
   [FloatControlHeader.WhCharged]: number;
 }
 
+/**
+ * NOTE: non-exhaustive for faults reported by VESC Tool
+ * NOTE: also includes our custom faults
+ */
+export enum State {
+  Startup = 'startup',
+  StopHalf = 'stop half',
+  StopFull = 'stop full',
+  StopAngle = 'stop angle',
+  Wheelslip = 'wheelslip',
+  Custom_OneFootpadAtSpeed = 'custom: one footpad at speed',
+  Custom_NoFootpadsAtSpeed = 'custom: no footpads at speed',
+}
+
 export const empty: FloatControlRowWithIndex = {
   index: -1,
   time: 0,

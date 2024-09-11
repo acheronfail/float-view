@@ -23,6 +23,11 @@ body {
   box-sizing: border-box;
 }
 
+hr {
+  border-color: #888;
+  width: 70%;
+}
+
 /* TODO: use tailwind to clean up all the inline styles */
 
 :root {
@@ -51,4 +56,42 @@ body {
   height: 100px;
   top: -35px;
   left: -15px;
+}
+
+/* fault icons */
+.fault-icon {
+  background-color: magenta;
+  border-radius: 50%;
+  border: 1px solid black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.fault-icon.svg {
+  background-color: transparent;
+  border: none;
+}
+.fault-icon.warning svg {
+  fill: white;
+}
+.fault-icon.stop_half {
+  background-color: grey;
+}
+.fault-icon.stop_full svg {
+  fill: #ff0000;
+}
+.fault-icon.stop_angle svg {
+  fill: #daa520;
+}
+.fault-icon.wheelslip svg {
+  fill: #fff309;
+}
+.fault-icon.custom__one_footpad_at_speed svg {
+  fill: cyan;
+}
+.fault-icon.custom__no_footpads_at_speed svg {
+  fill: maroon;
+}
+.fault-icon.startup {
+  background-color: green;
 }

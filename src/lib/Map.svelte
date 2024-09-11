@@ -1,4 +1,6 @@
 <script lang="ts" module>
+  import Leaflet, { type LatLngExpression } from 'leaflet';
+
   export interface FaultPoint {
     index: number;
     fault: string;
@@ -15,16 +17,14 @@
 </script>
 
 <script lang="ts">
-  import Leaflet, { type LatLngExpression } from 'leaflet';
-  import riderIconSvg from '../assets/rider-icon.svg?raw';
   import type { FloatControlRowWithIndex } from './Csv';
   import { untrack } from 'svelte';
+  import { getIcon, riderIcon } from './MapUtils';
 
   let map: Leaflet.Map | null = null;
   let polyline: Leaflet.Polyline | null = null;
   let riderMarker: Leaflet.Marker | null = null;
-  let riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderIconSvg });
-  let faultIcon = Leaflet.divIcon({ className: 'fault-icon' });
+  const faultMarkers: Leaflet.Marker[] = [];
 
   let { setSelectedIdx, selectedRowIndex, setVisible, visibleRows, gpsPoints, faultPoints }: Props = $props();
 
@@ -33,6 +33,12 @@
   $effect(() => {
     if (node && gpsPoints) {
       untrack(() => renderMap(node!));
+    }
+  });
+
+  $effect(() => {
+    if (map && faultPoints) {
+      updateFaultMarkers();
     }
   });
 
@@ -48,8 +54,6 @@
       }
     }
   });
-
-  const stateToClass = (state: string) => state.toLowerCase().replace(/\s+/g, '_');
 
   function setVisibleIndices() {
     // SAFETY: only called when a valid map has been created
@@ -81,6 +85,41 @@
     },
   });
 
+  function updateFaultMarkers() {
+    for (const marker of faultMarkers) {
+      marker.remove();
+    }
+    faultMarkers.length = 0;
+
+    // add fault markers
+    for (const { index, fault } of faultPoints) {
+      const { icon, className } = getIcon(fault);
+      const marker = Leaflet.marker(gpsPoints[index], {
+        icon,
+        title: fault,
+      });
+
+      // SAFETY: this function is never called unless the map has been created
+      marker.addTo(map!);
+      faultMarkers.push(marker);
+
+      const element = marker.getElement();
+      if (element) {
+        element.classList.add(className);
+        element.addEventListener('click', () => {
+          // find the point in `visibleRows`, if it was clicked it was visible, so it must
+          // be in this list
+          for (let i = 0; i < visibleRows.length; i++) {
+            if (visibleRows[i].index === index) {
+              setSelectedIdx(i);
+              break;
+            }
+          }
+        });
+      }
+    }
+  }
+
   function renderMap(node: HTMLDivElement) {
     // cleanup
     if (map) {
@@ -107,24 +146,7 @@
     // add a reset zoom button
     map.addControl(new ResetButton());
 
-    // add fault markers
-    for (const { index, fault } of faultPoints) {
-      const marker = Leaflet.marker(gpsPoints[index], { icon: faultIcon, title: fault }).addTo(map);
-      const element = marker.getElement();
-      if (element) {
-        element.classList.add(stateToClass(fault));
-        element.addEventListener('click', () => {
-          // find the point in `visibleRows`, if it was clicked it was visible, so it must
-          // be in this list
-          for (let i = 0; i < visibleRows.length; i++) {
-            if (visibleRows[i].index === index) {
-              setSelectedIdx(i);
-              break;
-            }
-          }
-        });
-      }
-    }
+    updateFaultMarkers();
 
     map.addEventListener('zoomend', setVisibleIndices);
     map.addEventListener('moveend', setVisibleIndices);
@@ -145,26 +167,5 @@
 
   div#map:focus-within {
     border-color: #008c9c;
-  }
-
-  :global(.fault-icon) {
-    background-color: magenta;
-    border-radius: 50%;
-    border: 1px solid black;
-  }
-  :global(.fault-icon.stop_half) {
-    background-color: orange;
-  }
-  :global(.fault-icon.stop_full) {
-    background-color: red;
-  }
-  :global(.fault-icon.stop_angle) {
-    background-color: goldenrod;
-  }
-  :global(.fault-icon.wheelslip) {
-    background-color: orangered;
-  }
-  :global(.fault-icon.startup) {
-    background-color: green;
   }
 </style>

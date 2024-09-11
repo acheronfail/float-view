@@ -1,14 +1,17 @@
 <script lang="ts" module>
   import type { BatterySpecs } from './CommonTypes';
   import { demoFile } from './Csv';
+  import { State } from './FloatControlTypes';
 
   export interface Props extends BatterySpecs {
     file: File | undefined;
+    hiddenFaults: State[];
   }
 </script>
 
 <script lang="ts">
   import Input from './Input.svelte';
+  import { getIcon } from './MapUtils';
   import Modal from './Modal.svelte';
 
   let {
@@ -16,6 +19,7 @@
     cellCount = $bindable(),
     cellMaxVolt = $bindable(),
     cellMinVolt = $bindable(),
+    hiddenFaults = $bindable(),
   }: Props = $props();
 
   let open = $state(false);
@@ -76,6 +80,7 @@
     style:justify-content="start"
     style:align-items="center"
   >
+    <h3>Battery Specs</h3>
     <p>
       The following options help with calculating the voltage per cell, as well as configuring the voltage chart's axis
       limits.
@@ -97,6 +102,36 @@
       bind:value={cellMaxVolt}
       style="width:4rem"
     />
+    <h3>Map Options</h3>
+    <ul style:text-align="left">
+      {#each Object.values(State) as state}
+        {@const checked = !hiddenFaults.includes(state)}
+        {@const { icon, className } = getIcon(state)}
+        {@const html = icon.createIcon().innerHTML.trim()}
+        <li>
+          <div class="fault-icon {className} {html ? 'svg' : 'generic'}">
+            {#if html}
+              {@html html}
+            {:else}
+              &nbsp;
+            {/if}
+          </div>
+          <input
+            type="checkbox"
+            id="map_{state}"
+            {checked}
+            onchange={() => {
+              if (hiddenFaults.includes(state)) {
+                hiddenFaults = hiddenFaults.filter((s) => s !== state);
+              } else {
+                hiddenFaults = hiddenFaults.concat(state);
+              }
+            }}
+          />
+          <label for="map_{state}">{state}</label>
+        </li>
+      {/each}
+    </ul>
     <div
       style:flex-grow="1"
       style:display="flex"
@@ -104,7 +139,7 @@
       style:justify-content="space-around"
       style:align-items="center"
     >
-      <hr style:border-color="#333" />
+      <hr />
       <p>
         <strong>TIP:</strong> use the left and right arrows to step through one data point at a time!
       </p>
@@ -113,7 +148,18 @@
 </Modal>
 
 <style>
-  hr {
-    width: 70%;
+  ul {
+    user-select: none;
+  }
+
+  .fault-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 12px;
+    height: 12px;
+  }
+  .fault-icon.generic {
+    border: 1px solid black;
   }
 </style>

@@ -3,6 +3,7 @@ import {
   FloatControlHeader,
   floatControlKeyMap,
   FloatControlRawHeader,
+  State,
   type FloatControlRow,
 } from './FloatControlTypes';
 import demoCsv from '../assets/demo.csv?raw';
@@ -11,10 +12,13 @@ export interface FloatControlRowWithIndex extends FloatControlRow {
   index: number;
 }
 
-const map = (row: FloatControlRow, index: number): FloatControlRowWithIndex => {
-  (row as FloatControlRowWithIndex).index = index;
-  return row as FloatControlRowWithIndex;
-};
+function map(rows: FloatControlRow[]): FloatControlRowWithIndex[] {
+  // TODO: is the first GPS value from FloatControl always (0, 0)?
+  return rows.slice(1).map((row, index) => {
+    (row as FloatControlRowWithIndex).index = index;
+    return row as FloatControlRowWithIndex;
+  });
+}
 
 const transformHeader = (header: string) => floatControlKeyMap[header as FloatControlRawHeader];
 const transform = <C extends FloatControlHeader>(value: string, column: C): FloatControlRow[C] => {
@@ -22,7 +26,23 @@ const transform = <C extends FloatControlHeader>(value: string, column: C): Floa
     case FloatControlHeader.Duty:
       return parseFloat(value.replace(/%/g, '')) as FloatControlRow[C];
     case FloatControlHeader.State:
-      return value as FloatControlRow[C];
+      const lower = value.toLowerCase();
+      switch (lower) {
+        case 'startup':
+          return State.Startup as FloatControlRow[C];
+        case 'stop half':
+          return State.StopHalf as FloatControlRow[C];
+        case 'stop full':
+          return State.StopFull as FloatControlRow[C];
+        case 'stop angle':
+          return State.StopAngle as FloatControlRow[C];
+        case 'wheelslip':
+          return State.Wheelslip as FloatControlRow[C];
+        default:
+          console.warn(`Unknown state: '${value}'`);
+        case 'riding':
+          return lower as FloatControlRow[C];
+      }
     default:
       return parseFloat(value) as FloatControlRow[C];
   }
@@ -40,8 +60,7 @@ export function parse(input: string | File): Promise<ParseResult<FloatControlRow
     csv.parse<FloatControlRow>(input, {
       ...parseOptions,
       complete: (results) => {
-        // TODO: is the first GPS value from FloatControl always (0, 0)?
-        results.data = results.data.slice(1).map(map);
+        results.data = map(results.data);
         resolve(results as ParseResult<FloatControlRowWithIndex>);
       },
     });
@@ -49,4 +68,4 @@ export function parse(input: string | File): Promise<ParseResult<FloatControlRow
 }
 
 export const demoFile = new File([demoCsv], 'demo.csv');
-export const demoRows = csv.parse<FloatControlRowWithIndex>(demoCsv, parseOptions).data.slice(1).map(map);
+export const demoRows = map(csv.parse<FloatControlRowWithIndex>(demoCsv, parseOptions).data);
