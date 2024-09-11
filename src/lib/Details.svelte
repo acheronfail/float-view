@@ -63,7 +63,7 @@
         { label: 'ERPM', value: `${data.erpm}` },
         { label: 'Distance', value: `${data.distance} km` },
         '-',
-        { label: 'State', value: data.state, color: getStateColor(data.state) },
+        { label: 'State', value: data.state.toUpperCase(), color: getStateColor(data.state) },
         { label: 'CSV Row', value: (data.index + 1).toString(), htmlTitle: 'Selected line from the CSV file' },
       ]}
     />
