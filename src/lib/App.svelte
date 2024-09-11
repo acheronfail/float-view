@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { type LatLngExpression } from 'leaflet';
   import Chart from './Chart.svelte';
   import Map, { type FaultPoint } from './Map.svelte';
   import Details from './Details.svelte';
@@ -29,7 +28,7 @@
   let selectedRowIndex = $state(0);
   /** entire view of gps points from `rows` */
   let { gpsPoints, gpsGaps } = $derived.by(() => {
-    const gpsPoints: LatLngExpression[] = [];
+    const gpsPoints: [number, number][] = [];
     const gpsGaps: number[] = [0];
     for (let i = 0; i < rows.length; ++i) {
       const prev = rows[i - 1];
@@ -38,6 +37,21 @@
       gpsPoints.push([curr.gps_latitude, curr.gps_longitude]);
       if (prev && curr.time - prev.time > 60) {
         gpsGaps.push(i);
+      }
+    }
+
+    // When Float Control starts recording a ride, it seems to set the GPS points as 0,0
+    // until it gets a location. We can't show those on the map, so just default them to
+    // the first known location.
+    // TODO: we may have to do this after each gap, too
+    // TODO: should be able to use `GPS-Accuracy` column for this!
+    const firstNonZero = gpsPoints.find(([lat, lng]) => lat !== 0 || lng !== 0);
+    if (firstNonZero) {
+      for (let i = 0; i < gpsPoints.length; ++i) {
+        const [lat, lng] = gpsPoints[i];
+        if (lat === 0 && lng === 0) {
+          gpsPoints[i] = [firstNonZero[0], firstNonZero[1]];
+        }
       }
     }
 
