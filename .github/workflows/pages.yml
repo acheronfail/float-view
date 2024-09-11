@@ -53,7 +53,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build
-        run: VITE_BUILD_VERSION="$(git rev-parse --short HEAD)" npm run build
+        run: VITE_BUILD_VERSION="$(jq -r .version ./package.json).$(git rev-parse --short HEAD)" npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
