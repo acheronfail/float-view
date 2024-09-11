@@ -12,22 +12,22 @@
   import List from './List.svelte';
   import Pitch from './Pitch.svelte';
   import Roll from './Roll.svelte';
-  import { empty } from './FloatControlTypes';
+  import { empty, State } from './FloatControlTypes';
   import type { FloatControlRowWithIndex } from './Csv';
 
   let { data = empty, batterySpecs }: Props = $props();
 
   const getStateColor = (state: string): string | undefined => {
     switch (state.toLowerCase()) {
-      case 'startup':
-        return 'grey';
       case 'riding':
         return 'yellowgreen';
-      case 'stop half':
-      case 'wheelslip':
+      case State.Startup:
+        return 'grey';
+      case State.StopHalf:
+      case State.Wheelslip:
         return 'orange';
-      case 'stop full':
-      case 'stop angle':
+      case State.StopFull:
+      case State.StopAngle:
         return 'red';
     }
   };
@@ -108,6 +108,10 @@
   }
 
   @media (width < 600px) {
+    .item {
+      font-size: 0.8em;
+    }
+
     .transpose-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
