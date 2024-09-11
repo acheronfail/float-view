@@ -71,6 +71,11 @@ hr {
   background-color: transparent;
   border: none;
 }
+/* NOTE: safari won't show SVGs unless they have an explicit width/height set */
+.fault-icon svg {
+  width: 12px;
+  height: 12px;
+}
 .fault-icon.warning svg {
   fill: white;
 }
