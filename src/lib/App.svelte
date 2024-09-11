@@ -179,6 +179,7 @@
       {setSelectedIdx}
       {gapIndices}
       title="Speed"
+      precision={1}
       unit=" km/h"
     />
   </div>
@@ -200,6 +201,7 @@
       {gapIndices}
       title="Battery Voltage"
       unit="V"
+      precision={1}
       yAxis={{
         suggestedMin: batterySpecs.cellCount * batterySpecs.cellMinVolt,
         suggestedMax: batterySpecs.cellCount * batterySpecs.cellMaxVolt,
@@ -226,6 +228,7 @@
       {setSelectedIdx}
       {gapIndices}
       title="I-Mot / I-Batt"
+      precision={1}
       unit="A"
     />
   </div>
@@ -239,6 +242,7 @@
       {setSelectedIdx}
       {gapIndices}
       title="T-Mot / T-Mosfet"
+      precision={1}
       unit="°C"
     />
   </div>

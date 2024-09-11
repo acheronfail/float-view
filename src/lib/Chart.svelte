@@ -38,6 +38,7 @@
     yAxis?: TickOptions;
     unit?: string;
     title?: string;
+    precision?: number;
   }
 
   const getYValueHeight = (y: number, min: number, max: number) => ((y - min) / (max - min)) * 100;
@@ -45,7 +46,7 @@
   const valueToYPct = (y: number, min: number, max: number) => 100 - getYValueHeight(y, min, max);
   const aggMaxAbs = (acc: number, n: number) => (Math.abs(acc) > Math.abs(n) ? acc : n);
 
-  let { data, selectedIndex, setSelectedIdx, gapIndices, unit = '', title = '', yAxis }: Props = $props();
+  let { data, selectedIndex, setSelectedIdx, gapIndices, unit = '', title = '', precision, yAxis }: Props = $props();
   let dataLen = $derived(data[0].values.length);
   assert(
     data.every(({ values }) => values.length === dataLen),
@@ -137,7 +138,7 @@
       return '';
     }
 
-    return Number.isInteger(value) ? value.toString() : value.toFixed(1);
+    return precision ? value.toFixed(precision) : Number.isInteger(value) ? value.toString() : value.toFixed(1);
   };
 
   let chartDiv: HTMLDivElement | undefined;
