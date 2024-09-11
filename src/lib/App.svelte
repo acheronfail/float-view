@@ -2,7 +2,7 @@
   import { type LatLngExpression } from 'leaflet';
   import Chart from './Chart.svelte';
   import Map, { type FaultPoint } from './Map.svelte';
-  import OtherInfo from './OtherInfo.svelte';
+  import Details from './Details.svelte';
   import Header from './Header.svelte';
   import type { BatterySpecs } from './CommonTypes';
   import { demoFile, demoRows, parse, type FloatControlRowWithIndex } from './Csv';
@@ -182,7 +182,7 @@
     style:place-self="center"
     class="column-2-to-row-2"
   >
-    <OtherInfo data={visibleRows[selectedIndex]} {batterySpecs} />
+    <Details data={visibleRows[selectedIndex]} {batterySpecs} />
   </div>
 
   <div class="chart">
