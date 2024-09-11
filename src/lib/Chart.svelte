@@ -6,6 +6,7 @@
 
   // TODO: on resize, grid lines get quite thick? (or is this just with smaller sizes?)
   // TODO: sometimes a grid line is drawn at/near zero, which interferes with zero line
+  // FIXME: don't make selected tooltips overflow past edges
 
   const DEFAULT_COLOUR = 'red';
 
@@ -301,7 +302,6 @@
   </div>
 
   <!-- tooltip for vertical selected line -->
-  <!-- TODO: don't make this overflow past end? -->
   {#if selectedDataPointIndex > -1}
     <div>
       <div

@@ -16,7 +16,7 @@
   let cellMaxVolt = $state(4.2);
   let batterySpecs = $derived<BatterySpecs>({ cellCount, cellMinVolt, cellMaxVolt });
   // map settings
-  let hiddenFaults = $state<State[]>([State.Startup, State.StopHalf]);
+  let hiddenFaults = $state<State[]>([State.Startup, State.StopHalf, State.Custom_OneFootpadAtSpeed]);
 
   /** selected file */
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
@@ -25,6 +25,7 @@
   /** selected index of `rows` */
   let selectedRowIndex = $state(0);
   /** entire view of gps points from `rows` */
+  // FIXME: create new lines if there are gaps in ride
   let gpsPoints = $derived(rows.map((x): LatLngExpression => [x.gps_latitude, x.gps_longitude]));
   /** entire list of faults from `rows` */
   let faultPoints = $derived.by(() => {

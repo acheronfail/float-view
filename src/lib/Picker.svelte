@@ -43,9 +43,7 @@
     <ul>
       <li>Data never leaves your device, your browser does all the work!</li>
       <li>
-        Source code available here: <a href="https://github.com/acheronfail/float-view">
-          github.com/acheronfail/float-view
-        </a>
+        Source code available here: <a href="https://github.com/acheronfail/float-view">acheronfail/float-view</a>
       </li>
       <li>
         Credit to <a href="https://apps.apple.com/au/app/float-control-vesc-companion/id1590924299">Float Control</a> for
