@@ -6,7 +6,19 @@ Use it here: <https://acheronfail.github.io/float-view/>!
 
 ## Demo
 
-![demo image of Float View](./.github/demo.png)
+![demo image of Float View in browser](./.github/demo.png)
+
+Also works great on mobile devices:
+
+![demo image of Float View on mobile](./.github/mobile.png | width=100)
+
+And can be saved as an app to your phone's home screen, by:
+
+1. Opening the website in your browser
+2. Clicking the Share button
+3. Selecting `Add to Home Screen`
+
+Now you'll have `Float View` all the time, even offline!q
 
 ## How do I use it?
 
