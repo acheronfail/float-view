@@ -41,13 +41,19 @@
   >
     <p>Some notes:</p>
     <ul>
-      <li>Data never leaves your device, your browser does all the work!</li>
+      <li>
+        <strong>Data never leaves your device, your browser does all the work!</strong>
+      </li>
       <li>
         Source code available here: <a href="https://github.com/acheronfail/float-view">acheronfail/float-view</a>
       </li>
       <li>
         Credit to <a href="https://apps.apple.com/au/app/float-control-vesc-companion/id1590924299">Float Control</a> for
         making a great app for VESCs!
+      </li>
+      <li>
+        Credit to <a href="https://jf.id.au/blog/how-i-built-the-best-chart-in-the-world">jakzo</a> for examples of excellent
+        charts!
       </li>
       <li>
         Credit to <a href="https://thenounproject.com/icon/onewheel-4260841/">Luis Prado</a> for the Onewheel Rider Icon!
