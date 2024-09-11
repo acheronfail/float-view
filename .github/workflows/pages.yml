@@ -53,7 +53,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build
-        run: npm run build
+        run: VITE_BUILD_VERSION=$GITHUB_SHA npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact

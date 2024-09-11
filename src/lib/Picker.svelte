@@ -58,6 +58,9 @@
       <li>
         Credit to <a href="https://thenounproject.com/icon/onewheel-4260841/">Luis Prado</a> for the Onewheel Rider Icon!
       </li>
+      <li style:font-family="monospace">
+        Build version: {import.meta.env.VITE_BUILD_VERSION}
+      </li>
     </ul>
   </div>
 </Modal>
