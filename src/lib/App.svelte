@@ -44,13 +44,12 @@
     // until it gets a location. We can't show those on the map, so just default them to
     // the first known location.
     // TODO: we may have to do this after each gap, too
-    // TODO: should be able to use `GPS-Accuracy` column for this!
-    const firstNonZero = gpsPoints.find(([lat, lng]) => lat !== 0 || lng !== 0);
-    if (firstNonZero) {
+    const firstKnownPoint = rows.find((row) => row.gps_accuracy > 0);
+    if (firstKnownPoint) {
       for (let i = 0; i < gpsPoints.length; ++i) {
         const [lat, lng] = gpsPoints[i];
         if (lat === 0 && lng === 0) {
-          gpsPoints[i] = [firstNonZero[0], firstNonZero[1]];
+          gpsPoints[i] = [firstKnownPoint.gps_latitude, firstKnownPoint.gps_longitude];
         }
       }
     }
