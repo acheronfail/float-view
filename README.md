@@ -10,7 +10,7 @@ Use it here: <https://acheronfail.github.io/float-view/>!
 
 Also works great on mobile devices:
 
-![demo image of Float View on mobile](./.github/mobile.png)
+<img alt="demo image of Float View on mobile" src="./.github/mobile.png" width="35%">
 
 And can be saved as an app to your phone's home screen, by:
 
