@@ -9,6 +9,8 @@
   import Picker from './Picker.svelte';
   import type { EventHandler } from 'svelte/elements';
   import { State } from './FloatControlTypes';
+  import Modal from './Modal.svelte';
+  import { riderIconSvg } from './MapUtils';
 
   // battery specs
   let cellCount = $state(20);
@@ -105,13 +107,24 @@
   };
 
   // parse csv when file is selected
+  let loading = $state(false);
+  let timer = -1;
   $effect(() => {
     if (file) {
-      parse(file).then((results) => {
-        // FIXME: handle parse errors
-        rows = results.data;
-        selectedIndex = 0;
-      });
+      timer = window.setTimeout(() => (loading = true));
+      parse(file)
+        .then((results) => {
+          clearTimeout(timer);
+          // FIXME: handle parse errors
+          if (results.errors.length) {
+            console.log(results.errors);
+            alert(`An error occurred when parsing your CSV file!`);
+          }
+
+          rows = results.data;
+          selectedIndex = 0;
+        })
+        .finally(() => (loading = false));
     }
   });
 
@@ -162,6 +175,15 @@
 
 {#if !file}
   <Picker bind:file />
+{:else if loading}
+  <Modal open closable={false} title="Loading...">
+    <div>
+      <h3>Parsing your ride...</h3>
+      <div class="rotate">
+        {@html riderIconSvg}
+      </div>
+    </div>
+  </Modal>
 {/if}
 
 <main
@@ -294,6 +316,16 @@
 </div>
 
 <style>
+  @keyframes spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .rotate {
+    animation: spin 1s infinite linear;
+  }
+
   .column-2-to-row-2 {
     grid-column: span 2;
     grid-row: unset;

@@ -3,6 +3,7 @@ import riderIconSvg from '../assets/rider-icon.svg?raw';
 import warningSvg from '../assets/warning.svg?raw';
 import { State } from './FloatControlTypes';
 
+export { riderIconSvg };
 export const riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderIconSvg });
 export const genericIcon = Leaflet.divIcon({ className: 'fault-icon' });
 export const warningIcon = Leaflet.divIcon({

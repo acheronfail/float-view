@@ -4,6 +4,7 @@
   export interface Props {
     open?: boolean;
     title: string;
+    closable?: boolean;
     closeText?: string;
     closeHandler?: () => void;
     children: Snippet;
@@ -15,6 +16,7 @@
     open = $bindable(false),
     closeHandler = () => (open = false),
     closeText = 'close',
+    closable = true,
     title,
     children,
   }: Props = $props();
@@ -35,7 +37,9 @@
         {@render children()}
       </div>
       <div>
-        <button onclick={closeHandler}>{closeText}</button>
+        {#if closable}
+          <button onclick={closeHandler}>{closeText}</button>
+        {/if}
       </div>
     </div>
   </div>
