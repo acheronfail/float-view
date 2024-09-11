@@ -6,7 +6,6 @@
 
   // TODO: on resize, grid lines get quite thick? (or is this just with smaller sizes?)
   // TODO: sometimes a grid line is drawn at/near zero, which interferes with zero line
-  // FIXME: don't make selected tooltips overflow past edges
 
   const DEFAULT_COLOUR = 'red';
 
@@ -140,9 +139,41 @@
 
     return Number.isInteger(value) ? value.toString() : value.toFixed(1);
   };
+
+  let chartDiv: HTMLDivElement | undefined;
+  const nodes: HTMLDivElement[] = [];
+  const onCreateTooltip = (el: HTMLDivElement) => {
+    nodes.push(el);
+  };
+  const onCreateContainer = (el: HTMLDivElement) => {
+    chartDiv = el;
+  };
+
+  $effect(() => {
+    if (selectedDataPointIndex > -1) {
+      const tooltipEl = nodes[0];
+      const container = chartDiv!.parentElement!;
+      const halfWidth = tooltipEl.offsetWidth / 2;
+
+      const containerRect = container.getBoundingClientRect();
+      const chartRect = chartDiv!.getBoundingClientRect();
+      const tooltipRect = tooltipEl.getBoundingClientRect();
+
+      const leftGap = chartRect.left - containerRect.left;
+      if (tooltipRect.left < containerRect.left) {
+        tooltipEl.style.left = `${halfWidth - leftGap}px`;
+      }
+
+      const rightGap = containerRect.right - chartRect.right;
+      if (tooltipRect.right > containerRect.right) {
+        tooltipEl.style.left = `${chartRect.width + rightGap - halfWidth}px`;
+      }
+    }
+  });
 </script>
 
 <div
+  use:onCreateContainer
   style:height="calc(100% - {MARGIN_BOTTOM} - {MARGIN_TOP})"
   style:width="100%"
   style:position="relative"
@@ -303,43 +334,42 @@
 
   <!-- tooltip for vertical selected line -->
   {#if selectedDataPointIndex > -1}
-    <div>
-      <div
-        style:position="absolute"
-        style:top="50%"
-        style:left="{indexToXPct(selectedDataPointIndex)}%"
-        style:transform="translateX(-50%)"
-        style:white-space="nowrap"
-        style:color="#000"
-        style:background-color="#222"
-        style:border="1px solid #888"
-        style:border-radius="6px"
-        style:padding="3px"
-        style:text-align="center"
-        style:font-family="monospace"
-        style:display="flex"
-        style:flex-direction="column"
-        style:justify-content="center"
-        style:align-items="center"
-        style:pointer-events="none"
-      >
-        {#each data as _, i}
-          <div
-            style:color={data[i].color ?? DEFAULT_COLOUR}
-            style:width="100%"
-            style:display="flex"
-            style:flex-direction="row"
-            style:justify-content="space-between"
-            style:align-items="center"
-            style:gap="1rem"
-          >
-            {#if data[i].label}
-              <span>{data[i].label + ':'}</span>
-            {/if}
-            <span>{formatValue(data[i].values[selectedDataPointIndex])}{unit}</span>
-          </div>
-        {/each}
-      </div>
+    <div
+      use:onCreateTooltip
+      style:position="absolute"
+      style:top="50%"
+      style:left="{indexToXPct(selectedDataPointIndex)}%"
+      style:transform="translateX(-50%)"
+      style:white-space="nowrap"
+      style:color="#000"
+      style:background-color="#222"
+      style:border="1px solid #888"
+      style:border-radius="6px"
+      style:padding="3px"
+      style:text-align="center"
+      style:font-family="monospace"
+      style:display="flex"
+      style:flex-direction="column"
+      style:justify-content="center"
+      style:align-items="center"
+      style:pointer-events="none"
+    >
+      {#each data as _, i}
+        <div
+          style:color={data[i].color ?? DEFAULT_COLOUR}
+          style:width="100%"
+          style:display="flex"
+          style:flex-direction="row"
+          style:justify-content="space-between"
+          style:align-items="center"
+          style:gap="1rem"
+        >
+          {#if data[i].label}
+            <span>{data[i].label + ':'}</span>
+          {/if}
+          <span>{formatValue(data[i].values[selectedDataPointIndex])}{unit}</span>
+        </div>
+      {/each}
     </div>
   {/if}
 </div>
