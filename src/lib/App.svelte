@@ -5,7 +5,7 @@
   import Details from './Details.svelte';
   import Header from './Header.svelte';
   import type { BatterySpecs } from './CommonTypes';
-  import { demoFile, demoRows, parse, type FloatControlRowWithIndex } from './Csv';
+  import { demoFile, demoRows, parse, type Units, type FloatControlRowWithIndex } from './Csv';
   import Picker from './Picker.svelte';
   import type { EventHandler } from 'svelte/elements';
   import { State } from './FloatControlTypes';
@@ -24,6 +24,7 @@
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
   /** parsed csv data from Float Control */
   let rows = $state<FloatControlRowWithIndex[]>(demoRows);
+  let units = $state<Units>('metric');
   /** selected index of `rows` */
   let selectedRowIndex = $state(0);
   /** entire view of gps points from `rows` */
@@ -115,13 +116,15 @@
       parse(file)
         .then((results) => {
           clearTimeout(timer);
+
+          units = results.units;
           // FIXME: handle parse errors
-          if (results.errors.length) {
-            console.log(results.errors);
+          if (results.csv.errors.length) {
+            console.log(results.csv.errors);
             alert(`An error occurred when parsing your CSV file!`);
           }
 
-          rows = results.data;
+          rows = results.csv.data;
           selectedIndex = 0;
         })
         .finally(() => (loading = false));
@@ -204,7 +207,7 @@
     style:place-self="center"
     class="column-2-to-row-2"
   >
-    <Details data={visibleRows[selectedIndex]} {batterySpecs} />
+    <Details data={visibleRows[selectedIndex]} {batterySpecs} {units} />
   </div>
 
   <div class="chart">
@@ -215,7 +218,7 @@
       {gapIndices}
       title="Speed"
       precision={1}
-      unit=" km/h"
+      unit={units === 'metric' ? ' km/h' : ' mph'}
     />
   </div>
   <div class="chart">

@@ -13,8 +13,7 @@ export interface FloatControlRowWithIndex extends FloatControlRow {
 }
 
 function map(rows: FloatControlRow[]): FloatControlRowWithIndex[] {
-  // TODO: is the first GPS value from FloatControl always (0, 0)?
-  return rows.slice(1).map((row, index) => {
+  return rows.map((row, index) => {
     (row as FloatControlRowWithIndex).index = index;
     return row as FloatControlRowWithIndex;
   });
@@ -55,13 +54,30 @@ const parseOptions = {
   transform,
 };
 
-export function parse(input: string | File): Promise<ParseResult<FloatControlRowWithIndex>> {
+export type Units = 'imperial' | 'metric';
+export interface FloatControlData {
+  csv: ParseResult<FloatControlRowWithIndex>;
+  units: Units;
+}
+
+export function parse(input: string | File): Promise<FloatControlData> {
+  let units: Units = 'imperial';
   return new Promise((resolve) => {
     csv.parse<FloatControlRow>(input, {
       ...parseOptions,
+      transformHeader: (header: string) => {
+        if (header === FloatControlRawHeader.SpeedKm || header === FloatControlRawHeader.DistanceKm) {
+          units = 'metric';
+        }
+
+        return transformHeader(header);
+      },
       complete: (results) => {
         results.data = map(results.data);
-        resolve(results as ParseResult<FloatControlRowWithIndex>);
+        resolve({
+          csv: results as ParseResult<FloatControlRowWithIndex>,
+          units,
+        });
       },
     });
   });

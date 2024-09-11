@@ -4,6 +4,7 @@
   export interface Props {
     data: FloatControlRowWithIndex | undefined;
     batterySpecs: BatterySpecs;
+    units: Units;
   }
 </script>
 
@@ -13,9 +14,9 @@
   import Pitch from './Pitch.svelte';
   import Roll from './Roll.svelte';
   import { empty, State } from './FloatControlTypes';
-  import type { FloatControlRowWithIndex } from './Csv';
+  import type { FloatControlRowWithIndex, Units } from './Csv';
 
-  let { data = empty, batterySpecs }: Props = $props();
+  let { data = empty, batterySpecs, units }: Props = $props();
 
   const getStateColor = (state: string): string | undefined => {
     switch (state.toLowerCase()) {
@@ -59,9 +60,9 @@
   <div class="item">
     <List
       items={[
-        { label: 'Speed', value: `${data.speed} km/h` },
+        { label: 'Speed', value: `${data.speed} ${units === 'metric' ? 'km/h' : 'mph'}` },
         { label: 'ERPM', value: `${data.erpm}` },
-        { label: 'Distance', value: `${data.distance} km` },
+        { label: 'Distance', value: `${data.distance} ${units === 'metric' ? 'km' : 'mi'}` },
         '-',
         { label: 'State', value: data.state.toUpperCase(), color: getStateColor(data.state) },
         { label: 'CSV Row', value: (data.index + 1).toString(), htmlTitle: 'Selected line from the CSV file' },
