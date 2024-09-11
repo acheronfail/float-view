@@ -18,7 +18,7 @@ And can be saved as an app to your phone's home screen, by:
 2. Clicking the Share button
 3. Selecting `Add to Home Screen`
 
-Now you'll have `Float View` all the time, even offline!q
+Now you'll have `Float View` all the time, even offline!
 
 ## How do I use it?
 

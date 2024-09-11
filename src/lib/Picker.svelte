@@ -39,7 +39,7 @@
     style:flex-grow="1"
     style:font-size="0.8rem"
   >
-    <p>Some notes:</p>
+    <strong>Some notes:</strong>
     <ul>
       <li>
         <strong>Data never leaves your device, your browser does all the work!</strong>
@@ -62,5 +62,12 @@
         Build version: {import.meta.env.VITE_BUILD_VERSION}
       </li>
     </ul>
+    <strong>This site can be saved to your device:</strong>
+    <ol>
+      <li>Open the website in your browser (you're already here)</li>
+      <li>Clicking the Share button</li>
+      <li>Selecting <strong style:font-family="monospace">Add to Home Screen</strong></li>
+      <li>Now you can use it offline whenever you'd like</li>
+    </ol>
   </div>
 </Modal>
