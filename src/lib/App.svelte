@@ -25,8 +25,21 @@
   /** selected index of `rows` */
   let selectedRowIndex = $state(0);
   /** entire view of gps points from `rows` */
-  // FIXME: create new lines if there are gaps in ride
-  let gpsPoints = $derived(rows.map((x): LatLngExpression => [x.gps_latitude, x.gps_longitude]));
+  let { gpsPoints, gpsGaps } = $derived.by(() => {
+    const gpsPoints: LatLngExpression[] = [];
+    const gpsGaps: number[] = [0];
+    for (let i = 0; i < rows.length; ++i) {
+      const prev = rows[i - 1];
+      const curr = rows[i];
+
+      gpsPoints.push([curr.gps_latitude, curr.gps_longitude]);
+      if (prev && curr.time - prev.time > 60) {
+        gpsGaps.push(i);
+      }
+    }
+
+    return { gpsPoints, gpsGaps };
+  });
   /** entire list of faults from `rows` */
   let faultPoints = $derived.by(() => {
     const points: FaultPoint[] = [];
@@ -160,7 +173,7 @@
   class="grid-container"
 >
   <div style:position="relative" class="map-container">
-    <Map {setSelectedIdx} {setVisible} {selectedRowIndex} {visibleRows} {gpsPoints} {faultPoints} />
+    <Map {setSelectedIdx} {setVisible} {selectedRowIndex} {visibleRows} {gpsPoints} {gpsGaps} {faultPoints} />
   </div>
   <div
     style:overflow="hidden"

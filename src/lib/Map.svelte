@@ -12,6 +12,7 @@
     setSelectedIdx: (index: number) => void;
     selectedRowIndex: number;
     gpsPoints: LatLngExpression[];
+    gpsGaps: number[];
     faultPoints: FaultPoint[];
   }
 </script>
@@ -26,7 +27,7 @@
   let riderMarker: Leaflet.Marker | null = null;
   const faultMarkers: Leaflet.Marker[] = [];
 
-  let { setSelectedIdx, selectedRowIndex, setVisible, visibleRows, gpsPoints, faultPoints }: Props = $props();
+  let { setSelectedIdx, selectedRowIndex, setVisible, visibleRows, gpsPoints, gpsGaps, faultPoints }: Props = $props();
 
   let node = $state<HTMLDivElement | undefined>();
 
@@ -138,7 +139,7 @@
     }).addTo(map);
 
     // create line
-    polyline = Leaflet.polyline(gpsPoints).addTo(map);
+    polyline = Leaflet.polyline(gpsGaps.map((startIdx, i) => gpsPoints.slice(startIdx, gpsGaps[i + 1]))).addTo(map);
 
     // fit ride in map
     map.fitBounds(polyline.getBounds());
