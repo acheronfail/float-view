@@ -34,16 +34,22 @@
       }
     }
 
-    // When Float Control starts recording a ride, it seems to set the GPS points as 0,0
-    // until it gets a location. We can't show those on the map, so just default them to
-    // the first known location.
-    // TODO: we may have to do this after each gap, too
-    const firstKnownPoint = rows.find((row) => row.gps_accuracy > 0);
-    if (firstKnownPoint) {
-      for (let i = 0; i < gpsPoints.length; ++i) {
-        const [lat, lng] = gpsPoints[i];
-        if (lat === 0 && lng === 0) {
-          gpsPoints[i] = [firstKnownPoint.gps_latitude, firstKnownPoint.gps_longitude];
+    // When Float Control starts recording a ride, it appears that the first few data points
+    // have incorrect GPS data. If it's the start of the ride, it's (0, 0), but if it's a resumed
+    // ride, then it seems to be the last known point from the paused ride.
+    // Either way, here we attempt to find the first "good" point and use that instead.
+    for (let i = 0; i < gpsGaps.length; ++i) {
+      const start = gpsGaps[i];
+      const end = gpsGaps[i + 1];
+      const curr = rows[start];
+      const guessedGoodValue = rows.slice(start, end).find((row) => {
+        const samePoint = curr.gps_latitude === row.gps_latitude && curr.gps_longitude === row.gps_longitude;
+        return row.gps_accuracy > 0 && !samePoint;
+      });
+
+      if (guessedGoodValue) {
+        for (let j = start; j < guessedGoodValue.index; ++j) {
+          gpsPoints[j] = [guessedGoodValue.gps_latitude, guessedGoodValue.gps_longitude];
         }
       }
     }
