@@ -1,9 +1,9 @@
 <script lang="ts" module>
-  import type { BatterySpecs } from './CommonTypes';
+  import { type ZBatterySpecs } from './Settings.svelte';
 
   export interface Props {
     data: FloatControlRowWithIndex | undefined;
-    batterySpecs: BatterySpecs;
+    batterySpecs: ZBatterySpecs;
     units: Units;
   }
 </script>
@@ -15,6 +15,7 @@
   import Roll from './Roll.svelte';
   import { empty, State } from './FloatControlTypes';
   import type { FloatControlRowWithIndex, Units } from './Csv';
+  import settings from './Settings.svelte';
 
   let { data = empty, batterySpecs, units }: Props = $props();
 
@@ -86,15 +87,22 @@
   <div class="item">
     <List
       items={[
-        { label: 'Spec', value: `${batterySpecs.cellCount}S` },
+        { label: 'Spec', value: batterySpecs.cellCount ? `${batterySpecs.cellCount}S` : configureButton },
         '-',
         { label: 'Batt V (total)', value: `${data.voltage} V` },
-        { label: 'Batt V (cell)', value: `${(data.voltage / batterySpecs.cellCount).toFixed(1)} V` },
+        {
+          label: 'Batt V (cell)',
+          value: `${batterySpecs.cellCount ? (data.voltage / batterySpecs.cellCount).toFixed(1) : '??'} V`,
+        },
         { label: 'Batt Current', value: `${data.current_battery} A` },
       ]}
     />
   </div>
 </div>
+
+{#snippet configureButton()}
+  <button onclick={() => (settings.open = true)}>set</button>
+{/snippet}
 
 <style>
   .item {

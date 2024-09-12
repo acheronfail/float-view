@@ -3,21 +3,14 @@
   import Map, { type FaultPoint } from './Map.svelte';
   import Details from './Details.svelte';
   import Header from './Header.svelte';
-  import type { BatterySpecs } from './CommonTypes';
   import { demoFile, demoRows, parse, type Units, type FloatControlRowWithIndex } from './Csv';
   import Picker from './Picker.svelte';
   import type { EventHandler } from 'svelte/elements';
   import { State } from './FloatControlTypes';
   import Modal from './Modal.svelte';
   import { riderIconSvg } from './MapUtils';
-
-  // battery specs
-  let cellCount = $state(20);
-  let cellMinVolt = $state(3.0);
-  let cellMaxVolt = $state(4.2);
-  let batterySpecs = $derived<BatterySpecs>({ cellCount, cellMinVolt, cellMaxVolt });
-  // map settings
-  let hiddenFaults = $state<State[]>([State.Startup, State.StopHalf, State.Custom_OneFootpadAtSpeed]);
+  import settings from './Settings.svelte';
+  import SettingsModal from './SettingsModal.svelte';
 
   /** selected file */
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
@@ -76,7 +69,7 @@
 
       // SAFETY: since the enum is non-exhaustive, just check it's not in here so
       // any ones we don't know about are shown
-      if (fault && !hiddenFaults.includes(fault as State)) {
+      if (fault && !settings.hiddenFaults.includes(fault as State)) {
         points.push({ index: i, fault });
       }
     }
@@ -187,7 +180,9 @@
   });
 </script>
 
-<Header bind:file bind:cellCount bind:cellMinVolt bind:cellMaxVolt bind:hiddenFaults />
+<Header bind:file />
+
+<SettingsModal />
 
 {#if !file}
   <Picker bind:file />
@@ -220,7 +215,7 @@
     style:place-self="center"
     class="column-2-to-row-2"
   >
-    <Details data={visibleRows[selectedIndex]} {batterySpecs} {units} />
+    <Details data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} {units} />
   </div>
 
   <div class="chart">
@@ -253,10 +248,7 @@
       title="Battery Voltage"
       unit="V"
       precision={1}
-      yAxis={{
-        suggestedMin: batterySpecs.cellCount * batterySpecs.cellMinVolt,
-        suggestedMax: batterySpecs.cellCount * batterySpecs.cellMaxVolt,
-      }}
+      yAxis={{ suggestedMin: settings.suggestedVMin, suggestedMax: settings.suggestedVMax }}
     />
   </div>
   <div class="chart">

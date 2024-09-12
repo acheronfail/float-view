@@ -1,8 +1,10 @@
 <script lang="ts" module>
+  import type { Snippet } from 'svelte';
+
   export type ListItem =
     | {
         label: string;
-        value: string;
+        value: string | Snippet;
         color?: string;
         htmlTitle?: string;
       }
@@ -38,7 +40,11 @@
           {item.label}:
         </div>
         <div style:color={item.color} style:flex-grow="1" style:white-space="nowrap" style:text-align="right">
-          {item.value}
+          {#if typeof item.value === 'string'}
+            {item.value}
+          {:else}
+            {@render item.value()}
+          {/if}
         </div>
       {/if}
     </div>

@@ -103,6 +103,7 @@
   }
 
   $effect(() => {
+    yAxis; // re-render chart when this changes
     if (data) {
       untrack(() => renderChart(svg!.getBoundingClientRect().width));
     }
