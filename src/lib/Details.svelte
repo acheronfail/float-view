@@ -40,7 +40,11 @@
 </script>
 
 <div
-  class="h-full w-full bg-slate-600 grid gap-px place-items-center grid-cols-[repeat(2,minmax(0,1fr))] grid-rows-[repeat(3,minmax(0,1fr))] wide:grid-cols-[repeat(3,minmax(0,1fr))] wide:grid-rows-[repeat(2,minmax(0,1fr))]"
+  class="h-full w-full bg-slate-600 grid gap-px place-items-center
+  grid-cols-[repeat(2,minmax(0,1fr))]
+  grid-rows-[repeat(3,minmax(0,1fr))]
+  wide:grid-cols-[repeat(3,minmax(0,1fr))]
+  wide:grid-rows-[repeat(2,minmax(0,1fr))]"
 >
   <div class={itemClass}>
     <Footpads {data} />

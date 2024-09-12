@@ -19,7 +19,8 @@
 </div>
 
 <header
-  class="sticky z-[10000] top-0 flex justify-between items-center gap-4 bg-slate-950 border-b h-[--header-height] px-4 whitespace-nowrap"
+  class="sticky z-[10000] top-0 flex justify-between items-center
+  gap-4 bg-slate-950 border-b h-[--header-height] px-4 whitespace-nowrap"
 >
   <h1 class="font-bold text-lg grow flex flex-rol justify-start">
     Float View

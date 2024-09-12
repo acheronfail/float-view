@@ -319,7 +319,9 @@
   {#if selectedDataPointIndex > -1}
     <div
       use:onCreateTooltip
-      class="absolute top-2/4 translate-x-[-50%] whitespace-nowrap text-xs text-slate-100 bg-slate-800 border rounded p-2 text-center font-mono flex flex-col justify-center items-center pointer-events-none"
+      class="absolute top-2/4 translate-x-[-50%] whitespace-nowrap text-xs
+      text-slate-100 bg-slate-800 border rounded p-2 text-center font-mono
+      flex flex-col justify-center items-center pointer-events-none"
       style:left="{indexToXPct(selectedDataPointIndex)}%"
     >
       {#each data as _, i}

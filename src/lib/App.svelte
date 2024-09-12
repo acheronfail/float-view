@@ -201,15 +201,22 @@
 {/if}
 
 <main
-  class="grid w-full bg-slate-600 gap-px grid-flow-dense h-[unset] grid-cols-[repeat(auto-fit,minmax(var(--grid-width),1fr))] wide:h-[calc(100vh-var(--header-height))] wide:grid-cols-[repeat(3,1fr)]"
+  class="grid w-full bg-slate-600 gap-px grid-flow-dense
+  h-[unset]
+  grid-cols-[repeat(auto-fit,minmax(var(--grid-width),1fr))]
+  wide:h-[calc(100vh-var(--header-height))]
+  wide:grid-cols-[repeat(3,1fr)]"
 >
   <div
-    class="sticky top-[--header-height] h-[--grid-width] z-50 border-b wide:relative wide:top-[unset] wide:h-[unset] wide:border-b-0"
+    class="sticky top-[--header-height] h-[--grid-width] z-50 border-b
+    wide:relative wide:top-[unset] wide:h-[unset] wide:border-b-0"
   >
     <Map {setSelectedIdx} {setVisible} {selectedRowIndex} {visibleRows} {gpsPoints} {gpsGaps} {faultPoints} />
   </div>
   <div
-    class="place-self-center w-full h-full overflow-hidden [grid-column:unset] [grid-row:span_2] wide:[grid-column:span_2] wide:[grid-row:unset]"
+    class="place-self-center w-full h-full overflow-hidden
+    [grid-column:unset] [grid-row:span_2]
+    wide:[grid-column:span_2] wide:[grid-row:unset]"
   >
     <Details data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} {units} />
   </div>
