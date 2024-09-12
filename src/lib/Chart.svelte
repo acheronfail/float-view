@@ -369,7 +369,7 @@
           {#if data[i].label}
             <span>{data[i].label + ':'}</span>
           {/if}
-          <span>{formatValue(data[i].values[selectedDataPointIndex])}{unit}</span>
+          <span>{formatValue(data[i].values[selectedIndex])}{unit}</span>
         </div>
       {/each}
     </div>
