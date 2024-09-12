@@ -19,7 +19,12 @@ function map(rows: FloatControlRow[]): FloatControlRowWithIndex[] {
   });
 }
 
-const transformHeader = (header: string) => floatControlKeyMap[header as FloatControlRawHeader];
+const transformHeader = (header: string) => {
+  const key = floatControlKeyMap[header as FloatControlRawHeader];
+  if (!key) console.warn('Unknown header found in CSV file', { header });
+  return key ?? header;
+};
+
 const transform = <C extends FloatControlHeader>(value: string, column: C): FloatControlRow[C] => {
   switch (column) {
     case FloatControlHeader.Duty:
