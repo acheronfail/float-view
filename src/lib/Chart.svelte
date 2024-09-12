@@ -5,7 +5,6 @@
   import { untrack } from 'svelte';
 
   // TODO: on resize, grid lines get quite thick? (or is this just with smaller sizes?)
-  // TODO: sometimes a grid line is drawn at/near zero, which interferes with zero line
 
   const DEFAULT_COLOUR = 'red';
 
@@ -207,15 +206,18 @@
           y1={maxTickY}
           y2={maxTickY}
         />
-        <line
-          style:stroke={GRID_LINE_COLOUR}
-          style:stroke-width={GRID_LINE_WIDTH}
-          style:stroke-dasharray={GRID_LINE_DASHARRAY}
-          x1={0}
-          x2={100 * scaleFactor}
-          y1={minTickY}
-          y2={minTickY}
-        />
+        <!-- only draw this line if the zero line isn't going to be drawn in the same place -->
+        {#if yTickMin !== 0}
+          <line
+            style:stroke={GRID_LINE_COLOUR}
+            style:stroke-width={GRID_LINE_WIDTH}
+            style:stroke-dasharray={GRID_LINE_DASHARRAY}
+            x1={0}
+            x2={100 * scaleFactor}
+            y1={minTickY}
+            y2={minTickY}
+          />
+        {/if}
         {#each yTicks as [value], i (i)}
           {@const y = valueToYPct(value, yTickMin, yTickMax) * scaleFactor}
           {#if value !== 0}
