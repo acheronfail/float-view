@@ -42,6 +42,8 @@ const transform = <C extends FloatControlHeader>(value: string, column: C): Floa
           return State.StopAngle as FloatControlRow[C];
         case 'wheelslip':
           return State.Wheelslip as FloatControlRow[C];
+        case 'quickstop':
+          return State.Quickstop as FloatControlRow[C];
         default:
           console.warn(`Unknown state: '${value}'`);
         case 'riding':

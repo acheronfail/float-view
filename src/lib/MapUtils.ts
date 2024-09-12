@@ -15,6 +15,7 @@ export const faultIcons: Record<string, Leaflet.DivIcon | undefined> = {
   [State.Wheelslip]: warningIcon,
   [State.StopAngle]: warningIcon,
   [State.StopFull]: warningIcon,
+  [State.Quickstop]: warningIcon,
   [State.Custom_OneFootpadAtSpeed]: warningIcon,
   [State.Custom_NoFootpadsAtSpeed]: warningIcon,
 };

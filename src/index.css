@@ -88,6 +88,9 @@ hr {
 .fault-icon.stop_angle svg {
   fill: #daa520;
 }
+.fault-icon.quickstop svg {
+  fill: #640085;
+}
 .fault-icon.wheelslip svg {
   fill: #fff309;
 }
