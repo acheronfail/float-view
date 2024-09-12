@@ -216,7 +216,7 @@
 
   <div class={chartClass}>
     <Chart
-      data={[{ values: visibleRows.map((x) => x.speed), color: 'white' }]}
+      data={[{ values: visibleRows.map((x) => x.speed), color: '#fde68a' }]}
       {selectedIndex}
       {setSelectedIdx}
       {gapIndices}
@@ -227,7 +227,7 @@
   </div>
   <div class={chartClass}>
     <Chart
-      data={[{ values: visibleRows.map((x) => x.duty) }]}
+      data={[{ values: visibleRows.map((x) => x.duty), color: '#f472b6' }]}
       {selectedIndex}
       {setSelectedIdx}
       {gapIndices}
@@ -237,7 +237,7 @@
   </div>
   <div class={chartClass}>
     <Chart
-      data={[{ values: visibleRows.map((x) => x.voltage), color: 'green' }]}
+      data={[{ values: visibleRows.map((x) => x.voltage), color: '#34d399' }]}
       {selectedIndex}
       {setSelectedIdx}
       {gapIndices}
@@ -249,7 +249,7 @@
   </div>
   <div class={chartClass}>
     <Chart
-      data={[{ values: visibleRows.map((x) => x.altitude), color: 'brown' }]}
+      data={[{ values: visibleRows.map((x) => x.altitude), color: '#ea580c' }]}
       {selectedIndex}
       {setSelectedIdx}
       {gapIndices}
@@ -260,8 +260,8 @@
   <div class={chartClass}>
     <Chart
       data={[
-        { values: visibleRows.map((x) => x.current_motor), color: 'cyan', label: 'Motor current' },
-        { values: visibleRows.map((x) => x.current_battery), color: 'azure', label: 'Battery current' },
+        { values: visibleRows.map((x) => x.current_motor), color: '#67e8f9', label: 'Motor current' },
+        { values: visibleRows.map((x) => x.current_battery), color: '#a5b4fc', label: 'Battery current' },
       ]}
       {selectedIndex}
       {setSelectedIdx}
@@ -274,8 +274,8 @@
   <div class={chartClass}>
     <Chart
       data={[
-        { values: visibleRows.map((x) => x.temp_motor), color: 'orange', label: 'Motor temp' },
-        { values: visibleRows.map((x) => x.temp_mosfet), color: 'yellow', label: 'Mosfet temp' },
+        { values: visibleRows.map((x) => x.temp_motor), color: '#facc15', label: 'Motor temp' },
+        { values: visibleRows.map((x) => x.temp_mosfet), color: '#fb7185', label: 'Mosfet temp' },
       ]}
       {selectedIndex}
       {setSelectedIdx}
