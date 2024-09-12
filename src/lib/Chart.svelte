@@ -4,8 +4,6 @@
   import { assert } from './Utils';
   import { untrack } from 'svelte';
 
-  // TODO: on resize, grid lines get quite thick? (or is this just with smaller sizes?)
-
   const DEFAULT_COLOUR = 'red';
 
   const MARGIN_TOP = '3rem';
