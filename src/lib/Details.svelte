@@ -16,6 +16,7 @@
   import { empty, State } from './FloatControlTypes';
   import type { FloatControlRowWithIndex, Units } from './Csv';
   import settings from './Settings.svelte';
+  import Button from './Button.svelte';
 
   let { data = empty, batterySpecs, units }: Props = $props();
 
@@ -33,32 +34,27 @@
         return 'red';
     }
   };
+
+  const itemClass =
+    'text-xs wide:text-sm relative bg-slate-900 text-slate-100 flex justify-around items-center h-full w-full';
 </script>
 
 <div
-  style:height="100%"
-  style:width="100%"
-  style:display="grid"
-  style:grid-template-columns="repeat(3, minmax(0, 1fr))"
-  style:grid-template-rows="repeat(2, minmax(0, 1fr))"
-  style:grid-gap="1px"
-  style:background-color="#333"
-  style:place-items="center"
-  class="transpose-grid"
+  class="h-full w-full bg-slate-600 grid gap-px place-items-center grid-cols-[repeat(2,minmax(0,1fr))] grid-rows-[repeat(3,minmax(0,1fr))] wide:grid-cols-[repeat(3,minmax(0,1fr))] wide:grid-rows-[repeat(2,minmax(0,1fr))]"
 >
-  <div class="item">
+  <div class={itemClass}>
     <Footpads {data} />
   </div>
 
-  <div class="item">
+  <div class={itemClass}>
     <Pitch {data} />
   </div>
 
-  <div class="item">
+  <div class={itemClass}>
     <Roll {data} />
   </div>
 
-  <div class="item">
+  <div class={itemClass}>
     <List
       items={[
         { label: 'Speed', value: `${data.speed} ${units === 'metric' ? 'km/h' : 'mph'}` },
@@ -71,7 +67,7 @@
     />
   </div>
 
-  <div class="item">
+  <div class={itemClass}>
     <List
       items={[
         { label: 'Duty', value: `${data.duty}%`, color: data.duty > 80 ? 'red' : undefined },
@@ -84,7 +80,7 @@
     />
   </div>
 
-  <div class="item">
+  <div class={itemClass}>
     <List
       items={[
         { label: 'Spec', value: batterySpecs.cellCount ? `${batterySpecs.cellCount}S` : configureButton },
@@ -101,29 +97,5 @@
 </div>
 
 {#snippet configureButton()}
-  <button onclick={() => (settings.open = true)}>set</button>
+  <Button onclick={() => (settings.open = true)}>set</Button>
 {/snippet}
-
-<style>
-  .item {
-    position: relative;
-    background-color: #1a1a1a;
-    color: #fff;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-  }
-
-  @media (width < 600px) {
-    .item {
-      font-size: 0.8em;
-    }
-
-    .transpose-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
-    }
-  }
-</style>

@@ -8,9 +8,10 @@
   import type { EventHandler } from 'svelte/elements';
   import { State } from './FloatControlTypes';
   import Modal from './Modal.svelte';
-  import { riderIconSvg } from './MapUtils';
+  import { riderSvg } from './MapUtils';
   import settings from './Settings.svelte';
   import SettingsModal from './SettingsModal.svelte';
+  import Button from './Button.svelte';
 
   /** selected file */
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
@@ -178,6 +179,8 @@
       stepPrev();
     }
   });
+
+  const chartClass = 'bg-slate-950 flex overflow-hidden h-[--grid-width] wide:h-[unset]';
 </script>
 
 <Header bind:file />
@@ -189,36 +192,29 @@
 {:else if loading}
   <Modal open closable={false} title="Loading...">
     <div>
-      <h3>Parsing your ride...</h3>
-      <div class="rotate">
-        {@html riderIconSvg}
+      <h3 class="font-bold mb-4 animate-bounce">Parsing your ride...</h3>
+      <div class="inline-block animate-spin">
+        {@html riderSvg}
       </div>
     </div>
   </Modal>
 {/if}
 
 <main
-  style:display="grid"
-  style:grid-auto-flow="dense"
-  style:grid-gap="1px"
-  style:background-color="#444"
-  style:width="100%"
-  class="grid-container"
+  class="grid w-full bg-slate-600 gap-px grid-flow-dense h-[unset] grid-cols-[repeat(auto-fit,minmax(var(--grid-width),1fr))] wide:h-[calc(100vh-var(--header-height))] wide:grid-cols-[repeat(3,1fr)]"
 >
-  <div style:position="relative" class="map-container">
+  <div
+    class="sticky top-[--header-height] h-[--grid-width] z-50 border-b wide:relative wide:top-[unset] wide:h-[unset] wide:border-b-0"
+  >
     <Map {setSelectedIdx} {setVisible} {selectedRowIndex} {visibleRows} {gpsPoints} {gpsGaps} {faultPoints} />
   </div>
   <div
-    style:overflow="hidden"
-    style:height="100%"
-    style:width="100%"
-    style:place-self="center"
-    class="column-2-to-row-2"
+    class="place-self-center w-full h-full overflow-hidden [grid-column:unset] [grid-row:span_2] wide:[grid-column:span_2] wide:[grid-row:unset]"
   >
     <Details data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} {units} />
   </div>
 
-  <div class="chart">
+  <div class={chartClass}>
     <Chart
       data={[{ values: visibleRows.map((x) => x.speed), color: 'white' }]}
       {selectedIndex}
@@ -229,7 +225,7 @@
       unit={units === 'metric' ? ' km/h' : ' mph'}
     />
   </div>
-  <div class="chart">
+  <div class={chartClass}>
     <Chart
       data={[{ values: visibleRows.map((x) => x.duty) }]}
       {selectedIndex}
@@ -239,7 +235,7 @@
       unit="%"
     />
   </div>
-  <div class="chart">
+  <div class={chartClass}>
     <Chart
       data={[{ values: visibleRows.map((x) => x.voltage), color: 'green' }]}
       {selectedIndex}
@@ -251,7 +247,7 @@
       yAxis={{ suggestedMin: settings.suggestedVMin, suggestedMax: settings.suggestedVMax }}
     />
   </div>
-  <div class="chart">
+  <div class={chartClass}>
     <Chart
       data={[{ values: visibleRows.map((x) => x.altitude), color: 'brown' }]}
       {selectedIndex}
@@ -261,7 +257,7 @@
       unit="m"
     />
   </div>
-  <div class="chart">
+  <div class={chartClass}>
     <Chart
       data={[
         { values: visibleRows.map((x) => x.current_motor), color: 'cyan', label: 'Motor current' },
@@ -275,7 +271,7 @@
       unit="A"
     />
   </div>
-  <div class="chart">
+  <div class={chartClass}>
     <Chart
       data={[
         { values: visibleRows.map((x) => x.temp_motor), color: 'orange', label: 'Motor temp' },
@@ -292,18 +288,10 @@
 </main>
 
 <div
-  style:position="fixed"
-  style:right="1rem"
-  style:bottom="1rem"
-  style:flex-direction="row"
-  style:justify-content="center"
-  style:align-items="center"
-  style:gap="1rem"
-  style:user-select="none"
-  class="buttons"
+  class="flex wide:hidden select-none flex-row justify-center items-center gap-4 fixed right-4 bottom-4"
   use:initButtons
 >
-  <button
+  <Button
     onclick={stepPrev}
     ontouchstart={onInteractStart(stepPrev)}
     onmousedown={onInteractStart(stepPrev)}
@@ -311,8 +299,8 @@
     onmouseup={onInteractEnd}
   >
     ←
-  </button>
-  <button
+  </Button>
+  <Button
     onclick={stepNext}
     ontouchstart={onInteractStart(stepNext)}
     onmousedown={onInteractStart(stepNext)}
@@ -320,7 +308,7 @@
     onmouseup={onInteractEnd}
   >
     →
-  </button>
+  </Button>
 </div>
 
 <style>
@@ -332,60 +320,5 @@
 
   .rotate {
     animation: spin 1s infinite linear;
-  }
-
-  .column-2-to-row-2 {
-    grid-column: span 2;
-    grid-row: unset;
-  }
-
-  .grid-container {
-    grid-template-columns: repeat(3, 1fr);
-    height: calc(100vh - var(--header-height));
-  }
-
-  .chart {
-    background-color: #000;
-    box-sizing: border-box;
-    display: flex;
-    overflow: hidden;
-  }
-
-  .buttons {
-    display: none;
-  }
-  .buttons button {
-    font-weight: bold;
-    padding: 0.5rem 1rem;
-    touch-action: manipulation;
-  }
-
-  /* TODO: preprocessor to save all media query constants */
-  @media (width <= 600px) {
-    .column-2-to-row-2 {
-      grid-row: span 2;
-      grid-column: unset;
-    }
-
-    .grid-container {
-      height: unset;
-      grid-template-columns: repeat(auto-fit, minmax(var(--grid-width), 1fr));
-    }
-
-    .map-container {
-      height: var(--grid-width);
-      position: sticky !important;
-      top: var(--header-height);
-      z-index: 100;
-      border-bottom: 1px solid #333;
-    }
-
-    .chart {
-      height: var(--grid-width);
-    }
-
-    .buttons {
-      display: flex;
-    }
   }
 </style>

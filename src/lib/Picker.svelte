@@ -20,27 +20,20 @@
 </script>
 
 <Modal open={!file} closeHandler={() => (file = demoFile)} closeText="view demo ride" title="Welcome!">
-  <div
-    style:display="flex"
-    style:flex-direction="column"
-    style:justify-content="space-between"
-    style:align-items="center"
-    style:gap="1rem"
-  >
+  <div class="flex flex-col justify-between items-center gap-4">
     <p>Please select an exported CSV file from Float Control to get started.</p>
-    <input type="file" {onchange} accept="text/csv" />
+    <input
+      class="file:mr-4 file:py-2 file:px-4
+      file:rounded file:border file:border-solid file:border-slate-600
+      file:text-sm file:font-bold file:bg-slate-700 active:file:bg-slate-800"
+      type="file"
+      {onchange}
+      accept="text/csv"
+    />
   </div>
-  <div
-    style:display="flex"
-    style:flex-direction="column"
-    style:justify-content="end"
-    style:align-items="center"
-    style:text-align="left"
-    style:flex-grow="1"
-    style:font-size="0.8rem"
-  >
-    <strong>Some notes:</strong>
-    <ul>
+  <div class="grow flex flex-col justify-end items-center text-left text-xs">
+    <h4 class="font-bold my-2 text-sm">Some notes:</h4>
+    <ul class="list-disc list-inside">
       <li>
         <strong>Data never leaves your device, your browser does all the work!</strong>
       </li>
@@ -58,15 +51,15 @@
       <li>
         Credit to <a href="https://thenounproject.com/icon/onewheel-4260841/">Luis Prado</a> for the Onewheel Rider Icon!
       </li>
-      <li style:font-family="monospace">
+      <li class="font-mono">
         Build version: {import.meta.env.VITE_BUILD_VERSION}
       </li>
     </ul>
-    <strong>This site can be saved to your device:</strong>
-    <ol>
+    <h4 class="font-bold my-2 text-sm">This site can be saved to your device:</h4>
+    <ol class="list-decimal list-inside">
       <li>Open the website in your browser (you're already here)</li>
       <li>Clicking the Share button</li>
-      <li>Selecting <strong style:font-family="monospace">Add to Home Screen</strong></li>
+      <li>Selecting <strong class="font-mono">Add to Home Screen</strong></li>
       <li>Now you can use it offline whenever you'd like</li>
     </ol>
   </div>

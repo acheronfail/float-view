@@ -19,27 +19,16 @@
   let { items }: Props = $props();
 </script>
 
-<div style:display="flex" style:width="90%" style:flex-direction="column" style:font-family="monospace">
+<div class="flex w-[90%] flex-col font-mono">
   {#each items as item, i (i)}
-    <div
-      style:display="flex"
-      style:flex-direction="row"
-      style:justify-content="space-between"
-      style:align-items="center"
-    >
+    <div class="flex flex-row justify-between items-center">
       {#if typeof item === 'string'}
-        <hr style:width="75%" style:border-color="#333" />
+        <hr class="mx-auto my-2 border-slate-700" />
       {:else}
-        <div
-          title={item.htmlTitle ?? item.label}
-          style:color="grey"
-          style:text-overflow="ellipsis"
-          style:white-space="nowrap"
-          style:overflow="hidden"
-        >
+        <div class="truncate text-slate-500" title={item.htmlTitle ?? item.label}>
           {item.label}:
         </div>
-        <div style:color={item.color} style:flex-grow="1" style:white-space="nowrap" style:text-align="right">
+        <div class="grow whitespace-nowrap text-right" style:color={item.color}>
           {#if typeof item.value === 'string'}
             {item.value}
           {:else}

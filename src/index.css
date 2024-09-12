@@ -1,3 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    @apply border-slate-600;
+  }
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -11,10 +23,12 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --grid-width: 320px; /* NOTE: must be 1/2 of "wide" screen in tailwind */
+  --header-height: 3rem;
 }
 
 body {
-  margin: 0;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -26,14 +40,6 @@ body {
 hr {
   border-color: #888;
   width: 70%;
-}
-
-/* TODO: use tailwind to clean up all the inline styles */
-
-:root {
-  --grid-width: 300px;
-  --grid-collapse-width: 600px;
-  --header-height: 3rem;
 }
 
 /**
@@ -73,8 +79,8 @@ hr {
 }
 /* NOTE: safari won't show SVGs unless they have an explicit width/height set */
 .fault-icon svg {
-  width: 12px;
-  height: 12px;
+  width: 1rem;
+  height: 1rem;
 }
 .fault-icon.warning svg {
   fill: white;
@@ -83,22 +89,25 @@ hr {
   background-color: grey;
 }
 .fault-icon.stop_full svg {
-  fill: #ff0000;
+  fill: #dc2626;
 }
 .fault-icon.stop_angle svg {
-  fill: #daa520;
-}
-.fault-icon.quickstop svg {
-  fill: #640085;
+  fill: #f97316;
 }
 .fault-icon.wheelslip svg {
-  fill: #fff309;
+  fill: #eab308;
 }
-.fault-icon.custom__one_footpad_at_speed svg {
-  fill: cyan;
+.fault-icon.custom__one_footpad_at_speed svg .left {
+  fill: #0ea5e9;
+}
+.fault-icon.custom__one_footpad_at_speed svg .right {
+  fill: #991b1b;
 }
 .fault-icon.custom__no_footpads_at_speed svg {
-  fill: maroon;
+  fill: #991b1b;
+}
+.fault-icon.quickstop {
+  background-color: #2dd4bf;
 }
 .fault-icon.startup {
   background-color: green;

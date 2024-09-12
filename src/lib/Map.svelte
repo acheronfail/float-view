@@ -155,18 +155,7 @@
   }
 </script>
 
-<div id="map" bind:this={node}></div>
-
-<style>
-  div#map {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border: 1px solid transparent;
-    outline: none;
-  }
-
-  div#map:focus-within {
-    border-color: #008c9c;
-  }
-</style>
+<div
+  class="absolute h-full w-full border border-transparent outline-none focus-within:border-cyan-400"
+  bind:this={node}
+></div>

@@ -8,10 +8,10 @@
 </script>
 
 <script lang="ts">
-  let { id, label, value = $bindable(), inline = false, ...rest }: Props = $props();
+  let { id, label, value = $bindable(), inline = false, class: propClass, ...rest }: Props = $props();
 </script>
 
-<div style:display={inline ? 'inline-block' : 'block'}>
-  <label for={id}>{label}:</label>
-  <input {...rest} {id} bind:value />
+<div class="{inline ? 'inline-flex' : 'flex'} flex-row space-between {propClass}">
+  <label class="grow text-left truncate" title={label} for={id}>{label}:</label>
+  <input class="bg-slate-900 border rounded px-2 py min-w-24" {...rest} {id} bind:value />
 </div>

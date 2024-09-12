@@ -176,9 +176,8 @@
 
 <div
   use:onCreateContainer
+  class="relative w-full"
   style:height="calc(100% - {MARGIN_BOTTOM} - {MARGIN_TOP})"
-  style:width="100%"
-  style:position="relative"
   style:margin-left={MARGIN_LEFT}
   style:margin-right={MARGIN_RIGHT}
   style:margin-top={MARGIN_TOP}
@@ -290,13 +289,10 @@
   <!-- title -->
   <div>
     <div
-      style:position="absolute"
+      class="absolute p-2 font-bold text-center"
       style:top="-{MARGIN_TOP}"
       style:left="-{MARGIN_LEFT}"
       style:right="-{MARGIN_RIGHT}"
-      style:padding="0.5rem"
-      style:font-weight="bold"
-      style:text-align="center"
     >
       {title}
     </div>
@@ -304,30 +300,15 @@
 
   <!-- y-axis ticks -->
   <div>
-    <div
-      style:position="absolute"
-      style:bottom="100%"
-      style:right="100%"
-      style:text-align="right"
-      style:margin-bottom="1rem"
-      style:margin-right="1rem"
-      style:font-weight="bold"
-    >
+    <div class="absolute bottom-full right-full text-right mb-4 mr-4 font-bold">
       <!-- tick title can go here -->
     </div>
     {#each yTicks as [value, label] (value)}
       <div
-        style:position="absolute"
-        style:width="1px"
-        style:height="1px"
-        style:line-height="1px"
-        style:white-space="nowrap"
-        style:font-size="0.8rem"
-        style:transform="translateX(-0.5rem)"
-        style:left="0"
+        class="absolute left-0 w-[1px] h-[1px] leading-[1px] whitespace-nowrap text-sm translate-x-[-0.5rem]"
         style:top="{valueToYPct(value, yTickMin, yTickMax)}%"
       >
-        <div style:float="right">
+        <div class="float-right">
           {label}
         </div>
       </div>
@@ -338,33 +319,13 @@
   {#if selectedDataPointIndex > -1}
     <div
       use:onCreateTooltip
-      style:position="absolute"
-      style:top="50%"
+      class="absolute top-2/4 translate-x-[-50%] whitespace-nowrap text-xs text-slate-100 bg-slate-800 border rounded p-2 text-center font-mono flex flex-col justify-center items-center pointer-events-none"
       style:left="{indexToXPct(selectedDataPointIndex)}%"
-      style:transform="translateX(-50%)"
-      style:white-space="nowrap"
-      style:color="#000"
-      style:background-color="#222"
-      style:border="1px solid #888"
-      style:border-radius="6px"
-      style:padding="3px"
-      style:text-align="center"
-      style:font-family="monospace"
-      style:display="flex"
-      style:flex-direction="column"
-      style:justify-content="center"
-      style:align-items="center"
-      style:pointer-events="none"
     >
       {#each data as _, i}
         <div
+          class="w-full flex flex-rol justify-between items-center gap-4"
           style:color={data[i].color ?? DEFAULT_COLOUR}
-          style:width="100%"
-          style:display="flex"
-          style:flex-direction="row"
-          style:justify-content="space-between"
-          style:align-items="center"
-          style:gap="1rem"
         >
           {#if data[i].label}
             <span>{data[i].label + ':'}</span>

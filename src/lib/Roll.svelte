@@ -14,14 +14,7 @@
   </g>
 </svg>
 
-<div
-  style:display="flex"
-  style:flex-direction="column"
-  style:justify-content="center"
-  style:align-items="center"
-  style:width="30%"
-  style:font-family="monospace"
->
+<div class="flex flex-col justify-center items-center w-[30%] font-mono">
   <span>{data.roll}°</span>
   <span style:color="grey">Roll</span>
 </div>

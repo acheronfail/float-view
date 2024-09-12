@@ -1,10 +1,12 @@
 import Leaflet from 'leaflet';
-import riderIconSvg from '../assets/rider-icon.svg?raw';
+import riderSvg from '../assets/rider-icon.svg?raw';
+import footpadSvg from '../assets/footpad.svg?raw';
 import warningSvg from '../assets/warning.svg?raw';
 import { State } from './FloatControlTypes';
 
-export { riderIconSvg };
-export const riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderIconSvg });
+export { riderSvg };
+export const riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderSvg });
+export const footpadIcon = Leaflet.divIcon({ className: 'fault-icon svg', html: footpadSvg, iconSize: [20, 20] });
 export const genericIcon = Leaflet.divIcon({ className: 'fault-icon' });
 export const warningIcon = Leaflet.divIcon({
   className: 'fault-icon warning svg',
@@ -15,9 +17,8 @@ export const faultIcons: Record<string, Leaflet.DivIcon | undefined> = {
   [State.Wheelslip]: warningIcon,
   [State.StopAngle]: warningIcon,
   [State.StopFull]: warningIcon,
-  [State.Quickstop]: warningIcon,
-  [State.Custom_OneFootpadAtSpeed]: warningIcon,
-  [State.Custom_NoFootpadsAtSpeed]: warningIcon,
+  [State.Custom_OneFootpadAtSpeed]: footpadIcon,
+  [State.Custom_NoFootpadsAtSpeed]: footpadIcon,
 };
 
 const faultToClassName = (fault: string) => fault.replace(/\W/g, '_');

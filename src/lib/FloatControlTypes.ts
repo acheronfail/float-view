@@ -178,11 +178,11 @@ export interface FloatControlRow extends Record<FloatControlHeader, number | str
  */
 export enum State {
   Startup = 'startup',
+  Quickstop = 'quickstop',
   StopHalf = 'stop half',
   StopFull = 'stop full',
   StopAngle = 'stop angle',
   Wheelslip = 'wheelslip',
-  Quickstop = 'quickstop',
   Custom_OneFootpadAtSpeed = 'custom: one footpad at speed',
   Custom_NoFootpadsAtSpeed = 'custom: no footpads at speed',
 }

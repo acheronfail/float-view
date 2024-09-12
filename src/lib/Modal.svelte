@@ -12,6 +12,8 @@
 </script>
 
 <script lang="ts">
+  import Button from './Button.svelte';
+
   let {
     open = $bindable(false),
     closeHandler = () => (open = false),
@@ -23,73 +25,20 @@
 </script>
 
 {#if open}
-  <div class="overlay"></div>
-  <div class="modal-container">
+  <div class="fixed top-0 left-0 right-0 bottom-0 z-[10000] bg-slate-950 opacity-50"></div>
+  <div class="fixed top-0 left-0 right-0 bottom-0 z-[10010] flex justify-center items-center">
     <div
-      class="modal"
-      style:display="flex"
-      style:flex-direction="column"
-      style:justify-content="space-between"
-      style:align-items="center"
+      class="flex flex-col justify-between items-center text-center overflow-y-auto bg-slate-800 h-screen w-screen border-0 p-4 rounded-none wide:w-[60vw] wide:h-[80vh] wide:rounded wide:border"
     >
-      <h2>{title}</h2>
-      <div style:flex-grow="1" style:display="flex" style:flex-direction="column">
+      <h2 class="font-bold text-xl mb-2 underline">{title}</h2>
+      <div class="grow flex flex-col">
         {@render children()}
       </div>
-      <div>
-        {#if closable}
-          <button onclick={closeHandler}>{closeText}</button>
-        {/if}
-      </div>
+      {#if closable}
+        <div class="mt-4">
+          <Button onclick={closeHandler}>{closeText}</Button>
+        </div>
+      {/if}
     </div>
   </div>
 {/if}
-
-<style>
-  .overlay {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: #000;
-    opacity: 0.5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-  }
-
-  .modal-container {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10010;
-  }
-
-  .modal {
-    width: 50vw;
-    height: 80vh;
-    overflow-y: scroll;
-    background-color: #333;
-    border: 1px solid #888;
-    border-radius: 6px;
-    padding: 1rem;
-    text-align: center;
-  }
-
-  /* TODO: preprocessor to save all media query constants */
-  @media (width <= 600px) {
-    .modal {
-      width: 100vw;
-      height: 100vh;
-      border: none;
-      border-radius: 0;
-    }
-  }
-</style>
