@@ -8,6 +8,7 @@
   import type { ChangeEventHandler } from 'svelte/elements';
   import Modal from './Modal.svelte';
   import { demoFile } from './Csv';
+  import Link from './Link.svelte';
 
   let { file = $bindable() }: Props = $props();
 
@@ -38,18 +39,24 @@
         <strong>Data never leaves your device, your browser does all the work!</strong>
       </li>
       <li>
-        Source code available here: <a href="https://github.com/acheronfail/float-view">acheronfail/float-view</a>
+        Source code available here: <Link
+          href="https://github.com/acheronfail/float-view"
+          label="acheronfail/float-view"
+        />
       </li>
       <li>
-        Credit to <a href="https://apps.apple.com/au/app/float-control-vesc-companion/id1590924299">Float Control</a> for
-        making a great app for VESCs!
+        Credit to <Link
+          href="https://apps.apple.com/au/app/float-control-vesc-companion/id1590924299"
+          label="Float Control"
+        /> for making a great app for VESCs!
       </li>
       <li>
-        Credit to <a href="https://jf.id.au/blog/how-i-built-the-best-chart-in-the-world">jakzo</a> for examples of excellent
-        charts!
+        Credit to <Link href="https://jf.id.au/blog/how-i-built-the-best-chart-in-the-world" label="jakzo" /> for examples
+        of excellent charts!
       </li>
       <li>
-        Credit to <a href="https://thenounproject.com/icon/onewheel-4260841/">Luis Prado</a> for the Onewheel Rider Icon!
+        Credit to <Link href="https://thenounproject.com/icon/onewheel-4260841/" label="Luis Prado" /> for the Onewheel Rider
+        Icon!
       </li>
       <li class="font-mono">
         Build version: {import.meta.env.VITE_BUILD_VERSION}
