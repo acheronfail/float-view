@@ -97,7 +97,7 @@
     });
 
     const yZero = valueToYPct(0, yTickMin, yTickMax);
-    if (0 >= yTickMin && 0 <= yTickMax) {
+    if (dataPointsLen && 0 >= yTickMin && 0 <= yTickMax) {
       zeroPath = [
         [indexToXPct(-1) * scaleFactor, yZero * scaleFactor],
         [indexToXPct(dataPointsLen) * scaleFactor, yZero * scaleFactor],
@@ -217,96 +217,99 @@
     {ontouchmove}
   >
     <g>
-      <!-- horizontal grid lines -->
-      <g>
-        <line
-          style:stroke={GRID_LINE_COLOUR}
-          style:stroke-width={GRID_LINE_WIDTH}
-          style:stroke-dasharray={GRID_LINE_DASHARRAY}
-          x1={0}
-          x2={100 * scaleFactor}
-          y1={maxTickY}
-          y2={maxTickY}
-        />
-        <!-- only draw this line if the zero line isn't going to be drawn in the same place -->
-        {#if yTickMin !== 0}
+      {#if dataPointsLen > 0}
+        <!-- horizontal grid lines -->
+        <g>
           <line
             style:stroke={GRID_LINE_COLOUR}
             style:stroke-width={GRID_LINE_WIDTH}
             style:stroke-dasharray={GRID_LINE_DASHARRAY}
             x1={0}
             x2={100 * scaleFactor}
-            y1={minTickY}
-            y2={minTickY}
+            y1={maxTickY}
+            y2={maxTickY}
+          />
+          <!-- only draw this line if the zero line isn't going to be drawn in the same place -->
+          {#if yTickMin !== 0}
+            <line
+              style:stroke={GRID_LINE_COLOUR}
+              style:stroke-width={GRID_LINE_WIDTH}
+              style:stroke-dasharray={GRID_LINE_DASHARRAY}
+              x1={0}
+              x2={100 * scaleFactor}
+              y1={minTickY}
+              y2={minTickY}
+            />
+          {/if}
+          {#each yTicks as [value], i (i)}
+            {@const y = valueToYPct(value, yTickMin, yTickMax) * scaleFactor}
+            {#if value !== 0}
+              {#if i === 0 || i === yTicks.length - 1}{:else}
+                <line
+                  style:stroke={GRID_LINE_COLOUR}
+                  style:stroke-width={GRID_LINE_WIDTH}
+                  style:stroke-dasharray={GRID_LINE_DASHARRAY}
+                  x1={0}
+                  x2={100 * scaleFactor}
+                  y1={y}
+                  y2={y}
+                />
+              {/if}
+            {/if}
+          {/each}
+        </g>
+
+        <!-- zero path line -->
+        {#if zeroPath}
+          <path
+            data-d={console.log($state.snapshot(zeroPath))}
+            style:stroke={ZERO_LINE_COLOUR}
+            style:stroke-width={GRID_LINE_WIDTH}
+            style:stroke-dasharray={ZERO_LINE_DASHARRAY}
+            d="M{zeroPath.map((pos) => pos.join(',')).join('L')}"
           />
         {/if}
-        {#each yTicks as [value], i (i)}
-          {@const y = valueToYPct(value, yTickMin, yTickMax) * scaleFactor}
-          {#if value !== 0}
-            {#if i === 0 || i === yTicks.length - 1}{:else}
-              <line
-                style:stroke={GRID_LINE_COLOUR}
-                style:stroke-width={GRID_LINE_WIDTH}
-                style:stroke-dasharray={GRID_LINE_DASHARRAY}
-                x1={0}
-                x2={100 * scaleFactor}
-                y1={y}
-                y2={y}
-              />
-            {/if}
-          {/if}
+
+        <!-- data point lines -->
+        {#each dataPoints as values, i}
+          <path
+            fill="none"
+            stroke={data[i].color ?? DEFAULT_COLOUR}
+            d="M{values
+              .map((y, i) => `${indexToXPct(i) * scaleFactor},${valueToYPct(y, yTickMin, yTickMax) * scaleFactor}`)
+              .join('L')}"
+          />
         {/each}
-      </g>
 
-      <!-- zero path line -->
-      {#if zeroPath}
-        <path
-          style:stroke={ZERO_LINE_COLOUR}
-          style:stroke-width={GRID_LINE_WIDTH}
-          style:stroke-dasharray={ZERO_LINE_DASHARRAY}
-          d="M{zeroPath.map((pos) => pos.join(',')).join('L')}"
-        />
-      {/if}
+        <!-- lines indicating gaps in data -->
+        {#each gapIndices as gapIndex}
+          {@const x = indexToXPct(Math.floor(gapIndex / chunkSize)) * scaleFactor}
+          <path
+            fill="none"
+            stroke={GAP_LINE_COLOUR}
+            stroke-width={GAP_LINE_WIDTH}
+            stroke-dasharray={GAP_LINE_DASHARRAY}
+            d="M{[
+              [x, 0],
+              [x, 100 * scaleFactor],
+            ]
+              .map((pos) => pos.join(','))
+              .join('L')}"
+          />
+        {/each}
 
-      <!-- data point lines -->
-      {#each dataPoints as values, i}
-        <path
-          fill="none"
-          stroke={data[i].color ?? DEFAULT_COLOUR}
-          d="M{values
-            .map((y, i) => `${indexToXPct(i) * scaleFactor},${valueToYPct(y, yTickMin, yTickMax) * scaleFactor}`)
-            .join('L')}"
-        />
-      {/each}
-
-      <!-- lines indicating gaps in data -->
-      {#each gapIndices as gapIndex}
-        {@const x = indexToXPct(Math.floor(gapIndex / chunkSize)) * scaleFactor}
+        <!-- selected index vertical line -->
         <path
           fill="none"
-          stroke={GAP_LINE_COLOUR}
-          stroke-width={GAP_LINE_WIDTH}
-          stroke-dasharray={GAP_LINE_DASHARRAY}
+          stroke="#aaa"
           d="M{[
-            [x, 0],
-            [x, 100 * scaleFactor],
+            [selectedX, 0],
+            [selectedX, 100 * scaleFactor],
           ]
             .map((pos) => pos.join(','))
             .join('L')}"
         />
-      {/each}
-
-      <!-- selected index vertical line -->
-      <path
-        fill="none"
-        stroke="#aaa"
-        d="M{[
-          [selectedX, 0],
-          [selectedX, 100 * scaleFactor],
-        ]
-          .map((pos) => pos.join(','))
-          .join('L')}"
-      />
+      {/if}
     </g>
   </svg>
 
@@ -340,25 +343,32 @@
   </div>
 
   <!-- tooltip for vertical selected line -->
-  {#if selectedDataPointIndex > -1}
-    <div
-      use:onCreateTooltip
-      class="absolute top-2/4 translate-x-[-50%] whitespace-nowrap text-xs
+  <!-- TODO: show a "no data" tooltip -->
+  <div
+    use:onCreateTooltip
+    class="absolute top-2/4 translate-x-[-50%] whitespace-nowrap text-xs
       text-slate-100 bg-slate-800 border rounded p-2 text-center font-mono
       flex flex-col justify-center items-center pointer-events-none"
-      style:left="{indexToXPct(selectedDataPointIndex)}%"
-    >
-      {#each data as _, i}
-        <div
-          class="w-full flex flex-rol justify-between items-center gap-4"
-          style:color={data[i].color ?? DEFAULT_COLOUR}
-        >
-          {#if data[i].label}
-            <span>{data[i].label + ':'}</span>
-          {/if}
-          <span>{formatValue(data[i].values[selectedIndex])}{unit}</span>
-        </div>
-      {/each}
-    </div>
-  {/if}
+    style:left="{dataPointsLen > 0 ? indexToXPct(selectedDataPointIndex) : 50}%"
+  >
+    {#if dataPointsLen > 0}
+      {#if selectedDataPointIndex > -1}
+        {#each data as _, i}
+          <div
+            class="w-full flex flex-rol justify-between items-center gap-4"
+            style:color={data[i].color ?? DEFAULT_COLOUR}
+          >
+            {#if data[i].label}
+              <span>{data[i].label + ':'}</span>
+            {/if}
+            <span>{formatValue(data[i].values[selectedIndex])}{unit}</span>
+          </div>
+        {/each}
+      {/if}
+    {:else}
+      <div class="w-full flex flex-rol justify-between items-center gap-4" style:color="grey">
+        <span>no data</span>
+      </div>
+    {/if}
+  </div>
 </div>

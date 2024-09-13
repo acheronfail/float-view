@@ -14,7 +14,7 @@
   const closeRide = () => (file = undefined);
 </script>
 
-<div class="fixed z-[1] h-[calc(var(--header-height)+1000px)] top-[-1000px] left-0 right-0 bg-slate-950">
+<div class="fixed z-[9000] h-[calc(var(--header-height)+1000px)] top-[-1000px] left-0 right-0 bg-slate-950">
   <!-- hack to stop mobiles with notches from showing content as they scroll -->
 </div>
 
