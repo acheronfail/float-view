@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ticks, type TickOptions } from './ChartUtils';
-  import type { MouseEventHandler } from 'svelte/elements';
+  import type { MouseEventHandler, TouchEventHandler } from 'svelte/elements';
   import { assert } from './Utils';
   import { untrack } from 'svelte';
 
@@ -121,14 +121,26 @@
     }
   };
 
-  const onmousemove: MouseEventHandler<SVGSVGElement> = (e) => {
+  const selectPoint = (clientX: number) => {
     // because we scale the svg to a 1:1 pixel to viewbox point ratio, the
     // pixel coords ARE the viewbox points
     const bounds = svg!.getBoundingClientRect();
-    const pixelX = e.clientX - bounds.left;
+    const pixelX = clientX - bounds.left;
 
     // translate from visible indices to real indices
     setSelectedIdx(Math.min(Math.floor(pixelX * (dataLen / bounds.width)), dataLen - 1));
+  };
+
+  const onmousemove: MouseEventHandler<SVGSVGElement> = (e) => selectPoint(e.clientX);
+
+  const touchXThreshold = 15;
+  let touchStartX = -1;
+  const ontouchstart: TouchEventHandler<SVGSVGElement> = (e) => (touchStartX = e.touches[0].clientX);
+  const ontouchmove: TouchEventHandler<SVGSVGElement> = (e) => {
+    const { clientX } = e.touches[0];
+    if (Math.abs(touchStartX - clientX) > touchXThreshold) {
+      selectPoint(clientX);
+    }
   };
 
   const formatValue = (value: number): string => {
@@ -191,6 +203,8 @@
     role="graphics-object"
     {onmouseleave}
     {onmousemove}
+    {ontouchstart}
+    {ontouchmove}
   >
     <g>
       <!-- horizontal grid lines -->
