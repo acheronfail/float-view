@@ -130,15 +130,15 @@ export const floatControlKeyMap: Record<FloatControlRawHeader, FloatControlHeade
   [FloatControlRawHeader.WhCharged]: FloatControlHeader.WhCharged,
 };
 
-export interface FloatControlRow extends Record<FloatControlHeader, number | string> {
+export interface FloatControlRow {
   [FloatControlHeader.Adc1]: number;
   [FloatControlHeader.Adc2]: number;
   [FloatControlHeader.Ah]: number;
   [FloatControlHeader.AhCharged]: number;
   [FloatControlHeader.Altitude]: number;
-  [FloatControlHeader.BmsFault]: number;
-  [FloatControlHeader.BmsTemp]: number;
-  [FloatControlHeader.BmsTempBattery]: number;
+  [FloatControlHeader.BmsFault]?: number;
+  [FloatControlHeader.BmsTemp]?: number;
+  [FloatControlHeader.BmsTempBattery]?: number;
   [FloatControlHeader.CurrentBattery]: number;
   [FloatControlHeader.CurrentBooster]: number;
   [FloatControlHeader.CurrentFieldWeakening]: number;

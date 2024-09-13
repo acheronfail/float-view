@@ -1,0 +1,2 @@
+Time(s),State,Distance(km),Speed(km/h),Duty%,Voltage,I-Battery,I-Motor,I-FldWeak,Requested Amps,Pitch,Roll,Setpoint,SP-ATR,SP-Carve,T-Mosfet,T-Mot,ADC1,ADC2,Motor-Fault,Ah,Ah Charged,Wh,Wh Charged,ERPM,Altitude(m),State(num),True Pitch,SP-TrqTlt,SP-BrkTlt,SP-Remote,T-Batt,I-Booster,GPS-Lat,GPS-Long,GPS-Accuracy
+I am not a number,RIDING,0.000,0.0,2%,76.0,0.1,7.3,0.0,8.1,-0.100,3.400,0.0,0.0,0.0,25.2,21.7,3.04,3.06,0,0.00,0.00,0.14,0.02,0,135,1,-0.10,0.0,0.0,0.0,0.0,0.0,-1.091225,1.566577,9

@@ -25,10 +25,18 @@ const transformHeader = (header: string) => {
   return key ?? header;
 };
 
+const parseFloatValue = (input: string): number => {
+  const float = parseFloat(input);
+  if (Number.isNaN(float)) {
+    console.warn(`Failed to parse CSV! Expected a number, but got: '${input}'`);
+    return 0;
+  }
+
+  return float;
+};
+
 const transform = <C extends FloatControlHeader>(value: string, column: C): FloatControlRow[C] => {
   switch (column) {
-    case FloatControlHeader.Duty:
-      return parseFloat(value.replace(/%/g, '')) as FloatControlRow[C];
     case FloatControlHeader.State:
       const lower = value.toLowerCase();
       switch (lower) {
@@ -49,8 +57,10 @@ const transform = <C extends FloatControlHeader>(value: string, column: C): Floa
         case 'riding':
           return lower as FloatControlRow[C];
       }
+    case FloatControlHeader.Duty:
+      return parseFloatValue(value.replace('%', '')) as FloatControlRow[C];
     default:
-      return parseFloat(value) as FloatControlRow[C];
+      return parseFloatValue(value) as FloatControlRow[C];
   }
 };
 
