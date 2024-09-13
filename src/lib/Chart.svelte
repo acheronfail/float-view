@@ -138,7 +138,7 @@
   const ontouchstart: TouchEventHandler<SVGSVGElement> = (e) => (touchStartX = e.touches[0].clientX);
   const ontouchmove: TouchEventHandler<SVGSVGElement> = (e) => {
     const { clientX } = e.touches[0];
-    if (Math.abs(touchStartX - clientX) > touchXThreshold) {
+    if (touchStartX !== Infinity || Math.abs(touchStartX - clientX) > touchXThreshold) {
       selectPoint(clientX);
       touchStartX = Infinity;
     }
