@@ -194,6 +194,7 @@
 
 <div
   use:onCreateContainer
+  data-testid="chart_{title.toLowerCase().replace(/\s/g, '_')}"
   class="relative w-full"
   style:height="calc(100% - {MARGIN_BOTTOM} - {MARGIN_TOP})"
   style:margin-left={MARGIN_LEFT}

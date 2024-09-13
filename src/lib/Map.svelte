@@ -156,6 +156,7 @@
 </script>
 
 <div
+  data-testid="map"
   class="absolute h-full w-full border border-transparent outline-none focus-within:border-cyan-400"
   bind:this={node}
 ></div>

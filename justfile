@@ -21,6 +21,10 @@ setup:
 dev *args:
   npm run dev -- {{args}}
 
+# run the tests
+test *args:
+  npm run tests -- {{args}}
+
 _pre_commit_start:
   #!/usr/bin/env bash
   set -uo pipefail
@@ -35,7 +39,7 @@ _pre_commit_start:
   fi
 
   npm run format
-  git add .
+  git add --update .
 
 _pre_commit_clean:
   #!/usr/bin/env bash
@@ -48,4 +52,4 @@ _pre_commit_clean:
 # pre-commit hook
 pre-commit: _pre_commit_start && _pre_commit_clean
   npm run types
-  npm run tests
+  just test run
