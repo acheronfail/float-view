@@ -128,18 +128,19 @@
     const pixelX = clientX - bounds.left;
 
     // translate from visible indices to real indices
-    setSelectedIdx(Math.min(Math.floor(pixelX * (dataLen / bounds.width)), dataLen - 1));
+    setSelectedIdx(Math.max(Math.min(Math.floor(pixelX * (dataLen / bounds.width)), dataLen - 1), 0));
   };
 
   const onmousemove: MouseEventHandler<SVGSVGElement> = (e) => selectPoint(e.clientX);
 
   const touchXThreshold = 15;
-  let touchStartX = -1;
+  let touchStartX = Infinity;
   const ontouchstart: TouchEventHandler<SVGSVGElement> = (e) => (touchStartX = e.touches[0].clientX);
   const ontouchmove: TouchEventHandler<SVGSVGElement> = (e) => {
     const { clientX } = e.touches[0];
     if (Math.abs(touchStartX - clientX) > touchXThreshold) {
       selectPoint(clientX);
+      touchStartX = Infinity;
     }
   };
 
