@@ -105,6 +105,8 @@
   });
   /** selected index of `visibleRows` */
   let selectedIndex = $state(0);
+  /** on small devices be able to swap map and details views */
+  let swapMapAndDetails = $state(false);
 
   const setVisible = (arrayAsMap: boolean[]) => {
     visible = arrayAsMap;
@@ -184,6 +186,10 @@
     if (e.key === 'ArrowLeft') {
       stepPrev();
     }
+    if (e.key === ' ') {
+      e.preventDefault();
+      swapMapAndDetails = !swapMapAndDetails;
+    }
   });
 
   const chartClass = 'bg-slate-950 flex overflow-hidden h-[--grid-width] wide:h-[unset]';
@@ -216,6 +222,7 @@
   <div
     class="sticky top-[--header-height] h-[--grid-width] z-50 border-b
     wide:relative wide:top-[unset] wide:h-[unset] wide:border-b-0"
+    class:map-swapped={swapMapAndDetails}
   >
     <Map {setSelectedIdx} {setVisible} {selectedRowIndex} {visibleRows} {gpsPoints} {gpsGaps} {faultPoints} />
   </div>
@@ -223,6 +230,7 @@
     class="place-self-center w-full h-full overflow-hidden
     [grid-column:unset] [grid-row:span_2]
     wide:[grid-column:span_2] wide:[grid-row:unset]"
+    class:details-swapped={swapMapAndDetails}
   >
     <Details data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} {units} />
   </div>
@@ -301,27 +309,34 @@
 </main>
 
 <div
-  class="flex wide:hidden select-none flex-row justify-center items-center gap-4 fixed right-4 bottom-4"
+  class="flex wide:hidden select-none pointer-events-none flex-row justify-between items-center fixed left-4 right-4 bottom-4"
   use:initButtons
 >
-  <Button
-    onclick={stepPrev}
-    ontouchstart={onInteractStart(stepPrev)}
-    onmousedown={onInteractStart(stepPrev)}
-    ontouchend={onInteractEnd}
-    onmouseup={onInteractEnd}
-  >
-    ←
-  </Button>
-  <Button
-    onclick={stepNext}
-    ontouchstart={onInteractStart(stepNext)}
-    onmousedown={onInteractStart(stepNext)}
-    ontouchend={onInteractEnd}
-    onmouseup={onInteractEnd}
-  >
-    →
-  </Button>
+  <div class="pointer-events-auto">
+    <Button class="text-xl" onpointerdown={() => (swapMapAndDetails = !swapMapAndDetails)}>⟲</Button>
+  </div>
+  <div class="flex flex-rol gap-4 pointer-events-auto">
+    <Button
+      class="text-xl"
+      onclick={stepPrev}
+      ontouchstart={onInteractStart(stepPrev)}
+      onmousedown={onInteractStart(stepPrev)}
+      ontouchend={onInteractEnd}
+      onmouseup={onInteractEnd}
+    >
+      ←
+    </Button>
+    <Button
+      class="text-xl"
+      onclick={stepNext}
+      ontouchstart={onInteractStart(stepNext)}
+      onmousedown={onInteractStart(stepNext)}
+      ontouchend={onInteractEnd}
+      onmouseup={onInteractEnd}
+    >
+      →
+    </Button>
+  </div>
 </div>
 
 <style>
@@ -333,5 +348,21 @@
 
   .rotate {
     animation: spin 1s infinite linear;
+  }
+
+  /* NOTE: must match up with `wide` breakpoint */
+  @media (width < 640px) {
+    .map-swapped {
+      position: relative !important;
+      top: unset !important;
+      z-index: 40;
+    }
+    .details-swapped {
+      z-index: 50;
+      position: sticky;
+      top: var(--header-height);
+      grid-row: 1 / span 2 !important;
+      border-bottom-width: 1px;
+    }
   }
 </style>
