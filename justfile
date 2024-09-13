@@ -1,3 +1,5 @@
+git_temp_patch := ".precommit.patch"
+
 _default:
   just -l
 
@@ -19,6 +21,31 @@ setup:
 dev *args:
   npm run dev -- {{args}}
 
-pre-commit:
+_pre_commit_start:
+  #!/usr/bin/env bash
+  set -uo pipefail
+
+  git diff --exit-code >/dev/null
+  needs_save=$?
+  set -e
+
+  if [ $needs_save -ne 0 ]; then
+    git diff > "{{git_temp_patch}}"
+    git apply --reverse "{{git_temp_patch}}"
+  fi
+
   npm run format
+  git add .
+
+_pre_commit_clean:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  if [ -f "{{git_temp_patch}}" ]; then
+    git apply "{{git_temp_patch}}"
+    rm "{{git_temp_patch}}"
+  fi
+
+# pre-commit hook
+pre-commit: _pre_commit_start && _pre_commit_clean
   npm run types
+  npm run tests
