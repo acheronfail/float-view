@@ -1,4 +1,12 @@
 <script lang="ts">
+  /**
+   * This is not the greatest chart in the world, no.
+   * This is just a tribute.
+   *
+   * I COULD remember, the greatest chart in the world, yeah.
+   * It's right here: https://jf.id.au/blog/how-i-built-the-best-chart-in-the-world
+   */
+
   import { ticks, type TickOptions } from './ChartUtils';
   import type { MouseEventHandler, TouchEventHandler } from 'svelte/elements';
   import { assert } from './Utils';
