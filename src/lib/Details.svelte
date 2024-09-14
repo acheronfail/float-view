@@ -31,6 +31,7 @@
       case State.Startup:
         return 'grey';
       case State.StopHalf:
+      case State.Quickstop:
       case State.Wheelslip:
         return 'orange';
       case State.StopFull:
