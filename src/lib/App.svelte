@@ -309,7 +309,8 @@
 </main>
 
 <div
-  class="flex wide:hidden select-none pointer-events-none flex-row justify-between items-center fixed left-4 right-4 bottom-4"
+  class="flex flex-row justify-between items-center wide:hidden
+  select-none pointer-events-none fixed left-4 right-4 bottom-4 z-50"
   use:initButtons
 >
   <div class="pointer-events-auto">
