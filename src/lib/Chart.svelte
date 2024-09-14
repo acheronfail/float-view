@@ -73,7 +73,7 @@
   let selectedX = $derived(indexToXPct(selectedDataPointIndex) * scaleFactor);
   /** ticks for the y-axis */
   let yTicks: [number, string][] = $derived(
-    ticks(dataPoints[0], yAxis).map((n) => [n, `${Number.isInteger(n) ? n : n.toFixed(1)}${unit}`]),
+    ticks(dataPoints.flat(), yAxis).map((n) => [n, `${Number.isInteger(n) ? n : n.toFixed(1)}${unit}`]),
   );
   let yTickMin = $derived(Math.min(...yTicks.map(([n]) => n)));
   let yTickMax = $derived(Math.max(...yTicks.map(([n]) => n)));
