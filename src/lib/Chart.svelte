@@ -262,7 +262,6 @@
         <!-- zero path line -->
         {#if zeroPath}
           <path
-            data-d={console.log($state.snapshot(zeroPath))}
             style:stroke={ZERO_LINE_COLOUR}
             style:stroke-width={GRID_LINE_WIDTH}
             style:stroke-dasharray={ZERO_LINE_DASHARRAY}
@@ -343,7 +342,6 @@
   </div>
 
   <!-- tooltip for vertical selected line -->
-  <!-- TODO: show a "no data" tooltip -->
   <div
     use:onCreateTooltip
     class="absolute top-2/4 translate-x-[-50%] whitespace-nowrap text-xs
