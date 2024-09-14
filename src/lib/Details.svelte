@@ -17,8 +17,12 @@
   import type { FloatControlRowWithIndex, Units } from './Csv';
   import settings from './Settings.svelte';
   import Button from './Button.svelte';
+  import { ChartColours } from './ChartUtils';
 
   let { data = empty, batterySpecs, units }: Props = $props();
+
+  let voltsPerCell = $derived(batterySpecs.cellCount ? data.voltage / batterySpecs.cellCount : NaN);
+  let cellVoltsLow = $derived(voltsPerCell && batterySpecs.cellMinVolt && voltsPerCell < batterySpecs.cellMinVolt);
 
   const getStateColor = (state: string): string | undefined => {
     switch (state.toLowerCase()) {
@@ -61,7 +65,7 @@
   <div class={itemClass}>
     <List
       items={[
-        { label: 'Speed', value: `${data.speed} ${units === 'metric' ? 'km/h' : 'mph'}` },
+        { label: 'Speed', value: `${data.speed} ${units === 'metric' ? 'km/h' : 'mph'}`, color: ChartColours.Speed },
         { label: 'ERPM', value: `${data.erpm}` },
         { label: 'Distance', value: `${data.distance} ${units === 'metric' ? 'km' : 'mi'}` },
         '-',
@@ -74,12 +78,12 @@
   <div class={itemClass}>
     <List
       items={[
-        { label: 'Duty', value: `${data.duty}%`, color: data.duty > 80 ? 'red' : undefined },
-        { label: 'Motor Current', value: `${data.current_motor} A` },
-        { label: 'Field Weakening', value: `${data.current_field_weakening} A` },
+        { label: 'Duty', value: `${data.duty}%`, color: data.duty > 80 ? 'red' : ChartColours.DutyCycle },
+        { label: 'Motor Current', value: `${data.current_motor} A`, color: ChartColours.CurrentMotor },
+        { label: 'Field Weakening', value: `${data.current_field_weakening} A`, color: ChartColours.CurrentMotor },
         '-',
-        { label: 'Temp Motor', value: `${data.temp_motor}°C` },
-        { label: 'Temp Controller', value: `${data.temp_mosfet}°C` },
+        { label: 'Temp Motor', value: `${data.temp_motor}°C`, color: ChartColours.TempMotor },
+        { label: 'Temp Controller', value: `${data.temp_mosfet}°C`, color: ChartColours.TempMosfet },
       ]}
     />
   </div>
@@ -89,12 +93,13 @@
       items={[
         { label: 'Spec', value: batterySpecs.cellCount ? `${batterySpecs.cellCount}S` : configureButton },
         '-',
-        { label: 'Batt V (total)', value: `${data.voltage} V` },
+        { label: 'Batt V (total)', value: `${data.voltage} V`, color: ChartColours.BatteryVoltage },
         {
           label: 'Batt V (cell)',
-          value: `${batterySpecs.cellCount ? (data.voltage / batterySpecs.cellCount).toFixed(1) : '??'} V`,
+          value: `${voltsPerCell ? voltsPerCell.toFixed(1) : '??'} V`,
+          color: cellVoltsLow ? 'red' : ChartColours.BatteryVoltage,
         },
-        { label: 'Batt Current', value: `${data.current_battery} A` },
+        { label: 'Batt Current', value: `${data.current_battery} A`, color: ChartColours.CurrentBattery },
       ]}
     />
   </div>

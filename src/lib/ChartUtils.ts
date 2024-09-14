@@ -1,3 +1,14 @@
+export enum ChartColours {
+  Speed = '#fde68a',
+  DutyCycle = '#f472b6',
+  BatteryVoltage = '#34d399',
+  Elevation = '#ea580c',
+  CurrentMotor = '#67e8f9',
+  CurrentBattery = '#a5b4fc',
+  TempMotor = '#facc15',
+  TempMosfet = '#fb7185',
+}
+
 export interface TickOptions {
   min?: number;
   max?: number;

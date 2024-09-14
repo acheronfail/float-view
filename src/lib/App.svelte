@@ -12,6 +12,7 @@
   import settings from './Settings.svelte';
   import SettingsModal from './SettingsModal.svelte';
   import Button from './Button.svelte';
+  import { ChartColours } from './ChartUtils';
 
   /** selected file */
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
@@ -237,7 +238,7 @@
 
   <div class={chartClass}>
     <Chart
-      data={[{ values: visibleRows.map((x) => x.speed), color: '#fde68a' }]}
+      data={[{ values: visibleRows.map((x) => x.speed), color: ChartColours.Speed }]}
       {selectedIndex}
       {setSelectedIdx}
       {gapIndices}
@@ -248,7 +249,7 @@
   </div>
   <div class={chartClass}>
     <Chart
-      data={[{ values: visibleRows.map((x) => x.duty), color: '#f472b6' }]}
+      data={[{ values: visibleRows.map((x) => x.duty), color: ChartColours.DutyCycle }]}
       {selectedIndex}
       {setSelectedIdx}
       {gapIndices}
@@ -258,7 +259,7 @@
   </div>
   <div class={chartClass}>
     <Chart
-      data={[{ values: visibleRows.map((x) => x.voltage), color: '#34d399' }]}
+      data={[{ values: visibleRows.map((x) => x.voltage), color: ChartColours.BatteryVoltage }]}
       {selectedIndex}
       {setSelectedIdx}
       {gapIndices}
@@ -270,7 +271,7 @@
   </div>
   <div class={chartClass}>
     <Chart
-      data={[{ values: visibleRows.map((x) => x.altitude), color: '#ea580c' }]}
+      data={[{ values: visibleRows.map((x) => x.altitude), color: ChartColours.Elevation }]}
       {selectedIndex}
       {setSelectedIdx}
       {gapIndices}
@@ -281,8 +282,12 @@
   <div class={chartClass}>
     <Chart
       data={[
-        { values: visibleRows.map((x) => x.current_motor), color: '#67e8f9', label: 'Motor current' },
-        { values: visibleRows.map((x) => x.current_battery), color: '#a5b4fc', label: 'Battery current' },
+        { values: visibleRows.map((x) => x.current_motor), color: ChartColours.CurrentMotor, label: 'Motor current' },
+        {
+          values: visibleRows.map((x) => x.current_battery),
+          color: ChartColours.CurrentBattery,
+          label: 'Battery current',
+        },
       ]}
       {selectedIndex}
       {setSelectedIdx}
@@ -295,8 +300,8 @@
   <div class={chartClass}>
     <Chart
       data={[
-        { values: visibleRows.map((x) => x.temp_motor), color: '#facc15', label: 'Motor temp' },
-        { values: visibleRows.map((x) => x.temp_mosfet), color: '#fb7185', label: 'Mosfet temp' },
+        { values: visibleRows.map((x) => x.temp_motor), color: ChartColours.TempMotor, label: 'Motor temp' },
+        { values: visibleRows.map((x) => x.temp_mosfet), color: ChartColours.TempMosfet, label: 'Mosfet temp' },
       ]}
       {selectedIndex}
       {setSelectedIdx}
