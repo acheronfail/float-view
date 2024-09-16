@@ -1,6 +1,6 @@
 import { parseFloatControlCsv } from './float-control';
 import { parseFloatyJson } from './floaty';
-import type { RowWithIndex, Units } from './types';
+import { Units, type RowWithIndex } from './types';
 
 export class ParseError extends Error {
   constructor(
@@ -44,7 +44,7 @@ export async function parse(file: File): Promise<ParseResult> {
 
   return {
     data: [],
-    units: 'metric',
+    units: Units.Metric,
     error: new ParseError('Unrecognised file!', file),
   };
 }

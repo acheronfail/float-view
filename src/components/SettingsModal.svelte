@@ -1,19 +1,34 @@
 <script lang="ts">
-  import { State } from '../lib/parse/types';
+  import { State, Units } from '../lib/parse/types';
   import Input from './Input.svelte';
   import { getIcon } from '../lib/map-helpers';
   import Modal from './Modal.svelte';
   import settings, { localStorageKey } from '../lib/settings.svelte';
+  import type { ChangeEventHandler } from 'svelte/elements';
 
+  let isImperial = $derived(settings.units === Units.Imperial);
   $effect(() => {
     window.localStorage.setItem(localStorageKey, settings.storedSettings);
   });
 
   const inputClass = 'w-[70%] m-px';
+
+  const onchangeUnits: ChangeEventHandler<HTMLInputElement> = (e) => {
+    settings.units = isImperial ? Units.Metric : Units.Imperial;
+  };
 </script>
 
 <Modal bind:open={settings.open} title="Settings">
   <div class="h-full w-full flex flex-col justify-start items-center">
+    <h3 class="font-bold text-lg my-2">General</h3>
+    <Input
+      class={inputClass}
+      id="units"
+      label="Use Imperial Units"
+      type="checkbox"
+      checked={isImperial}
+      onchange={onchangeUnits}
+    />
     <h3 class="font-bold text-lg my-2">Battery Specs</h3>
     <p>
       The following options help with calculating the voltage per cell, as well as configuring the voltage chart's axis
@@ -26,7 +41,6 @@
       type="number"
       placeholder="20"
       bind:value={settings.cellCount}
-      style="width:4rem"
     />
     <Input
       class={inputClass}
@@ -36,7 +50,6 @@
       placeholder="3.0"
       step="0.1"
       bind:value={settings.cellMinVolt}
-      style="width:4rem"
     />
     <Input
       class={inputClass}
@@ -46,7 +59,6 @@
       placeholder="4.2"
       step="0.1"
       bind:value={settings.cellMaxVolt}
-      style="width:4rem"
     />
     <h3 class="font-bold text-lg my-2">Map Options</h3>
     <ul class="text-left select-none">

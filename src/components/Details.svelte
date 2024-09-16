@@ -1,9 +1,10 @@
 <script lang="ts" module>
-  import { type RowWithIndex, type Units } from '../lib/parse/types';
+  import { Units, type RowWithIndex } from '../lib/parse/types';
 
   export interface Props {
     data: RowWithIndex | undefined;
     batterySpecs: ZBatterySpecs;
+    mapSpeed: (input: number) => number;
     units: Units;
   }
 </script>
@@ -18,10 +19,11 @@
   import { ChartColours } from '../lib/chart-helpers';
   import { empty, State } from '../lib/parse/types';
 
-  let { data = empty, batterySpecs, units }: Props = $props();
+  let { data = empty, batterySpecs, mapSpeed, units }: Props = $props();
 
   let voltsPerCell = $derived(batterySpecs.cellCount ? data.voltage / batterySpecs.cellCount : NaN);
   let cellVoltsLow = $derived(voltsPerCell && batterySpecs.cellMinVolt && voltsPerCell < batterySpecs.cellMinVolt);
+  let formatSpeed = $derived((x: number) => mapSpeed(x).toFixed(1));
 
   const getStateColor = (state: string): string | undefined => {
     switch (state.toLowerCase()) {
@@ -65,9 +67,13 @@
   <div class={itemClass}>
     <List
       items={[
-        { label: 'Speed', value: `${data.speed} ${units === 'metric' ? 'km/h' : 'mph'}`, color: ChartColours.Speed },
+        {
+          label: 'Speed',
+          value: `${formatSpeed(data.speed)} ${units === Units.Metric ? 'km/h' : 'mph'}`,
+          color: ChartColours.Speed,
+        },
         ...(Number.isNaN(data.erpm) ? [] : [{ label: 'ERPM', value: `${data.erpm}` }]),
-        { label: 'Distance', value: `${data.distance} ${units === 'metric' ? 'km' : 'mi'}` },
+        { label: 'Distance', value: `${formatSpeed(data.distance)} ${units === Units.Metric ? 'km' : 'mi'}` },
         '-',
         { label: 'State', value: data.state.toUpperCase(), color: getStateColor(data.state) },
         { label: 'CSV Row', value: (data.index + 1).toString(), htmlTitle: 'Selected line from the CSV file' },

@@ -1,4 +1,7 @@
-export type Units = 'imperial' | 'metric';
+export enum Units {
+  Metric = 'metric',
+  Imperial = 'imperial',
+}
 
 /**
  * NOTE: non-exhaustive for faults reported by VESC Tool

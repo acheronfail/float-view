@@ -6,7 +6,7 @@
   import { demoFile, demoRows } from '../lib/parse/float-control';
   import Picker from './Picker.svelte';
   import type { EventHandler } from 'svelte/elements';
-  import { State, type RowWithIndex, type Units } from '../lib/parse/types';
+  import { State, Units, type RowWithIndex } from '../lib/parse/types';
   import Modal from './Modal.svelte';
   import { riderSvg } from '../lib/map-helpers';
   import settings from '../lib/settings.svelte';
@@ -14,12 +14,16 @@
   import Button from './Button.svelte';
   import { ChartColours } from '../lib/chart-helpers';
   import { parse } from '../lib/parse';
+  import { speedMapper } from '../lib/misc';
 
   /** selected file */
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
   /** parsed csv data from Float Control */
   let rows = $state<RowWithIndex[]>(demoRows);
-  let units = $state<Units>('metric');
+  /** the units that the data is in */
+  let dataUnits = $state(Units.Metric);
+  /** the units that the user has selected */
+  let mapSpeed = $derived(speedMapper(dataUnits, settings.units));
   /** selected index of `rows` */
   let selectedRowIndex = $state(0);
   /** entire view of gps points from `rows` */
@@ -135,7 +139,7 @@
         .then((results) => {
           clearTimeout(timer);
 
-          units = results.units;
+          dataUnits = results.units;
           // FIXME: handle parse errors
           if (results.error) {
             console.error(results.error, results.error.cause);
@@ -236,18 +240,18 @@
     wide:[grid-column:span_2] wide:[grid-row:unset]"
     class:details-swapped={swapMapAndDetails}
   >
-    <Details data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} {units} />
+    <Details data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} {mapSpeed} units={settings.units} />
   </div>
 
   <div class={chartClass}>
     <Chart
-      data={[{ values: visibleRows.map((x) => x.speed), color: ChartColours.Speed }]}
+      data={[{ values: visibleRows.map((x) => mapSpeed(x.speed)), color: ChartColours.Speed }]}
       {selectedIndex}
       {setSelectedIdx}
       {gapIndices}
       title="Speed"
       precision={1}
-      unit={units === 'metric' ? ' km/h' : ' mph'}
+      unit={settings.units === Units.Metric ? ' km/h' : ' mph'}
     />
   </div>
   <div class={chartClass}>

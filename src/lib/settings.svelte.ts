@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { State } from './parse/types';
+import { State, Units } from './parse/types';
 
 const BatterySpecsSchema = z.object({
   cellCount: z.number().nullish(),
@@ -9,10 +9,12 @@ const BatterySpecsSchema = z.object({
 export type ZBatterySpecs = z.infer<typeof BatterySpecsSchema>;
 
 const HiddenFaultSchema = z.nativeEnum(State).array();
+const UnitsSchema = z.nativeEnum(Units);
 
 const SavedSettingsSchema = z.object({
   batterySpecs: BatterySpecsSchema,
   hiddenFaults: HiddenFaultSchema,
+  units: UnitsSchema,
 });
 type ZSavedSettings = z.infer<typeof SavedSettingsSchema>;
 
@@ -32,6 +34,7 @@ const savedSettings: ZSavedSettings | undefined = (() => {
 const settings = new (class {
   open = $state(false);
 
+  units = $state(savedSettings?.units ?? Units.Metric);
   hiddenFaults = $state<State[]>(
     savedSettings?.hiddenFaults ?? [State.Startup, State.StopHalf, State.Custom_OneFootpadAtSpeed],
   );
@@ -52,6 +55,7 @@ const settings = new (class {
     JSON.stringify({
       batterySpecs: this.batterySpecs,
       hiddenFaults: this.hiddenFaults,
+      units: this.units,
     } satisfies ZSavedSettings),
   );
 })();

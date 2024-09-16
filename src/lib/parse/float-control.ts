@@ -2,7 +2,7 @@ import csv, { type ParseResult } from 'papaparse';
 import { floatControlKeyMap, FloatControlRawHeader } from './float-control.types';
 import demoCsv from '../../assets/demo.csv?raw';
 import { attachIndex } from '../misc';
-import { RowKey, State, type Row, type RowWithIndex, type Units } from './types';
+import { RowKey, State, type Row, type RowWithIndex, Units } from './types';
 
 const transformHeader = (header: string) => {
   const key = floatControlKeyMap[header as FloatControlRawHeader];
@@ -62,13 +62,13 @@ export interface FloatControlData {
 }
 
 export function parseFloatControlCsv(input: string | File): Promise<FloatControlData> {
-  let units: Units = 'imperial';
+  let units = Units.Imperial;
   return new Promise((resolve) => {
     csv.parse<Row>(input, {
       ...parseOptions,
       transformHeader: (header: string) => {
         if (header === FloatControlRawHeader.SpeedKm || header === FloatControlRawHeader.DistanceKm) {
-          units = 'metric';
+          units = Units.Metric;
         }
 
         return transformHeader(header);

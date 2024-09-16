@@ -1,7 +1,7 @@
 import { ParseError, type ParseResult } from './index';
 import { attachIndex } from '../misc';
 import { FloatyJsonSchema, type ZFloatyJson, type ZLocation, type ZLog } from './floaty.types';
-import { stateCodeMap, type Row } from './types';
+import { stateCodeMap, Units, type Row } from './types';
 
 function rowsFromFloatyJson(json: ZFloatyJson): Row[] {
   const rows: Row[] = [];
@@ -69,13 +69,13 @@ export async function parseFloatyJson(input: string | File): Promise<ParseResult
     const data = FloatyJsonSchema.parse(json);
     return {
       data: attachIndex(rowsFromFloatyJson(data)),
-      units: 'metric',
+      units: Units.Metric,
       error: undefined,
     };
   } catch (error) {
     return {
       data: [],
-      units: 'metric',
+      units: Units.Metric,
       error: new ParseError('Failed to parse Floaty JSON!', error),
     };
   }
