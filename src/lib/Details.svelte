@@ -67,7 +67,7 @@
     <List
       items={[
         { label: 'Speed', value: `${data.speed} ${units === 'metric' ? 'km/h' : 'mph'}`, color: ChartColours.Speed },
-        ...(data.erpm ? [{ label: 'ERPM', value: `${data.erpm}` }] : []),
+        ...(Number.isNaN(data.erpm) ? [] : [{ label: 'ERPM', value: `${data.erpm}` }]),
         { label: 'Distance', value: `${data.distance} ${units === 'metric' ? 'km' : 'mi'}` },
         '-',
         { label: 'State', value: data.state.toUpperCase(), color: getStateColor(data.state) },
@@ -81,9 +81,15 @@
       items={[
         { label: 'Duty', value: `${data.duty}%`, color: data.duty > 80 ? 'red' : ChartColours.DutyCycle },
         { label: 'Motor Current', value: `${data.current_motor} A`, color: ChartColours.CurrentMotor },
-        ...(data.current_field_weakening
-          ? [{ label: 'Field Weakening', value: `${data.current_field_weakening} A`, color: ChartColours.CurrentMotor }]
-          : []),
+        ...(Number.isNaN(data.current_field_weakening)
+          ? []
+          : [
+              {
+                label: 'Field Weakening',
+                value: `${data.current_field_weakening} A`,
+                color: ChartColours.CurrentMotor,
+              },
+            ]),
         '-',
         { label: 'Temp Motor', value: `${data.temp_motor}°C`, color: ChartColours.TempMotor },
         { label: 'Temp Controller', value: `${data.temp_mosfet}°C`, color: ChartColours.TempMosfet },

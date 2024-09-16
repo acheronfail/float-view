@@ -43,7 +43,7 @@ export const ticks = (values: number[], opts: TickOptions = {}): number[] => {
     n += tickSpacing;
   }
   if (max > niceMax) result.push(n);
-  while (min < result[0]) result.unshift(result[0] - tickSpacing);
+  while (result[0] && min < result[0]) result.unshift(result[0] - tickSpacing);
 
   if (!result.length) {
     return [0, 100];

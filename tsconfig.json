@@ -16,8 +16,7 @@
     "isolatedModules": true,
     "strict": true,
     "noUnusedLocals": true,
-    // TODO: enable
-    "noUncheckedIndexedAccess": false,
+    "noUncheckedIndexedAccess": true,
     "moduleDetection": "force"
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],

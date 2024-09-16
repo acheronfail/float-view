@@ -5,7 +5,7 @@ import { stateCodeMap, type Row } from './types';
 
 function rowsFromFloatyJson(json: ZFloatyJson): Row[] {
   const rows: Row[] = [];
-  const map = (log: ZLog, location: ZLocation) => ({
+  const map = (log: ZLog, location: ZLocation): Row => ({
     adc1: log.adc1,
     adc2: log.adc2,
     ah_charged: NaN,
@@ -36,7 +36,7 @@ function rowsFromFloatyJson(json: ZFloatyJson): Row[] {
     setpoint: NaN,
     speed: log.speed,
     state_raw: log.state,
-    state: stateCodeMap[log.state],
+    state: stateCodeMap[log.state] ?? '??',
     temp_battery: NaN,
     temp_mosfet: log.controllerTemp,
     temp_motor: log.motorTemp,
@@ -50,10 +50,10 @@ function rowsFromFloatyJson(json: ZFloatyJson): Row[] {
   const { logs, locations } = json;
   let locationIdx = 0;
   for (let i = 0; i < logs.length; ++i) {
-    const log = logs[i];
-    let location = locations[locationIdx];
+    const log = logs[i]!;
+    let location = locations[locationIdx]!;
     if (location.timestamp < log.timestamp && locations[locationIdx + 1]) {
-      location = locations[++locationIdx];
+      location = locations[++locationIdx]!;
     }
 
     rows.push(map(log, location));
