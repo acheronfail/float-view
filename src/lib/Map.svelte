@@ -20,10 +20,11 @@
 <script lang="ts">
   import type { FloatControlRowWithIndex } from './Csv';
   import { untrack } from 'svelte';
-  import { getIcon, riderIcon } from './MapUtils';
+  import { getIcon, MapLineOptions, MapLine, riderIcon } from './MapUtils';
 
   let map: Leaflet.Map | null = null;
-  let polyline: Leaflet.Polyline | null = null;
+  let basePolyline: Leaflet.Polyline | null = null;
+  let travelledPolyline: Leaflet.Polyline | null = null;
   let riderMarker: Leaflet.Marker | null = null;
   const faultMarkers: Leaflet.Marker[] = [];
 
@@ -49,9 +50,14 @@
         riderMarker.remove();
       }
 
+      if (travelledPolyline) {
+        travelledPolyline.remove();
+      }
+
       const location = gpsPoints[selectedRowIndex];
       if (location) {
         riderMarker = Leaflet.marker(location, { icon: riderIcon }).addTo(map);
+        travelledPolyline = getPolyline(MapLine.Travelled).addTo(map);
       }
     }
   });
@@ -60,7 +66,7 @@
     // SAFETY: only called when a valid map has been created
     const bounds = map!.getBounds();
     // SAFETY: only called when a valid line has been created
-    if (bounds.contains(polyline!.getBounds())) {
+    if (bounds.contains(basePolyline!.getBounds())) {
       setVisible(new Array(gpsPoints.length).fill(true));
     } else {
       setVisible(gpsPoints.map((point) => bounds.contains(point)));
@@ -79,7 +85,7 @@
       el.textContent = 'reset';
       // SAFETY: can't be clicked without these existing
       el.onclick = () => {
-        map!.fitBounds(polyline!.getBounds());
+        map!.fitBounds(basePolyline!.getBounds());
         setSelectedIdx(0);
       };
       return el;
@@ -121,6 +127,20 @@
     }
   }
 
+  // TODO: have demo data have a paused ride so we can test that out, too
+  function getPolyline(line: MapLine): Leaflet.Polyline {
+    const limit = line === MapLine.Travelled ? selectedRowIndex : gpsPoints.length;
+    const values: LatLngExpression[][] = [];
+    for (let i = 0; i < gpsGaps.length; ++i) {
+      const start = gpsGaps[i];
+      const end = Math.min(limit, gpsGaps[i + 1] ?? gpsPoints.length);
+      values.push(gpsPoints.slice(start, end));
+      if (limit === end) break;
+    }
+
+    return Leaflet.polyline(values, MapLineOptions[line]);
+  }
+
   function renderMap(node: HTMLDivElement) {
     // cleanup
     if (map) {
@@ -138,11 +158,12 @@
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
 
-    // create line
-    polyline = Leaflet.polyline(gpsGaps.map((startIdx, i) => gpsPoints.slice(startIdx, gpsGaps[i + 1]))).addTo(map);
+    // create lines
+    basePolyline = getPolyline(MapLine.Base).addTo(map);
+    travelledPolyline = getPolyline(MapLine.Travelled).addTo(map);
 
     // fit ride in map
-    map.fitBounds(polyline.getBounds());
+    map.fitBounds(basePolyline.getBounds());
 
     // add a reset zoom button
     map.addControl(new ResetButton());
