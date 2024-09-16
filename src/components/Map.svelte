@@ -101,7 +101,7 @@
     // add fault markers
     for (const { index, fault } of faultPoints) {
       const { icon, className } = getIcon(fault);
-      const marker = Leaflet.marker(gpsPoints[index], {
+      const marker = Leaflet.marker(gpsPoints[index]!, {
         icon,
         title: fault,
       });
@@ -117,7 +117,7 @@
           // find the point in `visibleRows`, if it was clicked it was visible, so it must
           // be in this list
           for (let i = 0; i < visibleRows.length; i++) {
-            if (visibleRows[i].index === index) {
+            if (visibleRows[i]!.index === index) {
               setSelectedIdx(i);
               break;
             }

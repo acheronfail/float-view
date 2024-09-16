@@ -16,8 +16,7 @@
     "isolatedModules": true,
     "strict": true,
     "noUnusedLocals": true,
-    // TODO: enable, and also add svelte-check to `types` script
-    "noUncheckedIndexedAccess": false,
+    "noUncheckedIndexedAccess": true,
     "moduleDetection": "force"
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],

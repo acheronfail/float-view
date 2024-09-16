@@ -28,7 +28,7 @@
     const gpsGaps: number[] = [0];
     for (let i = 0; i < rows.length; ++i) {
       const prev = rows[i - 1];
-      const curr = rows[i];
+      const curr = rows[i]!;
 
       gpsPoints.push([curr.gps_latitude, curr.gps_longitude]);
       if (prev && curr.time - prev.time > 60) {
@@ -42,9 +42,9 @@
     // Either way, here we attempt to find the first "good" point and use that instead.
     // TODO: verify if we need to do this for Floaty-recorded rides
     for (let i = 0; i < gpsGaps.length; ++i) {
-      const start = gpsGaps[i];
+      const start = gpsGaps[i]!;
       const end = gpsGaps[i + 1];
-      const curr = rows[start];
+      const curr = rows[start]!;
       const guessedGoodValue = rows.slice(start, end).find((row) => {
         const samePoint = curr.gps_latitude === row.gps_latitude && curr.gps_longitude === row.gps_longitude;
         return row.gps_accuracy > 0 && !samePoint;
@@ -63,7 +63,7 @@
   let faultPoints = $derived.by(() => {
     const points: FaultPoint[] = [];
     for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
+      const row = rows[i]!;
 
       let fault: string | undefined;
       if (row.state !== 'riding') {
@@ -96,7 +96,7 @@
     let gaps: number[] = [];
     let prev = visibleRows[0]?.index ?? 0;
     for (let i = 1; i < visibleRows.length; i++) {
-      const { index } = visibleRows[i];
+      const { index } = visibleRows[i]!;
       if (prev < index - 1) {
         gaps.push(i);
       }

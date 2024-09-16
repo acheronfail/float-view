@@ -52,7 +52,7 @@
   const aggMaxAbs = (acc: number, n: number) => (Math.abs(acc) > Math.abs(n) ? acc : n);
 
   let { data, selectedIndex, setSelectedIdx, gapIndices, unit = '', title = '', precision, yAxis }: Props = $props();
-  let dataLen = $derived(data[0].values.length);
+  let dataLen = $derived(data[0]?.values.length ?? 0);
   assert(
     data.every(({ values }) => values.length === dataLen),
     'All input data lists must be the same length',
@@ -65,7 +65,7 @@
   let chunkSize = $state(1);
   /** scaled points representing the data */
   let dataPoints = $state<number[][]>(data.map(() => []));
-  let dataPointsLen = $derived(dataPoints[0].length);
+  let dataPointsLen = $derived(dataPoints[0]?.length ?? 0);
   /** start and end coordinates of where 0 is on the x axis */
   let zeroPath = $state<[[number, number], [number, number]] | undefined>();
   /** x coordinate of where the vertical line indicator should be */
@@ -143,16 +143,18 @@
 
   const touchXThreshold = 15;
   let touchStartX = Infinity;
-  const ontouchstart: TouchEventHandler<SVGSVGElement> = (e) => (touchStartX = e.touches[0].clientX);
+  const ontouchstart: TouchEventHandler<SVGSVGElement> = (e) => e.touches[0] && (touchStartX = e.touches[0].clientX);
   const ontouchmove: TouchEventHandler<SVGSVGElement> = (e) => {
-    const { clientX } = e.touches[0];
-    if (touchStartX === Infinity || Math.abs(touchStartX - clientX) > touchXThreshold) {
-      selectPoint(clientX);
-      touchStartX = Infinity;
+    if (e.touches[0]) {
+      const { clientX } = e.touches[0];
+      if (touchStartX === Infinity || Math.abs(touchStartX - clientX) > touchXThreshold) {
+        selectPoint(clientX);
+        touchStartX = Infinity;
+      }
     }
   };
 
-  const formatValue = (value: number): string => {
+  const formatValue = (value: number | undefined): string => {
     if (typeof value !== 'number' || Number.isNaN(value)) {
       return '';
     }
@@ -161,34 +163,33 @@
     return `${n}${unit}`;
   };
 
-  let chartDiv: HTMLDivElement | undefined;
-  const nodes: HTMLDivElement[] = [];
+  let chartEl: HTMLDivElement | undefined;
+  let tooltipEl: HTMLDivElement | undefined;
   const onCreateTooltip = (el: HTMLDivElement) => {
-    nodes.push(el);
+    tooltipEl = el;
   };
   const onCreateContainer = (el: HTMLDivElement) => {
-    chartDiv = el;
+    chartEl = el;
   };
-
   $effect(() => {
-    if (selectedDataPointIndex > -1) {
-      const tooltipEl = nodes[0];
-      const container = chartDiv!.parentElement!;
-      const halfWidth = tooltipEl.offsetWidth / 2;
+    if (!chartEl || !tooltipEl) return;
+    if (selectedDataPointIndex == -1) return;
 
-      const containerRect = container.getBoundingClientRect();
-      const chartRect = chartDiv!.getBoundingClientRect();
-      const tooltipRect = tooltipEl.getBoundingClientRect();
+    const container = chartEl!.parentElement!;
+    const halfWidth = tooltipEl.offsetWidth / 2;
 
-      const leftGap = chartRect.left - containerRect.left;
-      if (tooltipRect.left < containerRect.left) {
-        tooltipEl.style.left = `${halfWidth - leftGap}px`;
-      }
+    const containerRect = container.getBoundingClientRect();
+    const chartRect = chartEl!.getBoundingClientRect();
+    const tooltipRect = tooltipEl.getBoundingClientRect();
 
-      const rightGap = containerRect.right - chartRect.right;
-      if (tooltipRect.right > containerRect.right) {
-        tooltipEl.style.left = `${chartRect.width + rightGap - halfWidth}px`;
-      }
+    const leftGap = chartRect.left - containerRect.left;
+    if (tooltipRect.left < containerRect.left) {
+      tooltipEl.style.left = `${halfWidth - leftGap}px`;
+    }
+
+    const rightGap = containerRect.right - chartRect.right;
+    if (tooltipRect.right > containerRect.right) {
+      tooltipEl.style.left = `${chartRect.width + rightGap - halfWidth}px`;
     }
   });
 </script>
@@ -274,7 +275,7 @@
         {#each dataPoints as values, i}
           <path
             fill="none"
-            stroke={data[i].color ?? DEFAULT_COLOUR}
+            stroke={data[i]?.color ?? DEFAULT_COLOUR}
             d="M{values
               .map((y, i) => `${indexToXPct(i) * scaleFactor},${valueToYPct(y, yTickMin, yTickMax) * scaleFactor}`)
               .join('L')}"
@@ -355,12 +356,12 @@
         {#each data as _, i}
           <div
             class="w-full flex flex-rol justify-between items-center gap-4"
-            style:color={data[i].color ?? DEFAULT_COLOUR}
+            style:color={data[i]?.color ?? DEFAULT_COLOUR}
           >
-            {#if data[i].label}
-              <span>{data[i].label + ':'}</span>
+            {#if data[i]?.label}
+              <span>{data[i]?.label + ':'}</span>
             {/if}
-            <span>{formatValue(data[i].values[selectedIndex])}</span>
+            <span>{formatValue(data[i]?.values[selectedIndex])}</span>
           </div>
         {/each}
       {/if}
