@@ -2,7 +2,7 @@ import Leaflet, { type PolylineOptions } from 'leaflet';
 import riderSvg from '../assets/rider-icon.svg?raw';
 import footpadSvg from '../assets/footpad.svg?raw';
 import warningSvg from '../assets/warning.svg?raw';
-import { State } from './FloatControlTypes';
+import { State } from './parse/types';
 
 export { riderSvg };
 export const riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderSvg });

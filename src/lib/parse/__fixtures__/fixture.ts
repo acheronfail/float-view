@@ -1,16 +1,12 @@
-import type { FloatControlRowWithIndex } from '../Csv';
-import type { FloatControlHeader } from '../FloatControlTypes';
+import type { RowKey, RowWithIndex } from '../types';
 
-export const defaultBms: Pick<
-  FloatControlRowWithIndex,
-  FloatControlHeader.BmsFault | FloatControlHeader.BmsTemp | FloatControlHeader.BmsTempBattery
-> = {
+export const defaultBms: Pick<RowWithIndex, RowKey.BmsFault | RowKey.BmsTemp | RowKey.BmsTempBattery> = {
   bms_fault: 0,
   bms_temp: 36.5,
   bms_temp_battery: 29.0,
 };
 
-export const defaultFixture: FloatControlRowWithIndex = {
+export const defaultFixture: RowWithIndex = {
   adc1: 3.04,
   adc2: 3.06,
   ah: 0,

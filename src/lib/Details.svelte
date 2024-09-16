@@ -1,8 +1,9 @@
 <script lang="ts" module>
   import { type ZBatterySpecs } from './Settings.svelte';
+  import { type RowWithIndex, type Units } from './parse/types';
 
   export interface Props {
-    data: FloatControlRowWithIndex | undefined;
+    data: RowWithIndex | undefined;
     batterySpecs: ZBatterySpecs;
     units: Units;
   }
@@ -13,11 +14,10 @@
   import List from './List.svelte';
   import Pitch from './Pitch.svelte';
   import Roll from './Roll.svelte';
-  import { empty, State } from './FloatControlTypes';
-  import type { FloatControlRowWithIndex, Units } from './Csv';
   import settings from './Settings.svelte';
   import Button from './Button.svelte';
   import { ChartColours } from './ChartUtils';
+  import { empty, State } from './parse/types';
 
   let { data = empty, batterySpecs, units }: Props = $props();
 
@@ -67,7 +67,7 @@
     <List
       items={[
         { label: 'Speed', value: `${data.speed} ${units === 'metric' ? 'km/h' : 'mph'}`, color: ChartColours.Speed },
-        { label: 'ERPM', value: `${data.erpm}` },
+        ...(data.erpm ? [{ label: 'ERPM', value: `${data.erpm}` }] : []),
         { label: 'Distance', value: `${data.distance} ${units === 'metric' ? 'km' : 'mi'}` },
         '-',
         { label: 'State', value: data.state.toUpperCase(), color: getStateColor(data.state) },
@@ -81,7 +81,9 @@
       items={[
         { label: 'Duty', value: `${data.duty}%`, color: data.duty > 80 ? 'red' : ChartColours.DutyCycle },
         { label: 'Motor Current', value: `${data.current_motor} A`, color: ChartColours.CurrentMotor },
-        { label: 'Field Weakening', value: `${data.current_field_weakening} A`, color: ChartColours.CurrentMotor },
+        ...(data.current_field_weakening
+          ? [{ label: 'Field Weakening', value: `${data.current_field_weakening} A`, color: ChartColours.CurrentMotor }]
+          : []),
         '-',
         { label: 'Temp Motor', value: `${data.temp_motor}°C`, color: ChartColours.TempMotor },
         { label: 'Temp Controller', value: `${data.temp_mosfet}°C`, color: ChartColours.TempMosfet },

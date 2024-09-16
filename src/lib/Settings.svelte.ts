@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { State } from './FloatControlTypes';
+import { State } from './parse/types';
 
 const BatterySpecsSchema = z.object({
   cellCount: z.number().nullish(),

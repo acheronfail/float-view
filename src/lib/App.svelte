@@ -3,21 +3,22 @@
   import Map, { type FaultPoint } from './Map.svelte';
   import Details from './Details.svelte';
   import Header from './Header.svelte';
-  import { demoFile, demoRows, parse, type Units, type FloatControlRowWithIndex } from './Csv';
+  import { demoFile, demoRows } from './parse/float-control';
   import Picker from './Picker.svelte';
   import type { EventHandler } from 'svelte/elements';
-  import { State } from './FloatControlTypes';
+  import { State, type RowWithIndex, type Units } from './parse/types';
   import Modal from './Modal.svelte';
   import { riderSvg } from './MapUtils';
   import settings from './Settings.svelte';
   import SettingsModal from './SettingsModal.svelte';
   import Button from './Button.svelte';
   import { ChartColours } from './ChartUtils';
+  import { parse } from './parse';
 
   /** selected file */
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
   /** parsed csv data from Float Control */
-  let rows = $state<FloatControlRowWithIndex[]>(demoRows);
+  let rows = $state<RowWithIndex[]>(demoRows);
   let units = $state<Units>('metric');
   /** selected index of `rows` */
   let selectedRowIndex = $state(0);
@@ -39,6 +40,7 @@
     // have incorrect GPS data. If it's the start of the ride, it's (0, 0), but if it's a resumed
     // ride, then it seems to be the last known point from the paused ride.
     // Either way, here we attempt to find the first "good" point and use that instead.
+    // TODO: verify if we need to do this for Floaty-recorded rides
     for (let i = 0; i < gpsGaps.length; ++i) {
       const start = gpsGaps[i];
       const end = gpsGaps[i + 1];
@@ -135,12 +137,13 @@
 
           units = results.units;
           // FIXME: handle parse errors
-          if (results.csv.errors.length) {
-            console.log(results.csv.errors);
-            alert(`An error occurred when parsing your CSV file!`);
+          if (results.error) {
+            console.error(results.error, results.error.cause);
+            alert(`An error occurred when parsing: ${results.error.message}`);
+            return;
           }
 
-          rows = results.csv.data;
+          rows = results.data;
           selectedIndex = 0;
         })
         .finally(() => (loading = false));

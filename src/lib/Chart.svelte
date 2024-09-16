@@ -153,11 +153,12 @@
   };
 
   const formatValue = (value: number): string => {
-    if (typeof value !== 'number') {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
       return '';
     }
 
-    return precision ? value.toFixed(precision) : Number.isInteger(value) ? value.toString() : value.toFixed(1);
+    const n = precision ? value.toFixed(precision) : Number.isInteger(value) ? value.toString() : value.toFixed(1);
+    return `${n}${unit}`;
   };
 
   let chartDiv: HTMLDivElement | undefined;
@@ -359,7 +360,7 @@
             {#if data[i].label}
               <span>{data[i].label + ':'}</span>
             {/if}
-            <span>{formatValue(data[i].values[selectedIndex])}{unit}</span>
+            <span>{formatValue(data[i].values[selectedIndex])}</span>
           </div>
         {/each}
       {/if}

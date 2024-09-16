@@ -1,5 +1,6 @@
 <script lang="ts" module>
   import Leaflet, { type LatLngExpression } from 'leaflet';
+  import type { RowWithIndex } from './parse/types';
 
   export interface FaultPoint {
     index: number;
@@ -7,7 +8,7 @@
   }
 
   export interface Props {
-    visibleRows: FloatControlRowWithIndex[];
+    visibleRows: RowWithIndex[];
     setVisible: (visible: boolean[]) => void;
     setSelectedIdx: (index: number) => void;
     selectedRowIndex: number;
@@ -18,7 +19,6 @@
 </script>
 
 <script lang="ts">
-  import type { FloatControlRowWithIndex } from './Csv';
   import { untrack } from 'svelte';
   import { getIcon, MapLineOptions, MapLine, riderIcon } from './MapUtils';
 

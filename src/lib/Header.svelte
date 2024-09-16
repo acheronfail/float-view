@@ -1,6 +1,6 @@
 <script lang="ts" module>
   import Button from './Button.svelte';
-  import { demoFile } from './Csv';
+  import { demoFile } from './parse/float-control';
   import settings from './Settings.svelte';
 
   export interface Props {

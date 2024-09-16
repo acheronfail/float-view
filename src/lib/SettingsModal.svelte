@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { State } from './FloatControlTypes';
+  import { State } from './parse/types';
   import Input from './Input.svelte';
   import { getIcon } from './MapUtils';
   import Modal from './Modal.svelte';

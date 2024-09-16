@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { FloatControlRow } from './FloatControlTypes';
+  import type { FloatControlRow } from './parse/float-control.types';
   import List from './List.svelte';
 
   let { data }: { data: FloatControlRow } = $props();
