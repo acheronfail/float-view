@@ -65,8 +65,8 @@
     <h4 class="font-bold my-2 text-sm">This site can be saved to your device:</h4>
     <ol class="list-decimal list-inside">
       <li>Open the website in your browser (you're already here)</li>
-      <li>Clicking the Share button</li>
-      <li>Selecting <strong class="font-mono">Add to Home Screen</strong></li>
+      <li>Click the Share button</li>
+      <li>Select <strong class="font-mono">Add to Home Screen</strong></li>
       <li>Now you can use it offline whenever you'd like</li>
     </ol>
   </div>
