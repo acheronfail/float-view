@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { FloatControlRow } from './parse/float-control.types';
+  import type { Row } from '../lib/parse/types';
 
-  let { data }: { data: FloatControlRow } = $props();
+  let { data }: { data: Row } = $props();
 </script>
 
 <svg version="1.1" viewBox="0 0 100 100" role="graphics-object" xmlns="http://www.w3.org/2000/svg" height="50%">

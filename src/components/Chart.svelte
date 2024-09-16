@@ -7,9 +7,9 @@
    * It's right here: https://jf.id.au/blog/how-i-built-the-best-chart-in-the-world
    */
 
-  import { ticks, type TickOptions } from './ChartUtils';
+  import { ticks, type TickOptions } from '../lib/chart-helpers';
   import type { MouseEventHandler, TouchEventHandler } from 'svelte/elements';
-  import { assert } from './Utils';
+  import { assert } from '../lib/misc';
   import { untrack } from 'svelte';
 
   const DEFAULT_COLOUR = 'red';

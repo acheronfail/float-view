@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { State } from './parse/types';
+  import { State } from '../lib/parse/types';
   import Input from './Input.svelte';
-  import { getIcon } from './MapUtils';
+  import { getIcon } from '../lib/map-helpers';
   import Modal from './Modal.svelte';
-  import settings, { localStorageKey } from './Settings.svelte';
+  import settings, { localStorageKey } from '../lib/settings.svelte';
 
   $effect(() => {
     window.localStorage.setItem(localStorageKey, settings.storedSettings);

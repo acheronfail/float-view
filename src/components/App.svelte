@@ -3,17 +3,17 @@
   import Map, { type FaultPoint } from './Map.svelte';
   import Details from './Details.svelte';
   import Header from './Header.svelte';
-  import { demoFile, demoRows } from './parse/float-control';
+  import { demoFile, demoRows } from '../lib/parse/float-control';
   import Picker from './Picker.svelte';
   import type { EventHandler } from 'svelte/elements';
-  import { State, type RowWithIndex, type Units } from './parse/types';
+  import { State, type RowWithIndex, type Units } from '../lib/parse/types';
   import Modal from './Modal.svelte';
-  import { riderSvg } from './MapUtils';
-  import settings from './Settings.svelte';
+  import { riderSvg } from '../lib/map-helpers';
+  import settings from '../lib/settings.svelte';
   import SettingsModal from './SettingsModal.svelte';
   import Button from './Button.svelte';
-  import { ChartColours } from './ChartUtils';
-  import { parse } from './parse';
+  import { ChartColours } from '../lib/chart-helpers';
+  import { parse } from '../lib/parse';
 
   /** selected file */
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);

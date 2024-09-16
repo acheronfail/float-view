@@ -1,7 +1,7 @@
 import csv, { type ParseResult } from 'papaparse';
 import { floatControlKeyMap, FloatControlRawHeader } from './float-control.types';
 import demoCsv from '../../assets/demo.csv?raw';
-import { attachIndex } from '../Utils';
+import { attachIndex } from '../misc';
 import { RowKey, State, type Row, type RowWithIndex, type Units } from './types';
 
 const transformHeader = (header: string) => {

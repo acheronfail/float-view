@@ -1,5 +1,5 @@
 import { ParseError, type ParseResult } from './index';
-import { attachIndex } from '../Utils';
+import { attachIndex } from '../misc';
 import { FloatyJsonSchema, type ZFloatyJson, type ZLocation, type ZLog } from './floaty.types';
 import { stateCodeMap, type Row } from './types';
 

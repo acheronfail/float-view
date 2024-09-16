@@ -1,6 +1,5 @@
 <script lang="ts" module>
-  import { type ZBatterySpecs } from './Settings.svelte';
-  import { type RowWithIndex, type Units } from './parse/types';
+  import { type RowWithIndex, type Units } from '../lib/parse/types';
 
   export interface Props {
     data: RowWithIndex | undefined;
@@ -14,10 +13,10 @@
   import List from './List.svelte';
   import Pitch from './Pitch.svelte';
   import Roll from './Roll.svelte';
-  import settings from './Settings.svelte';
+  import settings, { type ZBatterySpecs } from '../lib/settings.svelte';
   import Button from './Button.svelte';
-  import { ChartColours } from './ChartUtils';
-  import { empty, State } from './parse/types';
+  import { ChartColours } from '../lib/chart-helpers';
+  import { empty, State } from '../lib/parse/types';
 
   let { data = empty, batterySpecs, units }: Props = $props();
 

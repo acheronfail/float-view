@@ -7,9 +7,9 @@
 <script lang="ts">
   import type { ChangeEventHandler } from 'svelte/elements';
   import Modal from './Modal.svelte';
-  import { demoFile } from './parse/float-control';
+  import { demoFile } from '../lib/parse/float-control';
   import Link from './Link.svelte';
-  import { supportedMimeTypes } from './parse';
+  import { supportedMimeTypes } from '../lib/parse';
 
   let { file = $bindable() }: Props = $props();
 

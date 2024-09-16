@@ -1,6 +1,6 @@
 <script lang="ts" module>
   import Leaflet, { type LatLngExpression } from 'leaflet';
-  import type { RowWithIndex } from './parse/types';
+  import type { RowWithIndex } from '../lib/parse/types';
 
   export interface FaultPoint {
     index: number;
@@ -20,7 +20,7 @@
 
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { getIcon, MapLineOptions, MapLine, riderIcon } from './MapUtils';
+  import { getIcon, MapLineOptions, MapLine, riderIcon } from '../lib/map-helpers';
 
   let map: Leaflet.Map | null = null;
   let basePolyline: Leaflet.Polyline | null = null;
