@@ -51,32 +51,34 @@
     <h3 class="font-bold text-lg my-2">Map Options</h3>
     <ul class="text-left select-none">
       {#each Object.values(State) as state}
-        {@const checked = !settings.hiddenFaults.includes(state)}
-        {@const { icon, className } = getIcon(state)}
-        {@const html = icon.createIcon().innerHTML.trim()}
-        <li class="flex flex-rol justify-start items-center gap-2">
-          <input
-            type="checkbox"
-            id="map_{state}"
-            {checked}
-            onchange={() => {
-              if (settings.hiddenFaults.includes(state)) {
-                settings.hiddenFaults = settings.hiddenFaults.filter((s) => s !== state);
-              } else {
-                settings.hiddenFaults = settings.hiddenFaults.concat(state);
-              }
-            }}
-          />
-          <div class="w-4 h-4 fault-icon {className} {html ? 'svg' : ''}">
-            {#if html}
-              {@html html}
-            {:else}
-              &nbsp;
-            {/if}
-          </div>
+        {#if state !== State.Riding}
+          {@const checked = !settings.hiddenFaults.includes(state)}
+          {@const { icon, className } = getIcon(state)}
+          {@const html = icon.createIcon().innerHTML.trim()}
+          <li class="flex flex-rol justify-start items-center gap-2">
+            <input
+              type="checkbox"
+              id="map_{state}"
+              {checked}
+              onchange={() => {
+                if (settings.hiddenFaults.includes(state)) {
+                  settings.hiddenFaults = settings.hiddenFaults.filter((s) => s !== state);
+                } else {
+                  settings.hiddenFaults = settings.hiddenFaults.concat(state);
+                }
+              }}
+            />
+            <div class="w-4 h-4 fault-icon {className} {html ? 'svg' : ''}">
+              {#if html}
+                {@html html}
+              {:else}
+                &nbsp;
+              {/if}
+            </div>
 
-          <label for="map_{state}">{state}</label>
-        </li>
+            <label for="map_{state}">{state}</label>
+          </li>
+        {/if}
       {/each}
     </ul>
     <div class="grow flex flex-col justify-around items-center">
