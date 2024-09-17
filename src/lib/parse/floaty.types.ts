@@ -13,12 +13,12 @@ export const LocationSchema = z.object({
 export type ZLog = z.infer<typeof LogSchema>;
 export const LogSchema = z.object({
   timestamp: z.number(),
-  speed: z.number(),
-  dutyCycle: z.number(),
-  batteryVolts: z.number(),
+  speed: z.number().nullable(),
+  dutyCycle: z.number().nullable(),
+  batteryVolts: z.number().nullable(),
   batteryPercent: z.number(),
-  batteryCurrent: z.number(),
-  motorCurrent: z.number(),
+  batteryCurrent: z.number().nullable(),
+  motorCurrent: z.number().nullable(),
   motorTemp: z.number(),
   controllerTemp: z.number(),
   tripDistance: z.number(),

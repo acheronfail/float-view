@@ -23,7 +23,7 @@
 
   let voltsPerCell = $derived(batterySpecs.cellCount ? data.voltage / batterySpecs.cellCount : NaN);
   let cellVoltsLow = $derived(voltsPerCell && batterySpecs.cellMinVolt && voltsPerCell < batterySpecs.cellMinVolt);
-  let formatSpeed = $derived((x: number) => mapSpeed(x).toFixed(1));
+  let formatSpeed = $derived((x: number) => (Number.isNaN(x) ? '??' : mapSpeed(x).toFixed(1)));
 
   const getStateColor = (state: string): string | undefined => {
     switch (state.toLowerCase()) {
@@ -84,8 +84,16 @@
   <div class={itemClass}>
     <List
       items={[
-        { label: 'Duty', value: `${data.duty}%`, color: data.duty > 80 ? 'red' : ChartColours.DutyCycle },
-        { label: 'Motor Current', value: `${data.current_motor} A`, color: ChartColours.CurrentMotor },
+        {
+          label: 'Duty',
+          value: `${Number.isNaN(data.duty) ? '?? ' : data.duty}%`,
+          color: data.duty > 80 ? 'red' : ChartColours.DutyCycle,
+        },
+        {
+          label: 'Motor Current',
+          value: `${Number.isNaN(data.current_motor) ? '??' : data.current_motor} A`,
+          color: ChartColours.CurrentMotor,
+        },
         ...(Number.isNaN(data.current_field_weakening)
           ? []
           : [
@@ -107,13 +115,21 @@
       items={[
         { label: 'Spec', value: batterySpecs.cellCount ? `${batterySpecs.cellCount}S` : configureButton },
         '-',
-        { label: 'Batt V (total)', value: `${data.voltage} V`, color: ChartColours.BatteryVoltage },
+        {
+          label: 'Batt V (total)',
+          value: `${Number.isNaN(data.voltage) ? '?? ' : data.voltage} V`,
+          color: ChartColours.BatteryVoltage,
+        },
         {
           label: 'Batt V (cell)',
           value: `${voltsPerCell ? voltsPerCell.toFixed(1) : '??'} V`,
           color: cellVoltsLow ? 'red' : ChartColours.BatteryVoltage,
         },
-        { label: 'Batt Current', value: `${data.current_battery} A`, color: ChartColours.CurrentBattery },
+        {
+          label: 'Batt Current',
+          value: `${Number.isNaN(data.current_battery) ? '??' : data.current_battery} A`,
+          color: ChartColours.CurrentBattery,
+        },
       ]}
     />
   </div>
