@@ -25,6 +25,8 @@
   let cellVoltsLow = $derived(voltsPerCell && batterySpecs.cellMinVolt && voltsPerCell < batterySpecs.cellMinVolt);
   let formatSpeed = $derived((x: number) => (Number.isNaN(x) ? '??' : mapSpeed(x).toFixed(1)));
 
+  const formatFloat = (n: number) => (Number.isNaN(n) ? '??' : n.toFixed(1));
+
   const getStateColor = (state: string): string | undefined => {
     switch (state.toLowerCase()) {
       case 'riding':
@@ -86,12 +88,12 @@
       items={[
         {
           label: 'Duty',
-          value: `${Number.isNaN(data.duty) ? '?? ' : data.duty}%`,
+          value: `${formatFloat(data.duty)}%`,
           color: data.duty > 80 ? 'red' : ChartColours.DutyCycle,
         },
         {
           label: 'Motor Current',
-          value: `${Number.isNaN(data.current_motor) ? '??' : data.current_motor} A`,
+          value: `${formatFloat(data.current_motor)} A`,
           color: ChartColours.CurrentMotor,
         },
         ...(Number.isNaN(data.current_field_weakening)
@@ -99,13 +101,13 @@
           : [
               {
                 label: 'Field Weakening',
-                value: `${data.current_field_weakening} A`,
+                value: `${formatFloat(data.current_field_weakening)} A`,
                 color: ChartColours.CurrentMotor,
               },
             ]),
         '-',
-        { label: 'Temp Motor', value: `${data.temp_motor}°C`, color: ChartColours.TempMotor },
-        { label: 'Temp Controller', value: `${data.temp_mosfet}°C`, color: ChartColours.TempMosfet },
+        { label: 'Temp Motor', value: `${formatFloat(data.temp_motor)}°C`, color: ChartColours.TempMotor },
+        { label: 'Temp Controller', value: `${formatFloat(data.temp_mosfet)}°C`, color: ChartColours.TempMosfet },
       ]}
     />
   </div>
@@ -117,7 +119,7 @@
         '-',
         {
           label: 'Batt V (total)',
-          value: `${Number.isNaN(data.voltage) ? '?? ' : data.voltage} V`,
+          value: `${formatFloat(data.voltage)} V`,
           color: ChartColours.BatteryVoltage,
         },
         {
@@ -127,7 +129,7 @@
         },
         {
           label: 'Batt Current',
-          value: `${Number.isNaN(data.current_battery) ? '??' : data.current_battery} A`,
+          value: `${formatFloat(data.current_battery)} A`,
           color: ChartColours.CurrentBattery,
         },
       ]}
