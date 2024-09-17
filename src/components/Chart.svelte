@@ -277,7 +277,25 @@
             fill="none"
             stroke={data[i]?.color ?? DEFAULT_COLOUR}
             d="M{values
-              .map((y, i) => `${indexToXPct(i) * scaleFactor},${valueToYPct(y, yTickMin, yTickMax) * scaleFactor}`)
+              .map((y, i, self) => {
+                // NOTE: sometimes Floaty has bad data in its logs, and when it does we just put NaN there instead. If we
+                // find a value that's NaN, then just look for the last known good value (or default to 0).
+                if (Number.isNaN(y)) {
+                  y = 0;
+                  let j = i - 1;
+                  while (j > 0) {
+                    if (!Number.isNaN(self[j])) {
+                      y = self[j]!;
+                      break;
+                    }
+                    j--;
+                  }
+                }
+
+                const pixelX = indexToXPct(i) * scaleFactor;
+                const pixelY = valueToYPct(Number.isNaN(y) ? 0 : y, yTickMin, yTickMax) * scaleFactor;
+                return `${pixelX},${pixelY}`;
+              })
               .join('L')}"
           />
         {/each}
