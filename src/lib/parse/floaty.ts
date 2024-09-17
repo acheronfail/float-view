@@ -19,7 +19,7 @@ function rowsFromFloatyJson(json: ZFloatyJson): Row[] {
     current_field_weakening: NaN,
     current_motor: log.motorCurrent ?? NaN,
     distance: log.tripDistance,
-    duty: log.dutyCycle ?? NaN,
+    duty: log.dutyCycle ? log.dutyCycle * 100 : NaN,
     erpm: NaN,
     gps_accuracy: location.accuracy,
     gps_latitude: location.latitude,
