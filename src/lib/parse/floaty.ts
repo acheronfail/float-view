@@ -1,7 +1,7 @@
 import { ParseError, type ParseResult } from './index';
 import { attachIndex } from '../misc';
 import { FloatyJsonSchema, type ZFloatyJson, type ZLocation, type ZLog } from './floaty.types';
-import { stateCodeMap, Units, type Row } from './types';
+import { DataSource, stateCodeMap, Units, type Row } from './types';
 
 function rowsFromFloatyJson(json: ZFloatyJson): Row[] {
   const rows: Row[] = [];
@@ -62,18 +62,19 @@ function rowsFromFloatyJson(json: ZFloatyJson): Row[] {
   return rows;
 }
 
-// TODO: confirm if floaty always saves data in metric units
 export async function parseFloatyJson(input: string | File): Promise<ParseResult> {
   try {
     const json = JSON.parse(typeof input === 'string' ? input : await input.text());
     const data = FloatyJsonSchema.parse(json);
     return {
+      source: DataSource.Floaty,
       data: attachIndex(rowsFromFloatyJson(data)),
       units: Units.Metric,
       error: undefined,
     };
   } catch (error) {
     return {
+      source: DataSource.Floaty,
       data: [],
       units: Units.Metric,
       error: new ParseError('Failed to parse Floaty JSON!', error),

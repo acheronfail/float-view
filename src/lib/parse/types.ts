@@ -1,3 +1,9 @@
+export enum DataSource {
+  None = 'none',
+  FloatControl = 'float_control',
+  Floaty = 'floaty',
+}
+
 export enum Units {
   Metric = 'metric',
   Imperial = 'imperial',

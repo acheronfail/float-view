@@ -6,7 +6,7 @@
   import { demoFile, demoRows } from '../lib/parse/float-control';
   import Picker from './Picker.svelte';
   import type { EventHandler } from 'svelte/elements';
-  import { State, Units, type RowWithIndex } from '../lib/parse/types';
+  import { DataSource, State, Units, type RowWithIndex } from '../lib/parse/types';
   import Modal from './Modal.svelte';
   import { riderSvg } from '../lib/map-helpers';
   import settings from '../lib/settings.svelte';
@@ -16,6 +16,8 @@
   import { parse } from '../lib/parse';
   import { speedMapper } from '../lib/misc';
 
+  /** source of data*/
+  let source = $state(DataSource.None);
   /** selected file */
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
   /** parsed csv data from Float Control */
@@ -29,6 +31,7 @@
   /** entire view of gps points from `rows` */
   let { gpsPoints, gpsGaps } = $derived.by(() => {
     const gpsPoints: [number, number][] = [];
+    // TODO: verify paused sessions from Floaty
     const gpsGaps: number[] = [0];
     for (let i = 0; i < rows.length; ++i) {
       const prev = rows[i - 1];
@@ -44,19 +47,20 @@
     // have incorrect GPS data. If it's the start of the ride, it's (0, 0), but if it's a resumed
     // ride, then it seems to be the last known point from the paused ride.
     // Either way, here we attempt to find the first "good" point and use that instead.
-    // TODO: verify if we need to do this for Floaty-recorded rides
-    for (let i = 0; i < gpsGaps.length; ++i) {
-      const start = gpsGaps[i]!;
-      const end = gpsGaps[i + 1];
-      const curr = rows[start]!;
-      const guessedGoodValue = rows.slice(start, end).find((row) => {
-        const samePoint = curr.gps_latitude === row.gps_latitude && curr.gps_longitude === row.gps_longitude;
-        return row.gps_accuracy > 0 && !samePoint;
-      });
+    if (source === DataSource.FloatControl) {
+      for (let i = 0; i < gpsGaps.length; ++i) {
+        const start = gpsGaps[i]!;
+        const end = gpsGaps[i + 1];
+        const curr = rows[start]!;
+        const guessedGoodValue = rows.slice(start, end).find((row) => {
+          const samePoint = curr.gps_latitude === row.gps_latitude && curr.gps_longitude === row.gps_longitude;
+          return row.gps_accuracy > 0 && !samePoint;
+        });
 
-      if (guessedGoodValue) {
-        for (let j = start; j < guessedGoodValue.index; ++j) {
-          gpsPoints[j] = [guessedGoodValue.gps_latitude, guessedGoodValue.gps_longitude];
+        if (guessedGoodValue) {
+          for (let j = start; j < guessedGoodValue.index; ++j) {
+            gpsPoints[j] = [guessedGoodValue.gps_latitude, guessedGoodValue.gps_longitude];
+          }
         }
       }
     }
@@ -140,6 +144,7 @@
           clearTimeout(timer);
 
           dataUnits = results.units;
+          source = results.source;
           // FIXME: handle parse errors
           if (results.error) {
             console.error(results.error, results.error.cause);
