@@ -18,8 +18,11 @@ export interface TickOptions {
 }
 
 export const ticks = (values: number[], opts: TickOptions = {}): number[] => {
-  const min = opts.min ?? Math.min(...values, ...(opts.suggestedMin !== undefined ? [opts.suggestedMin] : []));
-  const max = opts.max ?? Math.max(...values, ...(opts.suggestedMax !== undefined ? [opts.suggestedMax] : []));
+  const valuesWithoutNan = values.filter((x) => !Number.isNaN(x));
+  const min =
+    opts.min ?? Math.min(...valuesWithoutNan, ...(opts.suggestedMin !== undefined ? [opts.suggestedMin] : []));
+  const max =
+    opts.max ?? Math.max(...valuesWithoutNan, ...(opts.suggestedMax !== undefined ? [opts.suggestedMax] : []));
   const maxTicks = opts.maxTicks ?? 10;
 
   const niceNum = (range: number, round: boolean) => {
