@@ -39,42 +39,26 @@ export const empty: RowWithIndex = {
   index: -1,
   adc1: 0,
   adc2: 0,
-  ah_charged: 0,
   ah: 0,
   altitude: 0,
-  bms_fault: 0,
-  bms_temp: 0,
-  bms_temp_battery: 0,
   current_battery: 0,
-  current_booster: 0,
-  current_field_weakening: 0,
   current_motor: 0,
   distance: 0,
   duty: 0,
-  erpm: 0,
   gps_accuracy: 0,
   gps_latitude: 0,
   gps_longitude: 0,
   motor_fault: 0,
   pitch: 0,
-  requested_amps: 0,
   roll: 0,
-  setpoint_atr: 0,
-  setpoint_break_tilt: 0,
-  setpoint_carve: 0,
-  setpoint_remote: 0,
-  setpoint_torque_tilt: 0,
-  setpoint: 0,
   speed: 0,
   state_raw: 0,
   state: 'STARTUP',
-  temp_battery: 0,
   temp_mosfet: 0,
   temp_motor: 0,
   time: 0,
   true_pitch: 0,
   voltage: 0,
-  wh_charged: 0,
   wh: 0,
 };
 
@@ -124,42 +108,42 @@ export interface Row {
   [RowKey.Adc1]: number;
   [RowKey.Adc2]: number;
   [RowKey.Ah]: number;
-  [RowKey.AhCharged]: number;
+  [RowKey.AhCharged]?: number;
   [RowKey.Altitude]: number;
   [RowKey.BmsFault]?: number;
   [RowKey.BmsTemp]?: number;
   [RowKey.BmsTempBattery]?: number;
   [RowKey.CurrentBattery]: number;
-  [RowKey.CurrentBooster]: number;
-  [RowKey.CurrentFieldWeakening]: number;
+  [RowKey.CurrentBooster]?: number;
+  [RowKey.CurrentFieldWeakening]?: number;
   [RowKey.CurrentMotor]: number;
   [RowKey.Distance]: number;
   [RowKey.Duty]: number;
-  [RowKey.Erpm]: number;
+  [RowKey.Erpm]?: number;
   [RowKey.GpsAccuracy]: number;
   [RowKey.GpsLatitude]: number;
   [RowKey.GpsLongitude]: number;
   [RowKey.MotorFault]: number;
   [RowKey.Pitch]: number;
-  [RowKey.RequestedAmps]: number;
+  [RowKey.RequestedAmps]?: number;
   [RowKey.Roll]: number;
-  [RowKey.Setpoint]: number;
-  [RowKey.SetpointAtr]: number;
-  [RowKey.SetpointBreakTilt]: number;
-  [RowKey.SetpointCarve]: number;
-  [RowKey.SetpointRemote]: number;
-  [RowKey.SetpointTorqueTilt]: number;
+  [RowKey.Setpoint]?: number;
+  [RowKey.SetpointAtr]?: number;
+  [RowKey.SetpointBreakTilt]?: number;
+  [RowKey.SetpointCarve]?: number;
+  [RowKey.SetpointRemote]?: number;
+  [RowKey.SetpointTorqueTilt]?: number;
   [RowKey.Speed]: number;
   [RowKey.State]: string;
   [RowKey.StateRaw]: number;
-  [RowKey.TempBattery]: number;
+  [RowKey.TempBattery]?: number;
   [RowKey.TempMosfet]: number;
   [RowKey.TempMotor]: number;
   [RowKey.Time]: number;
   [RowKey.TruePitch]: number;
   [RowKey.Voltage]: number;
   [RowKey.Wh]: number;
-  [RowKey.WhCharged]: number;
+  [RowKey.WhCharged]?: number;
 }
 
 export interface RowWithIndex extends Row {

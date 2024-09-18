@@ -74,11 +74,15 @@
           value: `${formatSpeed(data.speed)} ${units === Units.Metric ? 'km/h' : 'mph'}`,
           color: ChartColours.Speed,
         },
-        ...(Number.isNaN(data.erpm) ? [] : [{ label: 'ERPM', value: `${data.erpm}` }]),
+        ...(data.erpm !== undefined ? [{ label: 'ERPM', value: `${data.erpm}` }] : []),
         { label: 'Distance', value: `${formatSpeed(data.distance)} ${units === Units.Metric ? 'km' : 'mi'}` },
         '-',
         { label: 'State', value: data.state.toUpperCase(), color: getStateColor(data.state) },
-        { label: 'CSV Row', value: (data.index + 1).toString(), htmlTitle: 'Selected line from the CSV file' },
+        {
+          label: 'Index',
+          value: (data.index + 1).toString(),
+          htmlTitle: 'Line number from the CSV file, or the specific log from the JSON file',
+        },
       ]}
     />
   </div>
@@ -96,15 +100,15 @@
           value: `${formatFloat(data.current_motor)} A`,
           color: ChartColours.CurrentMotor,
         },
-        ...(Number.isNaN(data.current_field_weakening)
-          ? []
-          : [
+        ...(data.current_field_weakening !== undefined
+          ? [
               {
                 label: 'Field Weakening',
                 value: `${formatFloat(data.current_field_weakening)} A`,
                 color: ChartColours.CurrentMotor,
               },
-            ]),
+            ]
+          : []),
         '-',
         { label: 'Temp Motor', value: `${formatFloat(data.temp_motor)}°C`, color: ChartColours.TempMotor },
         { label: 'Temp Controller', value: `${formatFloat(data.temp_mosfet)}°C`, color: ChartColours.TempMosfet },
