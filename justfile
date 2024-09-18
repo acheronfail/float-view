@@ -54,10 +54,30 @@ _pre_commit_clean:
     rm "{{git_temp_patch}}"
   fi
 
+_run command:
+  #!/usr/bin/env bash
+  set -uo pipefail
+
+  output=$(mktemp)
+  echo "[{{command}}] run" >&2
+  {{command}} > "$output" 2>&1
+  code=$?
+  if [[ ${code} -ne 0 ]]; then
+    cat "${output}"
+    echo "[{{command}}] failed with exit code ${code}" >&2
+    false
+  else
+    echo "[{{command}}]  ok" >&2
+  fi
+
 # pre-commit hook
 git-pre-commit: _pre_commit_start && _pre_commit_clean
-  npm run types
-  just test run
+  #!/usr/bin/env bash
+  set -euo pipefail
+  just _run "npm run types:ts" &
+  just _run "npm run types:svelte" &
+  just _run "just test run" &
+  wait
 
 # commit-msg hook
 [no-exit-message]
