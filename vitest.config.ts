@@ -7,6 +7,7 @@ export default defineConfig(
   mergeConfig(baseConfig, {
     plugins: [svelteTesting()],
     test: {
+      watch: false,
       environment: 'jsdom',
       setupFiles: ['src/setup-tests.ts'],
       deps: {

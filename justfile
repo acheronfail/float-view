@@ -28,7 +28,7 @@ dev *args:
 
 # run the tests
 test *args:
-  npm run tests -- {{args}}
+  npm run tests -- --watch {{args}}
 
 _pre_commit_start:
   #!/usr/bin/env bash
@@ -72,12 +72,7 @@ _run command:
 
 # pre-commit hook
 git-pre-commit: _pre_commit_start && _pre_commit_clean
-  #!/usr/bin/env bash
-  set -euo pipefail
-  just _run "npm run types:ts" &
-  just _run "npm run types:svelte" &
-  just _run "just test run" &
-  wait
+  npm run checks
 
 # commit-msg hook
 [no-exit-message]
