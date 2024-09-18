@@ -5,7 +5,7 @@ import { DataSource, stateCodeMap, Units, type Row } from './types';
 
 function rowsFromFloatyJson(json: ZFloatyJson): Row[] {
   const rows: Row[] = [];
-  // NOTE: sometimes Floaty doesn't record values, and seems to just put `null` in its logs.
+  // NOTE: sometimes Floaty doesn't record values, and seems to just put `null` (or 0) in its logs.
   // When it does, we backtrack until we find the last known value for it.
   const findValue = (index: number, key: keyof ZLog, floatyEmptyValue?: unknown): number => {
     const current = json.logs[index]![key];
