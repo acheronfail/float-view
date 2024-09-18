@@ -52,7 +52,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Bump version
-        run: npm run ci:bump
+        run: |
+          npm run ci:bump
+          npm i --package-lock-only
       - name: Build
         run: VITE_BUILD_VERSION="$(jq -r .version ./package.json)-$(git rev-parse --short HEAD)" npm run build
       - name: Push back
