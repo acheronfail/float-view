@@ -15,7 +15,7 @@ Main features:
 
 ## Demo
 
-![demo image of Float View in browser](./.github/demo.png)
+![demo image of Float View in browser](./.github/demo.jpg)
 
 Also works great on mobile devices:
 

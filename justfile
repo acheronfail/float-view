@@ -62,4 +62,4 @@ git-pre-commit: _pre_commit_start && _pre_commit_clean
 # commit-msg hook
 [no-exit-message]
 git-commit-msg path:
-  @if ! [[ "$(head -n1 {{path}})" =~ ^((major|minor|patch):|\\[skip ci]) ]]; then echo "Commit message must start with 'patch:', 'minor:' or 'major:'"; false; fi
+  @if ! [[ "$(head -n1 {{path}})" =~ ^(major|minor|patch):|\[skip\ ci\] ]]; then echo "Commit message must start with 'patch:', 'minor:' or 'major:'"; false; fi
