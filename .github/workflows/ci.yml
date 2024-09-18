@@ -17,8 +17,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Check
-        run: |
-          npm run format:check
-          npm run types
+        run: npm run checks
       - name: Build
         run: npm run build
