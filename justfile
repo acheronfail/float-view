@@ -10,11 +10,16 @@ setup:
 
   npm install
 
+  create_hook() {
+    echo "#!/usr/bin/env bash" > ".git/hooks/${1}"
+    echo "${2}" >> ".git/hooks/${1}"
+    chmod +x ".git/hooks/${1}"
+  }
+
   if [ -z "${CI:-}" ]; then
     echo "setting up git hooks..."
-    echo "#!/usr/bin/env bash" > .git/hooks/pre-commit
-    echo "just pre-commit" >> .git/hooks/pre-commit
-    chmod +x .git/hooks/pre-commit
+    create_hook "pre-commit" "just git-pre-commit"
+    create_hook "commit-msg" "just git-commit-msg \$1"
   fi
 
 # run the local dev server
@@ -50,6 +55,11 @@ _pre_commit_clean:
   fi
 
 # pre-commit hook
-pre-commit: _pre_commit_start && _pre_commit_clean
+git-pre-commit: _pre_commit_start && _pre_commit_clean
   npm run types
   just test run
+
+# commit-msg hook
+[no-exit-message]
+git-commit-msg path:
+  @if ! [[ "$(head -n1 {{path}})" =~ ^((major|minor|patch):|\\[skip ci]) ]]; then echo "Commit message must start with 'patch:', 'minor:' or 'major:'"; false; fi

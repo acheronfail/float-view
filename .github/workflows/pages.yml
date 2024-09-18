@@ -9,9 +9,10 @@ on:
 
 # Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
 permissions:
-  contents: read
   pages: write
   id-token: write
+  # GitHub Pages only needs `read`, but we have `write` so we can push commits
+  contents: write
 
 # Allow only one concurrent deployment
 concurrency:
@@ -52,8 +53,17 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Bump version
+        run: npm run ci:bump
       - name: Build
         run: VITE_BUILD_VERSION="$(jq -r .version ./package.json)-$(git rev-parse --short HEAD)" npm run build
+      - name: Push back
+        run: |
+          git config --global user.name  "float-view-ci"
+          git config --global user.email "acheronfail+float-view-ci@gmail.com"
+          git add package.json
+          git commit --no-verify --message "[skip ci] ci version bump"
+          git push
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
