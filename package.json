@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "checks": "concurrently --group --names --kill-others-on-fail npm:types:ts npm:types:svelte npm:tests",
+    "checks": "concurrently --group --prefix-colors=auto --names --kill-others-on-fail npm:types:ts npm:types:svelte npm:tests",
     "types:ts": "tsc -p tsconfig.json --noEmit",
     "types:svelte": "svelte-check --tsconfig tsconfig.json",
     "tests": "vitest --config vitest.config.ts",
