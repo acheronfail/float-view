@@ -14,7 +14,7 @@
 
   const DEFAULT_COLOUR = 'red';
 
-  const MARGIN_TOP = '3rem';
+  const MARGIN_TOP = '4rem';
   const MARGIN_RIGHT = '2rem';
   const MARGIN_LEFT = '4rem';
   const MARGIN_BOTTOM = '3rem';
@@ -44,6 +44,8 @@
     unit?: string;
     title?: string;
     precision?: number;
+    showMax?: boolean | 'nonzero';
+    showMin?: boolean | 'nonzero';
   }
 
   const getYValueHeight = (y: number, min: number, max: number) => ((y - min) / (max - min)) * 100;
@@ -51,7 +53,18 @@
   const valueToYPct = (y: number, min: number, max: number) => 100 - getYValueHeight(y, min, max);
   const aggMaxAbs = (acc: number, n: number) => (Math.abs(acc) > Math.abs(n) ? acc : n);
 
-  let { data, selectedIndex, setSelectedIdx, gapIndices, unit = '', title = '', precision, yAxis }: Props = $props();
+  let {
+    data,
+    selectedIndex,
+    setSelectedIdx,
+    gapIndices,
+    unit = '',
+    title = '',
+    precision,
+    yAxis,
+    showMax,
+    showMin,
+  }: Props = $props();
   let dataLen = $derived(data[0]?.values.length ?? 0);
   assert(
     data.every(({ values }) => values.length === dataLen),
@@ -321,12 +334,38 @@
   <!-- title -->
   <div>
     <div
-      class="absolute p-2 font-bold text-center"
+      class="absolute py-1 font-bold text-center"
       style:top="-{MARGIN_TOP}"
       style:left="-{MARGIN_LEFT}"
       style:right="-{MARGIN_RIGHT}"
     >
       {title}
+      <div class="flex flex-row gap-2 justify-center items-center font-mono text-xs">
+        {#each data as line, i}
+          {#if line.values.length > 0}
+            {@const min = Math.min(...line.values)}
+            {@const max = Math.max(...line.values)}
+            {@const minShown = showMin === 'nonzero' ? min !== 0 : showMin}
+            {@const maxShown = showMax === 'nonzero' ? max !== 0 : showMax}
+            {#if i}
+              <span class="text-slate-500">|</span>
+            {/if}
+            {#if minShown}
+              <div class="flex flex-row gap-2">
+                <span style:color={line.color}>min: {min}{unit}</span>
+              </div>
+            {/if}
+            {#if maxShown && minShown}
+              <span class="text-slate-500">-</span>
+            {/if}
+            {#if maxShown}
+              <div class="flex flex-row gap-2">
+                <span style:color={line.color}>max: {max}{unit}</span>
+              </div>
+            {/if}
+          {/if}
+        {/each}
+      </div>
     </div>
   </div>
 

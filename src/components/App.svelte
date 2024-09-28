@@ -257,6 +257,8 @@
       title="Speed"
       precision={1}
       unit={settings.units === Units.Metric ? ' km/h' : ' mph'}
+      showMax
+      showMin="nonzero"
     />
   </div>
   <div class={chartClass}>
@@ -267,6 +269,8 @@
       {gapIndices}
       title="Duty cycle"
       unit="%"
+      showMax
+      showMin="nonzero"
     />
   </div>
   <div class={chartClass}>
@@ -277,6 +281,8 @@
       {gapIndices}
       title="Battery Voltage"
       unit="V"
+      showMax
+      showMin
       precision={1}
       yAxis={{ suggestedMin: settings.suggestedVMin, suggestedMax: settings.suggestedVMax }}
     />
@@ -289,6 +295,8 @@
       {gapIndices}
       title="Elevation"
       unit="m"
+      showMax
+      showMin
     />
   </div>
   <div class={chartClass}>
@@ -307,6 +315,8 @@
       title="I-Mot / I-Batt"
       precision={1}
       unit="A"
+      showMax
+      showMin="nonzero"
     />
   </div>
   <div class={chartClass}>
@@ -321,6 +331,8 @@
       title="T-Mot / T-Mosfet"
       precision={1}
       unit="°C"
+      showMin
+      showMax
     />
   </div>
 </main>
