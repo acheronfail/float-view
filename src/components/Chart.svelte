@@ -9,7 +9,7 @@
 
   import { ticks, type TickOptions } from '../lib/chart-helpers';
   import type { MouseEventHandler, TouchEventHandler } from 'svelte/elements';
-  import { assert } from '../lib/misc';
+  import { assert, formatFloat } from '../lib/misc';
   import { untrack } from 'svelte';
 
   const DEFAULT_COLOUR = 'red';
@@ -352,7 +352,7 @@
             {/if}
             {#if minShown}
               <div class="flex flex-row gap-2">
-                <span style:color={line.color}>min: {min}{unit}</span>
+                <span style:color={line.color}>min: {formatFloat(min)}{unit}</span>
               </div>
             {/if}
             {#if maxShown && minShown}
@@ -360,7 +360,7 @@
             {/if}
             {#if maxShown}
               <div class="flex flex-row gap-2">
-                <span style:color={line.color}>max: {max}{unit}</span>
+                <span style:color={line.color}>max: {formatFloat(max)}{unit}</span>
               </div>
             {/if}
           {/if}

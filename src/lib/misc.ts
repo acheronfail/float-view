@@ -20,3 +20,5 @@ export const speedMapper = (inUnit: Units, outUnit: Units): ((input: number) => 
   if (outUnit === Units.Imperial) return kmToMi;
   return miToKm;
 };
+
+export const formatFloat = (n: number) => (Number.isNaN(n) ? '??' : n.toFixed(1));
