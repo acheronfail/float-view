@@ -1,5 +1,7 @@
 <script lang="ts" module>
-  export interface Props {
+  import type { HTMLAttributes } from 'svelte/elements';
+
+  export interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
     file?: File;
   }
 </script>
@@ -11,7 +13,7 @@
   import Link from './Link.svelte';
   import { supportedMimeTypeString } from '../lib/parse';
 
-  let { file = $bindable() }: Props = $props();
+  let { file = $bindable(), ...rest }: Props = $props();
 
   const onchange: ChangeEventHandler<HTMLInputElement> = (e) => {
     const { files } = e.currentTarget;
@@ -21,7 +23,7 @@
   };
 </script>
 
-<Modal open={!file} closeHandler={() => (file = demoFile)} closeText="view demo ride" title="Welcome!">
+<Modal open={!file} closeHandler={() => (file = demoFile)} closeText="view demo ride" title="Welcome!" {...rest}>
   <div class="flex flex-col justify-between items-center gap-4">
     <p>To get started, please open either:</p>
     <ul class="list-disc list-inside text-left">

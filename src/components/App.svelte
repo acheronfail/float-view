@@ -242,7 +242,7 @@
 <SettingsModal />
 
 {#if !file}
-  <Picker bind:file />
+  <Picker bind:file {ondragenter} />
 {:else if loading}
   <Modal open closable={false} title="Loading...">
     <div>
