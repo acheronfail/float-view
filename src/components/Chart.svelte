@@ -352,7 +352,7 @@
             {/if}
             {#if minShown}
               <div class="flex flex-row gap-2">
-                <span style:color={line.color}>min: {formatFloat(min)}{unit}</span>
+                <span style:color={line.color}>min: {formatFloat(min, true)}{unit}</span>
               </div>
             {/if}
             {#if maxShown && minShown}
@@ -360,7 +360,7 @@
             {/if}
             {#if maxShown}
               <div class="flex flex-row gap-2">
-                <span style:color={line.color}>max: {formatFloat(max)}{unit}</span>
+                <span style:color={line.color}>max: {formatFloat(max, true)}{unit}</span>
               </div>
             {/if}
           {/if}

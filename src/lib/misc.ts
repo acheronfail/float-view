@@ -21,4 +21,8 @@ export const speedMapper = (inUnit: Units, outUnit: Units): ((input: number) => 
   return miToKm;
 };
 
-export const formatFloat = (n: number) => (Number.isNaN(n) ? '??' : n.toFixed(1));
+export const formatFloat = (n: number, allowInt = false) => {
+  if (Number.isNaN(n)) return '??';
+  if (allowInt && Number.isInteger(n)) return n.toString();
+  return n.toFixed(1);
+};
