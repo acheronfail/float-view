@@ -23,7 +23,8 @@ export enum SupportedMimeTypes {
   Json = 'application/json',
 }
 
-export const supportedMimeTypes = Object.values(SupportedMimeTypes).join(',');
+export const supportedMimeTypes = Object.values<string>(SupportedMimeTypes);
+export const supportedMimeTypeString = supportedMimeTypes.join(',');
 
 export async function parse(file: File): Promise<ParseResult> {
   const lowerName = file.name.toLowerCase();

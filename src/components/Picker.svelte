@@ -9,7 +9,7 @@
   import Modal from './Modal.svelte';
   import { demoFile } from '../lib/parse/float-control';
   import Link from './Link.svelte';
-  import { supportedMimeTypes } from '../lib/parse';
+  import { supportedMimeTypeString } from '../lib/parse';
 
   let { file = $bindable() }: Props = $props();
 
@@ -34,7 +34,7 @@
       file:text-sm file:font-bold file:bg-slate-700 active:file:bg-slate-800"
       type="file"
       {onchange}
-      accept={supportedMimeTypes}
+      accept={supportedMimeTypeString}
     />
   </div>
   <div class="grow flex flex-col justify-end items-center text-left text-xs">

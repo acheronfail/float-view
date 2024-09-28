@@ -5,7 +5,7 @@
   import Header from './Header.svelte';
   import { demoFile, demoRows } from '../lib/parse/float-control';
   import Picker from './Picker.svelte';
-  import type { EventHandler } from 'svelte/elements';
+  import type { DragEventHandler, EventHandler } from 'svelte/elements';
   import { DataSource, State, Units, type RowWithIndex } from '../lib/parse/types';
   import Modal from './Modal.svelte';
   import { riderSvg } from '../lib/map-helpers';
@@ -13,7 +13,7 @@
   import SettingsModal from './SettingsModal.svelte';
   import Button from './Button.svelte';
   import { ChartColours } from '../lib/chart-helpers';
-  import { parse } from '../lib/parse';
+  import { parse, supportedMimeTypes } from '../lib/parse';
   import { speedMapper } from '../lib/misc';
 
   /** source of data*/
@@ -205,6 +205,35 @@
     }
   });
 
+  /**
+   * Allow dragging and dropping files to open them.
+   */
+
+  let draggingFile = $state(false);
+  const filterSupported = (item: { type: string }) => supportedMimeTypes.includes(item.type);
+  const ondragenter: DragEventHandler<HTMLElement> = (e) => {
+    if (!e.dataTransfer) return;
+    draggingFile = Array.from(e.dataTransfer.items).some(filterSupported);
+  };
+  const ondragleave: DragEventHandler<HTMLElement> = (_) => (draggingFile = false);
+  const ondragover: DragEventHandler<HTMLElement> = (e) => {
+    e.preventDefault();
+    if (draggingFile && e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'copy';
+    }
+  };
+  const ondrop: DragEventHandler<HTMLElement> = (e) => {
+    e.preventDefault();
+    if (!e.dataTransfer) return;
+
+    const droppedFile = Array.from(e.dataTransfer.files).find(filterSupported);
+    if (droppedFile) {
+      file = droppedFile;
+    }
+
+    draggingFile = false;
+  };
+
   const chartClass = 'bg-slate-950 flex overflow-hidden h-[--grid-width] wide:h-[unset]';
 </script>
 
@@ -231,7 +260,19 @@
   grid-cols-[repeat(auto-fit,minmax(var(--grid-width),1fr))]
   wide:h-[calc(100vh-var(--header-height))]
   wide:grid-cols-[repeat(3,1fr)]"
+  {ondragenter}
+  {ondragover}
+  {ondrop}
 >
+  {#if draggingFile}
+    <Modal title="File drag detected!" open closable={false} {ondragleave}>
+      <div class="h-full w-full flex flex-row justify-center items-center border border-dashed border-4 rounded-2xl">
+        <div>{@html riderSvg}</div>
+        <p>Drop your file to open it!</p>
+        <div>{@html riderSvg}</div>
+      </div>
+    </Modal>
+  {/if}
   <div
     class="sticky top-[--header-height] h-[--grid-width] z-50 border-b
     wide:relative wide:top-[unset] wide:h-[unset] wide:border-b-0"
