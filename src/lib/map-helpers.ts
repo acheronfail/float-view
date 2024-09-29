@@ -1,4 +1,4 @@
-import Leaflet, { type PolylineOptions } from 'leaflet';
+import Leaflet, { type LatLngExpression, type PolylineOptions } from 'leaflet';
 import riderSvg from '../assets/rider-icon.svg?raw';
 import footpadSvg from '../assets/footpad.svg?raw';
 import warningSvg from '../assets/warning.svg?raw';
@@ -36,3 +36,21 @@ export const MapLineOptions: Record<MapLine, PolylineOptions> = {
   [MapLine.Base]: { color: '#cffafe', weight: 2, dashArray: '5 5', opacity: 0.5 },
   [MapLine.Travelled]: { color: '#06b6d4', weight: 4 },
 };
+
+export function getPolyline(
+  gpsPoints: LatLngExpression[],
+  gpsGaps: number[],
+  selectedRowIndex: number,
+  line: MapLine,
+): Leaflet.Polyline {
+  const limit = line === MapLine.Travelled ? selectedRowIndex : gpsPoints.length;
+  const values: LatLngExpression[][] = [];
+  for (let i = 0; i < gpsGaps.length; ++i) {
+    const start = gpsGaps[i];
+    const end = Math.min(limit, gpsGaps[i + 1] ?? gpsPoints.length);
+    values.push(gpsPoints.slice(start, end));
+    if (limit === end) break;
+  }
+
+  return Leaflet.polyline(values, MapLineOptions[line]);
+}

@@ -20,7 +20,7 @@
 
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { getIcon, MapLineOptions, MapLine, riderIcon } from '../lib/map-helpers';
+  import { getIcon, MapLine, riderIcon, getPolyline } from '../lib/map-helpers';
 
   let map: Leaflet.Map | null = null;
   let basePolyline: Leaflet.Polyline | null = null;
@@ -57,7 +57,7 @@
       const location = gpsPoints[selectedRowIndex];
       if (location) {
         riderMarker = Leaflet.marker(location, { icon: riderIcon }).addTo(map);
-        travelledPolyline = getPolyline(MapLine.Travelled).addTo(map);
+        travelledPolyline = getPolyline(gpsPoints, gpsGaps, selectedRowIndex, MapLine.Travelled).addTo(map);
       }
     }
   });
@@ -127,20 +127,6 @@
     }
   }
 
-  // TODO: have demo data have a paused ride so we can test that out, too
-  function getPolyline(line: MapLine): Leaflet.Polyline {
-    const limit = line === MapLine.Travelled ? selectedRowIndex : gpsPoints.length;
-    const values: LatLngExpression[][] = [];
-    for (let i = 0; i < gpsGaps.length; ++i) {
-      const start = gpsGaps[i];
-      const end = Math.min(limit, gpsGaps[i + 1] ?? gpsPoints.length);
-      values.push(gpsPoints.slice(start, end));
-      if (limit === end) break;
-    }
-
-    return Leaflet.polyline(values, MapLineOptions[line]);
-  }
-
   function renderMap(node: HTMLDivElement) {
     // cleanup
     if (map) {
@@ -159,8 +145,8 @@
     }).addTo(map);
 
     // create lines
-    basePolyline = getPolyline(MapLine.Base).addTo(map);
-    travelledPolyline = getPolyline(MapLine.Travelled).addTo(map);
+    basePolyline = getPolyline(gpsPoints, gpsGaps, selectedRowIndex, MapLine.Base).addTo(map);
+    travelledPolyline = getPolyline(gpsPoints, gpsGaps, selectedRowIndex, MapLine.Travelled).addTo(map);
 
     // fit ride in map
     map.fitBounds(basePolyline.getBounds());
