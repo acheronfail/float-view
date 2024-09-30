@@ -34,7 +34,15 @@
   const getYValueHeight = (y: number, min: number, max: number) => ((y - min) / (max - min)) * 100;
   const indexToXPct = (i: number): number => (100 / dataPointsLen) * (i + 0.5);
   const valueToYPct = (y: number, min: number, max: number) => 100 - getYValueHeight(y, min, max);
-  const aggMaxAbs = (acc: number, n: number) => (Math.abs(acc) > Math.abs(n) ? acc : n);
+  const aggMaxAbs = (acc: number, n: number) => Math.max(Math.abs(acc), Math.abs(n));
+
+  type ReduceWithIndex<T> = { index: number; value: T } | null;
+  const reduceWithIndex = <T,>(arr: T[], cmp: (curr: T, next: T) => boolean): ReduceWithIndex<T> =>
+    arr.reduce<ReduceWithIndex<T>>((result, value, index) => {
+      if (!result) return { index, value };
+      if (cmp(result!.value, value)) return { index, value };
+      return result!;
+    }, null);
 
   let {
     data,
@@ -326,24 +334,42 @@
       <div class="flex flex-row gap-2 justify-center items-center font-mono text-xs">
         {#each data as line, i}
           {#if line.values.length > 0}
-            {@const min = Math.min(...line.values)}
-            {@const max = Math.max(...line.values)}
-            {@const minShown = showMin === 'nonzero' ? min !== 0 : showMin}
-            {@const maxShown = showMax === 'nonzero' ? max !== 0 : showMax}
+            {@const min = reduceWithIndex(line.values, (curr, next) => next < curr)}
+            {@const max = reduceWithIndex(line.values, (curr, next) => next > curr)}
+            {@const minShown = showMin === 'nonzero' ? min?.value !== 0 : showMin}
+            {@const maxShown = showMax === 'nonzero' ? max?.value !== 0 : showMax}
             {#if i}
               <span class="text-slate-500">|</span>
             {/if}
-            {#if minShown}
+            {#if min !== null && minShown}
               <div class="flex flex-row gap-2">
-                <span style:color={line.color}>min: {formatFloat(min, true)}{unit}</span>
+                <span
+                  class="cursor-pointer select-none"
+                  style:color={line.color}
+                  role="button"
+                  tabindex="0"
+                  onclick={() => setSelectedIdx(min!.index)}
+                  onkeydown={(e) => e.code === 'Space' && setSelectedIdx(min!.index)}
+                >
+                  min: {formatFloat(min.value, true)}{unit}
+                </span>
               </div>
             {/if}
             {#if maxShown && minShown}
               <span class="text-slate-500">-</span>
             {/if}
-            {#if maxShown}
+            {#if max !== null && maxShown}
               <div class="flex flex-row gap-2">
-                <span style:color={line.color}>max: {formatFloat(max, true)}{unit}</span>
+                <span
+                  class="cursor-pointer select-none"
+                  style:color={line.color}
+                  role="button"
+                  tabindex="0"
+                  onclick={() => setSelectedIdx(max!.index)}
+                  onkeydown={(e) => e.code === 'Space' && setSelectedIdx(max!.index)}
+                >
+                  max: {formatFloat(max.value, true)}{unit}
+                </span>
               </div>
             {/if}
           {/if}
