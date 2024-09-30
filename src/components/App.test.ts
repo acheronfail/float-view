@@ -9,6 +9,6 @@ test('it works', () => {
   expect(screen.getByTestId('chart_duty_cycle')).toBeInTheDocument();
   expect(screen.getByTestId('chart_battery_voltage')).toBeInTheDocument();
   expect(screen.getByTestId('chart_elevation')).toBeInTheDocument();
-  expect(screen.getByTestId('chart_i-mot_/_i-batt')).toBeInTheDocument();
-  expect(screen.getByTestId('chart_t-mot_/_t-mosfet')).toBeInTheDocument();
+  expect(screen.getByTestId('chart_i-motor_/_i-battery')).toBeInTheDocument();
+  expect(screen.getByTestId('chart_t-motor_/_t-controller')).toBeInTheDocument();
 });

@@ -4,7 +4,6 @@
   export interface Props {
     data: RowWithIndex | undefined;
     batterySpecs: ZBatterySpecs;
-    mapSpeed: (input: number) => number;
     units: Units;
   }
 </script>
@@ -19,12 +18,13 @@
   import { ChartColours } from '../lib/chart-helpers';
   import { empty, State } from '../lib/parse/types';
   import { formatFloat } from '../lib/misc';
+  import { globalState } from '../lib/global.svelte';
 
-  let { data = empty, batterySpecs, mapSpeed, units }: Props = $props();
+  let { data = empty, batterySpecs, units }: Props = $props();
 
   let voltsPerCell = $derived(batterySpecs.cellCount ? data.voltage / batterySpecs.cellCount : NaN);
   let cellVoltsLow = $derived(voltsPerCell && batterySpecs.cellMinVolt && voltsPerCell < batterySpecs.cellMinVolt);
-  let formatSpeed = $derived((x: number) => (Number.isNaN(x) ? '??' : mapSpeed(x).toFixed(1)));
+  let formatSpeed = $derived((x: number) => (Number.isNaN(x) ? '??' : globalState.mapSpeed(x).toFixed(1)));
 
   const getStateColor = (state: string): string | undefined => {
     switch (state.toLowerCase()) {

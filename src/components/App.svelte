@@ -6,15 +6,15 @@
   import { demoFile, demoRows } from '../lib/parse/float-control';
   import Picker from './Picker.svelte';
   import type { DragEventHandler, EventHandler } from 'svelte/elements';
-  import { DataSource, State, Units, type RowWithIndex } from '../lib/parse/types';
+  import { DataSource, State, type RowWithIndex } from '../lib/parse/types';
   import Modal from './Modal.svelte';
   import { riderSvg } from '../lib/map-helpers';
   import settings from '../lib/settings.svelte';
   import SettingsModal from './SettingsModal.svelte';
   import Button from './Button.svelte';
-  import { ChartColours } from '../lib/chart-helpers';
+  import { Charts } from '../lib/chart-helpers';
   import { parse, supportedMimeTypes } from '../lib/parse';
-  import { speedMapper } from '../lib/misc';
+  import { globalState } from '../lib/global.svelte';
 
   /** source of data*/
   let source = $state(DataSource.None);
@@ -22,10 +22,6 @@
   let file = $state<File | undefined>(import.meta.env.DEV ? demoFile : undefined);
   /** parsed csv data from Float Control */
   let rows = $state<RowWithIndex[]>(demoRows);
-  /** the units that the data is in */
-  let dataUnits = $state(Units.Metric);
-  /** the units that the user has selected */
-  let mapSpeed = $derived(speedMapper(dataUnits, settings.units));
   /** selected index of `rows` */
   let selectedRowIndex = $state(0);
   /** entire view of gps points from `rows` */
@@ -143,7 +139,7 @@
         .then((results) => {
           clearTimeout(timer);
 
-          dataUnits = results.units;
+          globalState.unitsFromData = results.units;
           source = results.source;
           // FIXME: handle parse errors
           if (results.error) {
@@ -286,95 +282,26 @@
     wide:[grid-column:span_2] wide:[grid-row:unset]"
     class:details-swapped={swapMapAndDetails}
   >
-    <Details data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} {mapSpeed} units={settings.units} />
+    <Details data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} units={settings.units} />
   </div>
 
   <div class={chartClass}>
-    <Chart
-      data={[{ values: visibleRows.map((x) => mapSpeed(x.speed)), color: ChartColours.Speed }]}
-      {selectedIndex}
-      {setSelectedIdx}
-      {gapIndices}
-      title="Speed"
-      precision={1}
-      unit={settings.units === Units.Metric ? ' km/h' : ' mph'}
-      showMax
-      showMin="nonzero"
-    />
+    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.speed(visibleRows)} />
   </div>
   <div class={chartClass}>
-    <Chart
-      data={[{ values: visibleRows.map((x) => x.duty), color: ChartColours.DutyCycle }]}
-      {selectedIndex}
-      {setSelectedIdx}
-      {gapIndices}
-      title="Duty cycle"
-      unit="%"
-      showMax
-      showMin="nonzero"
-    />
+    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.duty(visibleRows)} />
   </div>
   <div class={chartClass}>
-    <Chart
-      data={[{ values: visibleRows.map((x) => x.voltage), color: ChartColours.BatteryVoltage }]}
-      {selectedIndex}
-      {setSelectedIdx}
-      {gapIndices}
-      title="Battery Voltage"
-      unit="V"
-      showMax
-      showMin
-      precision={1}
-      yAxis={{ suggestedMin: settings.suggestedVMin, suggestedMax: settings.suggestedVMax }}
-    />
+    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.batteryVoltage(visibleRows)} />
   </div>
   <div class={chartClass}>
-    <Chart
-      data={[{ values: visibleRows.map((x) => x.altitude), color: ChartColours.Elevation }]}
-      {selectedIndex}
-      {setSelectedIdx}
-      {gapIndices}
-      title="Elevation"
-      unit="m"
-      showMax
-      showMin
-    />
+    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.elevation(visibleRows)} />
   </div>
   <div class={chartClass}>
-    <Chart
-      data={[
-        { values: visibleRows.map((x) => x.current_motor), color: ChartColours.CurrentMotor, label: 'Motor current' },
-        {
-          values: visibleRows.map((x) => x.current_battery),
-          color: ChartColours.CurrentBattery,
-          label: 'Battery current',
-        },
-      ]}
-      {selectedIndex}
-      {setSelectedIdx}
-      {gapIndices}
-      title="I-Mot / I-Batt"
-      precision={1}
-      unit="A"
-      showMax
-      showMin="nonzero"
-    />
+    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.currentCombined(visibleRows)} />
   </div>
   <div class={chartClass}>
-    <Chart
-      data={[
-        { values: visibleRows.map((x) => x.temp_motor), color: ChartColours.TempMotor, label: 'Motor temp' },
-        { values: visibleRows.map((x) => x.temp_mosfet), color: ChartColours.TempMosfet, label: 'Mosfet temp' },
-      ]}
-      {selectedIndex}
-      {setSelectedIdx}
-      {gapIndices}
-      title="T-Mot / T-Mosfet"
-      precision={1}
-      unit="°C"
-      showMin
-      showMax
-    />
+    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.tempCombined(visibleRows)} />
   </div>
 </main>
 

@@ -39,6 +39,7 @@ _pre_commit_start:
   set -e
 
   if [ $needs_save -ne 0 ]; then
+    # FIXME: do not clobber existing patch file!
     git diff > "{{git_temp_patch}}"
     git apply --reverse "{{git_temp_patch}}"
   fi

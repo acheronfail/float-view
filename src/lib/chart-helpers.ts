@@ -1,3 +1,8 @@
+import { Units, type RowWithIndex } from './parse/types';
+import type { Props as ChartProps } from '../components/Chart';
+import settings from './settings.svelte';
+import { globalState } from './global.svelte';
+
 export enum ChartColours {
   Speed = '#fde68a',
   DutyCycle = '#f472b6',
@@ -8,6 +13,75 @@ export enum ChartColours {
   TempMotor = '#facc15',
   TempMosfet = '#fb7185',
 }
+
+export type ChartFactoryFn = (
+  visibleRows: RowWithIndex[],
+) => Omit<ChartProps, 'selectedIndex' | 'setSelectedIdx' | 'gapIndices'>;
+
+export const Charts = {
+  speed: (visibleRows) => ({
+    data: [
+      {
+        values: visibleRows.map((x) => globalState.mapSpeed(x.speed)),
+        color: ChartColours.Speed,
+      },
+    ],
+    title: 'Speed',
+    precision: 1,
+    unit: settings.units === Units.Metric ? ' km/h' : ' mph',
+    showMax: true,
+    showMin: 'nonzero',
+  }),
+  duty: (visibleRows) => ({
+    data: [{ values: visibleRows.map((x) => x.duty), color: ChartColours.DutyCycle }],
+    title: 'Duty Cycle',
+    unit: '%',
+    showMax: true,
+    showMin: 'nonzero',
+  }),
+  elevation: (visibleRows) => ({
+    data: [{ values: visibleRows.map((x) => x.altitude), color: ChartColours.Elevation }],
+    title: 'Elevation',
+    unit: 'm',
+    showMax: true,
+    showMin: true,
+  }),
+  batteryVoltage: (visibleRows) => ({
+    data: [{ values: visibleRows.map((x) => x.voltage), color: ChartColours.BatteryVoltage }],
+    title: 'Battery Voltage',
+    unit: 'V',
+    showMax: true,
+    showMin: true,
+    precision: 1,
+    yAxis: { suggestedMin: settings.suggestedVMin, suggestedMax: settings.suggestedVMax },
+  }),
+  currentCombined: (visibleRows) => ({
+    data: [
+      { values: visibleRows.map((x) => x.current_motor), color: ChartColours.CurrentMotor, label: 'Motor current' },
+      {
+        values: visibleRows.map((x) => x.current_battery),
+        color: ChartColours.CurrentBattery,
+        label: 'Battery current',
+      },
+    ],
+    title: 'I-Motor / I-Battery',
+    unit: 'A',
+    showMax: true,
+    showMin: 'nonzero',
+    precision: 1,
+  }),
+  tempCombined: (visibleRows) => ({
+    data: [
+      { values: visibleRows.map((x) => x.temp_motor), color: ChartColours.TempMotor, label: 'Motor temp' },
+      { values: visibleRows.map((x) => x.temp_mosfet), color: ChartColours.TempMosfet, label: 'Controller temp' },
+    ],
+    title: 'T-Motor / T-Controller',
+    unit: '°C',
+    showMax: true,
+    showMin: true,
+    precision: 1,
+  }),
+} satisfies Record<string, ChartFactoryFn>;
 
 export interface TickOptions {
   min?: number;

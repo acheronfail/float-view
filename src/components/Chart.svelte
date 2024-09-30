@@ -7,10 +7,11 @@
    * It's right here: https://jf.id.au/blog/how-i-built-the-best-chart-in-the-world
    */
 
-  import { ticks, type TickOptions } from '../lib/chart-helpers';
+  import { ticks } from '../lib/chart-helpers';
   import type { MouseEventHandler, TouchEventHandler } from 'svelte/elements';
   import { assert, formatFloat } from '../lib/misc';
   import { untrack } from 'svelte';
+  import type { Props } from './Chart';
 
   const DEFAULT_COLOUR = 'red';
 
@@ -29,24 +30,6 @@
   const GAP_LINE_COLOUR = '#555';
   const GAP_LINE_WIDTH = 1;
   const GAP_LINE_DASHARRAY = '1 1';
-
-  interface Props {
-    data: {
-      color?: string;
-      label?: string;
-      values: number[];
-    }[];
-    selectedIndex: number;
-    setSelectedIdx: (index: number) => void;
-    gapIndices: number[];
-
-    yAxis?: TickOptions;
-    unit?: string;
-    title?: string;
-    precision?: number;
-    showMax?: boolean | 'nonzero';
-    showMin?: boolean | 'nonzero';
-  }
 
   const getYValueHeight = (y: number, min: number, max: number) => ((y - min) / (max - min)) * 100;
   const indexToXPct = (i: number): number => (100 / dataPointsLen) * (i + 0.5);
