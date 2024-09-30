@@ -172,6 +172,7 @@
   const onInteractStart =
     (fn: () => void): EventHandler =>
     () => {
+      fn();
       heldDown = true;
       timeout = window.setTimeout(() => repeat(fn), 300);
     };
