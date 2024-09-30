@@ -285,24 +285,11 @@
     <Details data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} units={settings.units} />
   </div>
 
-  <div class={chartClass}>
-    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.speed(visibleRows)} />
-  </div>
-  <div class={chartClass}>
-    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.duty(visibleRows)} />
-  </div>
-  <div class={chartClass}>
-    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.batteryVoltage(visibleRows)} />
-  </div>
-  <div class={chartClass}>
-    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.elevation(visibleRows)} />
-  </div>
-  <div class={chartClass}>
-    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.currentCombined(visibleRows)} />
-  </div>
-  <div class={chartClass}>
-    <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts.tempCombined(visibleRows)} />
-  </div>
+  {#each settings.charts as key}
+    <div class={chartClass}>
+      <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts[key](visibleRows)} />
+    </div>
+  {/each}
 </main>
 
 <div

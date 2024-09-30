@@ -18,6 +18,7 @@ export type ChartFactoryFn = (
   visibleRows: RowWithIndex[],
 ) => Omit<ChartProps, 'selectedIndex' | 'setSelectedIdx' | 'gapIndices'>;
 
+export type ChartKey = keyof typeof Charts;
 export const Charts = {
   speed: (visibleRows) => ({
     data: [
