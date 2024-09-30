@@ -1,6 +1,16 @@
 import { z } from 'zod';
 import { State, Units } from './parse/types';
-import type { ChartKey } from './chart-helpers';
+import { type ChartKey } from './chart-helpers';
+
+type SelectedCharts = [ChartKey, ChartKey, ChartKey, ChartKey, ChartKey, ChartKey];
+export const defaultSelectedCharts = Object.freeze([
+  'Speed',
+  'Duty Cycle',
+  'Battery Voltage',
+  'Elevation',
+  'I-Motor / I-Battery',
+  'T-Motor / T-Controller',
+]) as SelectedCharts;
 
 const BatterySpecsSchema = z.object({
   cellCount: z.number().nullish(),
@@ -25,23 +35,14 @@ const savedSettings: ZSavedSettings | undefined = (() => {
   const value = window.localStorage.getItem(localStorageKey);
   try {
     if (typeof value === 'string' && value.length > 0) {
-      return SavedSettingsSchema.parse(JSON.parse(value));
+      const json = JSON.parse(value);
+      return SavedSettingsSchema.parse(json);
     }
   } catch (err) {
     console.error('Failed to parse saved settings', err);
     window.localStorage.removeItem(localStorageKey);
   }
 })();
-
-type SelectedCharts = [ChartKey, ChartKey, ChartKey, ChartKey, ChartKey, ChartKey];
-const defaultSelectedCharts = Object.freeze([
-  'speed',
-  'duty',
-  'batteryVoltage',
-  'elevation',
-  'currentCombined',
-  'tempCombined',
-]) as SelectedCharts;
 
 const settings = new (class {
   /** whether the settings modal is open */
@@ -62,7 +63,7 @@ const settings = new (class {
   cellMaxVolt = $state<number | undefined>(savedSettings?.batterySpecs.cellMaxVolt ?? undefined);
 
   /** user selected charts */
-  charts = $state<SelectedCharts>(defaultSelectedCharts);
+  charts = $state<SelectedCharts>((savedSettings?.charts as SelectedCharts) ?? [...defaultSelectedCharts]);
 
   /*
    * derived state

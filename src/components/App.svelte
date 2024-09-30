@@ -9,10 +9,10 @@
   import { DataSource, State, type RowWithIndex } from '../lib/parse/types';
   import Modal from './Modal.svelte';
   import { riderSvg } from '../lib/map-helpers';
-  import settings from '../lib/settings.svelte';
+  import settings, { defaultSelectedCharts, localStorageKey } from '../lib/settings.svelte';
   import SettingsModal from './SettingsModal.svelte';
   import Button from './Button.svelte';
-  import { Charts } from '../lib/chart-helpers';
+  import { Charts, type ChartKey } from '../lib/chart-helpers';
   import { parse, supportedMimeTypes } from '../lib/parse';
   import { globalState } from '../lib/global.svelte';
 
@@ -229,8 +229,6 @@
 
     draggingFile = false;
   };
-
-  const chartClass = 'bg-slate-950 flex overflow-hidden h-[--grid-width] wide:h-[unset]';
 </script>
 
 <Header bind:file />
@@ -285,9 +283,28 @@
     <Details data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} units={settings.units} />
   </div>
 
-  {#each settings.charts as key}
-    <div class={chartClass}>
-      <Chart {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts[key](visibleRows)} />
+  {#each settings.charts as key, index}
+    <div class="relative bg-slate-950 flex overflow-hidden h-[--grid-width] wide:h-[unset]">
+      <select
+        value="change"
+        onchange={(e) => {
+          settings.charts[index] = e.currentTarget.value as ChartKey;
+          e.currentTarget.value = 'change';
+          window.localStorage.setItem(localStorageKey, settings.storedSettings);
+        }}
+        class="absolute appearance-none w-16 text-center top-2 right-2 z-10 rounded border bg-slate-700 active:bg-slate-800 text-xs px-2 py-1"
+      >
+        <option class="hidden" selected disabled>change</option>
+        {#each Object.keys(Charts) as value}
+          <option {value}>{value}</option>
+        {/each}
+      </select>
+      {#if Charts[key]}
+        <Chart title={key} {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts[key](visibleRows)} />
+      {:else}
+        {@const fallback = defaultSelectedCharts[index]!}
+        <Chart title={fallback} {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts[fallback](visibleRows)} />
+      {/if}
     </div>
   {/each}
 </main>
@@ -325,16 +342,6 @@
 </div>
 
 <style>
-  @keyframes spin {
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  .rotate {
-    animation: spin 1s infinite linear;
-  }
-
   /* NOTE: must match up with `wide` breakpoint */
   @media (width < 640px) {
     .map-swapped {
