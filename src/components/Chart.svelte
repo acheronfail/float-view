@@ -34,7 +34,8 @@
   const getYValueHeight = (y: number, min: number, max: number) => ((y - min) / (max - min)) * 100;
   const indexToXPct = (i: number): number => (100 / dataPointsLen) * (i + 0.5);
   const valueToYPct = (y: number, min: number, max: number) => 100 - getYValueHeight(y, min, max);
-  const aggMaxAbs = (acc: number, n: number) => Math.max(Math.abs(acc), Math.abs(n));
+  // FIXME: better aggregation for this one? e.g., can't see lowest battery voltage value...
+  const aggMaxAbs = (acc: number, n: number) => (Math.abs(acc) > Math.abs(n) ? acc : n);
 
   type ReduceWithIndex<T> = { index: number; value: T } | null;
   const reduceWithIndex = <T,>(arr: T[], cmp: (curr: T, next: T) => boolean): ReduceWithIndex<T> =>
