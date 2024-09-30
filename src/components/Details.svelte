@@ -135,6 +135,10 @@
           value: `${formatFloat(data.current_battery)} A`,
           color: ChartColours.CurrentBattery,
         },
+        {
+          label: 'Batt Watts',
+          value: `${formatFloat(data.current_battery * data.voltage)} W`,
+        },
       ]}
     />
   </div>
