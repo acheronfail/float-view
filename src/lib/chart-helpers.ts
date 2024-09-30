@@ -3,10 +3,12 @@ import type { Props as ChartProps } from '../components/Chart';
 import settings from './settings.svelte';
 import { globalState } from './global.svelte';
 
+// https://tailwindcss.com/docs/customizing-colors
 export enum ChartColours {
   Speed = '#fde68a',
   DutyCycle = '#f472b6',
   BatteryVoltage = '#34d399',
+  BatteryWatts = '#eab308',
   Elevation = '#ea580c',
   CurrentMotor = '#67e8f9',
   CurrentBattery = '#a5b4fc',
@@ -50,6 +52,13 @@ export const Charts = {
     showMin: true,
     precision: 1,
     yAxis: { suggestedMin: settings.suggestedVMin, suggestedMax: settings.suggestedVMax },
+  }),
+  'Battery Watts': (visibleRows) => ({
+    data: [{ values: visibleRows.map((x) => x.voltage * x.current_battery), color: ChartColours.BatteryWatts }],
+    unit: 'W',
+    showMax: true,
+    showMin: true,
+    precision: 1,
   }),
   'I-Motor / I-Battery': (visibleRows) => ({
     data: [

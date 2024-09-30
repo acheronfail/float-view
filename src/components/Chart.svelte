@@ -13,7 +13,7 @@
   import { untrack } from 'svelte';
   import type { Props } from './Chart';
 
-  const DEFAULT_COLOUR = 'red';
+  const DEFAULT_COLOUR = 'white';
 
   const MARGIN_TOP = '4rem';
   const MARGIN_RIGHT = '2rem';

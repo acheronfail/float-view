@@ -292,7 +292,7 @@
           e.currentTarget.value = 'change';
           window.localStorage.setItem(localStorageKey, settings.storedSettings);
         }}
-        class="absolute appearance-none w-16 text-center top-2 right-2 z-10 rounded border bg-slate-700 active:bg-slate-800 text-xs px-2 py-1"
+        class="absolute appearance-none w-14 text-center top-2 right-2 z-10 rounded border bg-slate-700 active:bg-slate-800 text-xs"
       >
         <option class="hidden" selected disabled>change</option>
         {#each Object.keys(Charts) as value}
