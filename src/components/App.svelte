@@ -292,7 +292,7 @@
           e.currentTarget.value = 'change';
           window.localStorage.setItem(localStorageKey, settings.storedSettings);
         }}
-        class="absolute appearance-none w-14 text-center top-2 right-2 z-10 rounded border bg-slate-700 active:bg-slate-800 text-xs"
+        class="apple-workaround absolute appearance-none w-14 text-center top-2 right-2 z-10 rounded border bg-slate-700 active:bg-slate-800 text-xs"
       >
         <option class="hidden" selected disabled>change</option>
         {#each Object.keys(Charts) as value}
@@ -355,6 +355,12 @@
       top: var(--header-height);
       grid-row: 1 / span 2 !important;
       border-bottom-width: 1px;
+    }
+  }
+
+  @supports (font: -apple-system-body) and (-webkit-appearance: none) {
+    .apple-workaround {
+      padding-left: 0.5em;
     }
   }
 </style>
