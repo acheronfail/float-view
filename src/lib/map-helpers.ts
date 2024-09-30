@@ -44,6 +44,8 @@ export function getPolyline(
   line: MapLine,
 ): Leaflet.Polyline {
   const limit = line === MapLine.Travelled ? selectedRowIndex : gpsPoints.length;
+
+  // TODO: add charging icons when we've detected a pause, and the battery voltage has increased
   const values: LatLngExpression[][] = [];
   for (let i = 0; i < gpsGaps.length; ++i) {
     const start = gpsGaps[i];
