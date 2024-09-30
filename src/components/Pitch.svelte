@@ -4,6 +4,7 @@
   import List from './List.svelte';
 
   let { data }: { data: Row } = $props();
+  // TODO: what's the difference between `true_pitch` and `pitch`?
 </script>
 
 <svg version="1.1" viewBox="0 0 100 100" role="graphics-object" xmlns="http://www.w3.org/2000/svg" height="60%">
