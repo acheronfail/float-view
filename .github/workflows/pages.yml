@@ -63,6 +63,7 @@ jobs:
           git config --global user.email "acheronfail+float-view-ci@gmail.com"
           git add package.json package-lock.json
           git commit --no-verify --message "[skip ci] ci version bump"
+          git pull --rebase
           git push
       - name: Setup Pages
         uses: actions/configure-pages@v4

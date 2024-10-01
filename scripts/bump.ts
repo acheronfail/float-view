@@ -1,6 +1,5 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { exec } from 'node:child_process';
-import { dirname, join } from 'node:path';
 import { promisify } from 'node:util';
 import semver, { ReleaseType } from 'semver';
 
