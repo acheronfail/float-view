@@ -27,7 +27,10 @@
   <div class="flex flex-col justify-between items-center gap-4">
     <p>To get started, please open either:</p>
     <ul class="list-disc list-inside text-left">
-      <li>an exported <span class="font-mono">CSV</span> file from <strong>Float Control</strong></li>
+      <li>
+        an exported <span class="font-mono">CSV</span> or <span class="font-mono">ZIP</span> file from
+        <strong>Float Control</strong>
+      </li>
       <li>an exported <span class="font-mono">JSON</span> file from <strong>Floaty</strong></li>
     </ul>
     <input
