@@ -66,9 +66,11 @@ const travelledLineColours = [
   green[500],
 ];
 
+const commonLineOptions: Partial<PolylineOptions> = { smoothFactor: 0, interactive: false };
 export const MapLineOptions: Record<MapLine, (index: number) => PolylineOptions> = {
-  [MapLine.Base]: () => ({ color: cyan[100], weight: 2, dashArray: '5 5', opacity: 0.5 }),
+  [MapLine.Base]: () => ({ ...commonLineOptions, color: cyan[100], weight: 2, dashArray: '5 5', opacity: 0.5 }),
   [MapLine.Travelled]: (index) => ({
+    ...commonLineOptions,
     color: travelledLineColours[index % travelledLineColours.length],
     weight: 4,
   }),
