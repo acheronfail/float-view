@@ -1,8 +1,7 @@
 <script lang="ts">
   import Leaflet from 'leaflet';
   import { untrack } from 'svelte';
-  import { getIcon, MapLine, riderIcon, getPolyline, SegmentedPolyline } from '../lib/map-helpers';
-  import type { Props } from './Map';
+  import { type Props, getIcon, MapLine, riderIcon, getPolyline, SegmentedPolyline } from './Map';
 
   let map: Leaflet.Map | null = null;
   let basePolyline: SegmentedPolyline | null = null;

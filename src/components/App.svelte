@@ -8,14 +8,14 @@
   import type { DragEventHandler, EventHandler } from 'svelte/elements';
   import { DataSource, type RowWithIndex } from '../lib/parse/types';
   import Modal from './Modal.svelte';
-  import { riderSvg } from '../lib/map-helpers';
   import settings, { defaultSelectedCharts, localStorageKey } from '../lib/settings.svelte';
   import SettingsModal from './SettingsModal.svelte';
   import Button from './Button.svelte';
-  import { Charts, type ChartKey } from '../lib/chart-helpers';
   import { parse, supportedMimeTypes } from '../lib/parse';
   import { globalState } from '../lib/global.svelte';
   import { extractGpsInformation, findPointsOfInterest } from './App';
+  import { type ChartKey, Charts } from './Chart';
+  import { riderSvg } from './Map';
 
   /** source of data*/
   let source = $state(DataSource.None);

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { State, Units } from '../lib/parse/types';
   import Input from './Input.svelte';
-  import { getIcon } from '../lib/map-helpers';
+  import { getIcon } from './Map';
   import Modal from './Modal.svelte';
   import settings, { localStorageKey } from '../lib/settings.svelte';
   import type { ChangeEventHandler } from 'svelte/elements';

@@ -7,11 +7,10 @@
    * It's right here: https://jf.id.au/blog/how-i-built-the-best-chart-in-the-world
    */
 
-  import { ticks } from '../lib/chart-helpers';
   import type { MouseEventHandler, TouchEventHandler } from 'svelte/elements';
   import { assert, formatFloat } from '../lib/misc';
   import { untrack } from 'svelte';
-  import type { Props } from './Chart';
+  import { type Props, ticks } from './Chart';
 
   const DEFAULT_COLOUR = 'white';
 

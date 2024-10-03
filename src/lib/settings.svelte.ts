@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { State, Units } from './parse/types';
-import { type ChartKey } from './chart-helpers';
+import { type ChartKey } from '../components/Chart';
 
 type SelectedCharts = [ChartKey, ChartKey, ChartKey, ChartKey, ChartKey, ChartKey];
 export const defaultSelectedCharts = Object.freeze([

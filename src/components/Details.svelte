@@ -15,7 +15,7 @@
   import Roll from './Roll.svelte';
   import settings, { type ZBatterySpecs } from '../lib/settings.svelte';
   import Button from './Button.svelte';
-  import { ChartColours } from '../lib/chart-helpers';
+  import { ChartColours } from './Chart';
   import { empty, State } from '../lib/parse/types';
   import { formatFloat } from '../lib/misc';
   import { globalState } from '../lib/global.svelte';

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { getPolyline, MapLine } from './map-helpers';
 import type { LatLngExpression } from 'leaflet';
+import { getPolyline, MapLine } from './Map';
 
 const lineFixture = (): LatLngExpression[] => [
   [0, 0],
