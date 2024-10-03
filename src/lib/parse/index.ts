@@ -24,7 +24,8 @@ export enum SupportedMimeTypes {
   /** Float Control's CSV */
   Csv = 'text/csv',
   /** Float Control's Zipped CSV */
-  Zip = 'application/zip',
+  Zip1 = 'application/zip',
+  Zip2 = 'application/x-zip-compressed',
   /** Floaty's JSON */
   Json = 'application/json',
 }
@@ -34,7 +35,7 @@ export const supportedMimeTypeString = supportedMimeTypes.join(',');
 
 export async function parse(file: File): Promise<ParseResult> {
   const lowerName = file.name.toLowerCase();
-  if (file.type === SupportedMimeTypes.Zip || lowerName.endsWith('.zip')) {
+  if (file.type === SupportedMimeTypes.Zip1 || file.type === SupportedMimeTypes.Zip2 || lowerName.endsWith('.zip')) {
     const fileMap = fflate.unzipSync(new Uint8Array(await file.arrayBuffer()));
     const fileList = Object.keys(fileMap);
     if (fileList.length !== 1) {
