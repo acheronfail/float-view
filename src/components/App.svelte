@@ -17,6 +17,7 @@
   import { globalState } from '../lib/global.svelte';
 
   const RIDE_GAP_THRESHOLD_SECONDS = 60;
+  const CHARGE_THRESHOLD_VOLTS = 2.5;
 
   /** source of data*/
   let source = $state(DataSource.None);
@@ -91,7 +92,10 @@
       // inferred charge points
       const prevRow = rows[i - 1];
       if (prevRow !== undefined) {
-        if (row.time - prevRow.time > RIDE_GAP_THRESHOLD_SECONDS && row.voltage > prevRow.voltage) {
+        if (
+          row.time - prevRow.time > RIDE_GAP_THRESHOLD_SECONDS &&
+          row.voltage - prevRow.voltage > CHARGE_THRESHOLD_VOLTS
+        ) {
           states.push(State.Custom_ChargePoint);
         }
       }
