@@ -2,9 +2,9 @@
   import Leaflet, { type LatLngExpression } from 'leaflet';
   import type { RowWithIndex } from '../lib/parse/types';
 
-  export interface FaultPoint {
+  export interface PointOfInterest {
     index: number;
-    fault: string;
+    state: string;
   }
 
   export interface Props {
@@ -14,21 +14,22 @@
     selectedRowIndex: number;
     gpsPoints: LatLngExpression[];
     gpsGaps: number[];
-    faultPoints: FaultPoint[];
+    pointsOfInterest: PointOfInterest[];
   }
 </script>
 
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { getIcon, MapLine, riderIcon, getPolyline } from '../lib/map-helpers';
+  import { getIcon, MapLine, riderIcon, getPolyline, SegmentedPolyline } from '../lib/map-helpers';
 
   let map: Leaflet.Map | null = null;
-  let basePolyline: Leaflet.Polyline | null = null;
-  let travelledPolyline: Leaflet.Polyline | null = null;
+  let basePolyline: SegmentedPolyline | null = null;
+  let travelledPolyline: SegmentedPolyline | null = null;
   let riderMarker: Leaflet.Marker | null = null;
-  const faultMarkers: Leaflet.Marker[] = [];
+  const markers: Leaflet.Marker[] = [];
 
-  let { setSelectedIdx, selectedRowIndex, setVisible, visibleRows, gpsPoints, gpsGaps, faultPoints }: Props = $props();
+  let { setSelectedIdx, selectedRowIndex, setVisible, visibleRows, gpsPoints, gpsGaps, pointsOfInterest }: Props =
+    $props();
 
   let node = $state<HTMLDivElement | undefined>();
 
@@ -39,8 +40,8 @@
   });
 
   $effect(() => {
-    if (map && faultPoints) {
-      updateFaultMarkers();
+    if (map && pointsOfInterest) {
+      updateMarkers();
     }
   });
 
@@ -92,23 +93,23 @@
     },
   });
 
-  function updateFaultMarkers() {
-    for (const marker of faultMarkers) {
+  function updateMarkers() {
+    for (const marker of markers) {
       marker.remove();
     }
-    faultMarkers.length = 0;
+    markers.length = 0;
 
     // add fault markers
-    for (const { index, fault } of faultPoints) {
-      const { icon, className } = getIcon(fault);
+    for (const { index, state: id } of pointsOfInterest) {
+      const { icon, className } = getIcon(id);
       const marker = Leaflet.marker(gpsPoints[index]!, {
         icon,
-        title: fault,
+        title: id,
       });
 
       // SAFETY: this function is never called unless the map has been created
       marker.addTo(map!);
-      faultMarkers.push(marker);
+      markers.push(marker);
 
       const element = marker.getElement();
       if (element) {
@@ -154,7 +155,8 @@
     // add a reset zoom button
     map.addControl(new ResetButton());
 
-    updateFaultMarkers();
+    // add markers
+    updateMarkers();
 
     map.addEventListener('zoomend', setVisibleIndices);
     map.addEventListener('moveend', setVisibleIndices);

@@ -67,8 +67,8 @@ hr {
   left: -15px;
 }
 
-/* fault icons */
-.fault-icon {
+/* state icons */
+.state-icon {
   background-color: magenta;
   border-radius: 50%;
   border: 1px solid black;
@@ -76,42 +76,47 @@ hr {
   justify-content: center;
   align-items: center;
 }
-.fault-icon.svg {
+.state-icon.svg {
   background-color: transparent;
   border: none;
 }
 /* NOTE: safari won't show SVGs unless they have an explicit width/height set */
-.fault-icon svg {
+.state-icon svg {
   width: 1rem;
   height: 1rem;
 }
-.fault-icon.warning svg {
+.state-icon.warning svg {
   fill: white;
 }
-.fault-icon.stop_half {
+.state-icon.stop_half {
   background-color: grey;
 }
-.fault-icon.stop_full svg {
+.state-icon.stop_full svg {
   fill: #dc2626;
 }
-.fault-icon.stop_angle svg {
+.state-icon.stop_angle svg {
   fill: #f97316;
 }
-.fault-icon.wheelslip svg {
+.state-icon.wheelslip svg {
   fill: #eab308;
 }
-.fault-icon.custom__one_footpad_at_speed svg .left {
+.state-icon.custom__one_footpad_at_speed svg .left {
   fill: #0ea5e9;
 }
-.fault-icon.custom__one_footpad_at_speed svg .right {
+.state-icon.custom__one_footpad_at_speed svg .right {
   fill: #991b1b;
 }
-.fault-icon.custom__no_footpads_at_speed svg {
+.state-icon.custom__no_footpads_at_speed svg {
   fill: #991b1b;
 }
-.fault-icon.quickstop {
+.state-icon.custom__charge_point svg {
+  fill: yellow;
+  stroke: black;
+  stroke-width: 5px;
+}
+.state-icon.quickstop {
   background-color: #2dd4bf;
 }
-.fault-icon.startup {
+.state-icon.startup {
   background-color: green;
 }

@@ -10,8 +10,8 @@ export enum Units {
 }
 
 /**
- * NOTE: non-exhaustive for faults reported by VESC Tool
- * NOTE: also includes our custom faults
+ * This enum is a merged map of faults reported by VESC Tool, some custom footpad
+ * faults created by us, as well as some other points of interest.
  */
 export enum State {
   Riding = 'riding',
@@ -23,6 +23,7 @@ export enum State {
   Wheelslip = 'wheelslip',
   Custom_OneFootpadAtSpeed = 'custom: one footpad at speed',
   Custom_NoFootpadsAtSpeed = 'custom: no footpads at speed',
+  Custom_ChargePoint = 'custom: charge point',
 }
 
 export const stateCodeMap: Record<number, State> = {

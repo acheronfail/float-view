@@ -1,15 +1,18 @@
-import Leaflet, { type LatLngExpression, type PolylineOptions } from 'leaflet';
+import Leaflet, { LatLng, type LatLngExpression, type PolylineOptions } from 'leaflet';
+import { teal, sky, cyan, orange, lime, yellow, green, indigo, purple, fuchsia, pink, rose } from 'tailwindcss/colors';
 import riderSvg from '../assets/rider-icon.svg?raw';
+import chargeSvg from '../assets/charge-icon.svg?raw';
 import footpadSvg from '../assets/footpad.svg?raw';
 import warningSvg from '../assets/warning.svg?raw';
 import { State } from './parse/types';
 
 export { riderSvg };
 export const riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderSvg });
-export const footpadIcon = Leaflet.divIcon({ className: 'fault-icon svg', html: footpadSvg, iconSize: [20, 20] });
-export const genericIcon = Leaflet.divIcon({ className: 'fault-icon' });
+export const chargeIcon = Leaflet.divIcon({ className: 'state-icon svg', html: chargeSvg });
+export const footpadIcon = Leaflet.divIcon({ className: 'state-icon svg', html: footpadSvg, iconSize: [20, 20] });
+export const genericIcon = Leaflet.divIcon({ className: 'state-icon' });
 export const warningIcon = Leaflet.divIcon({
-  className: 'fault-icon warning svg',
+  className: 'state-icon warning svg',
   html: warningSvg,
   iconSize: [15, 15],
 });
@@ -19,12 +22,13 @@ export const faultIcons: Record<string, Leaflet.DivIcon | undefined> = {
   [State.StopFull]: warningIcon,
   [State.Custom_OneFootpadAtSpeed]: footpadIcon,
   [State.Custom_NoFootpadsAtSpeed]: footpadIcon,
+  [State.Custom_ChargePoint]: chargeIcon,
 };
 
-const faultToClassName = (fault: string) => fault.replace(/\W/g, '_');
-export const getIcon = (fault: string): { icon: Leaflet.DivIcon; className: string } => ({
-  icon: faultIcons[fault] ?? genericIcon,
-  className: faultToClassName(fault),
+const stateToClassName = (state: string) => state.replace(/\W/g, '_');
+export const getIcon = (state: string): { icon: Leaflet.DivIcon; className: string } => ({
+  icon: faultIcons[state] ?? genericIcon,
+  className: stateToClassName(state),
 });
 
 export enum MapLine {
@@ -32,20 +36,56 @@ export enum MapLine {
   Travelled,
 }
 
-export const MapLineOptions: Record<MapLine, PolylineOptions> = {
-  [MapLine.Base]: { color: '#cffafe', weight: 2, dashArray: '5 5', opacity: 0.5 },
-  [MapLine.Travelled]: { color: '#06b6d4', weight: 4 },
+const travelledLineColours = [
+  teal[500],
+  sky[500],
+  indigo[500],
+  purple[500],
+  fuchsia[500],
+  pink[500],
+  rose[500],
+  orange[500],
+  yellow[500],
+  lime[500],
+  green[500],
+];
+
+export const MapLineOptions: Record<MapLine, (index: number) => PolylineOptions> = {
+  [MapLine.Base]: () => ({ color: cyan[100], weight: 2, dashArray: '5 5', opacity: 0.5 }),
+  [MapLine.Travelled]: (index) => ({
+    color: travelledLineColours[index % travelledLineColours.length],
+    weight: 4,
+  }),
 };
+
+export class SegmentedPolyline {
+  constructor(private readonly polylines: Leaflet.Polyline[]) {}
+  remove() {
+    this.polylines.forEach((line) => line.remove());
+  }
+
+  addTo(map: Leaflet.Map): SegmentedPolyline {
+    this.polylines.forEach((line) => line.addTo(map));
+    return this;
+  }
+
+  getBounds() {
+    return this.polylines.reduce((result, line) => result.extend(line.getBounds()), this.polylines[0]!.getBounds());
+  }
+
+  getLatLngs() {
+    return this.polylines.map((line) => line.getLatLngs() as LatLng[]);
+  }
+}
 
 export function getPolyline(
   gpsPoints: LatLngExpression[],
   gpsGaps: number[],
   selectedRowIndex: number,
   line: MapLine,
-): Leaflet.Polyline {
+): SegmentedPolyline {
   const limit = line === MapLine.Travelled ? selectedRowIndex : gpsPoints.length;
 
-  // TODO: add charging icons when we've detected a pause, and the battery voltage has increased
   const values: LatLngExpression[][] = [];
   for (let i = 0; i < gpsGaps.length; ++i) {
     const start = gpsGaps[i];
@@ -54,5 +94,5 @@ export function getPolyline(
     if (limit === end) break;
   }
 
-  return Leaflet.polyline(values, MapLineOptions[line]);
+  return new SegmentedPolyline(values.map((points, index) => Leaflet.polyline(points, MapLineOptions[line](index))));
 }

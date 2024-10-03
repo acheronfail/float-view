@@ -19,12 +19,12 @@ const BatterySpecsSchema = z.object({
 });
 export type ZBatterySpecs = z.infer<typeof BatterySpecsSchema>;
 
-const HiddenFaultSchema = z.nativeEnum(State).array();
+const HiddenStateSchema = z.nativeEnum(State).array();
 const UnitsSchema = z.nativeEnum(Units);
 
 const SavedSettingsSchema = z.object({
   batterySpecs: BatterySpecsSchema,
-  hiddenFaults: HiddenFaultSchema,
+  hiddenStates: HiddenStateSchema,
   units: UnitsSchema,
   charts: z.string().array(),
 });
@@ -51,8 +51,8 @@ const settings = new (class {
   /** user selected units */
   units = $state(savedSettings?.units ?? Units.Metric);
   /** faults to hide from the map */
-  hiddenFaults = $state<State[]>(
-    savedSettings?.hiddenFaults ?? [State.Startup, State.StopHalf, State.Custom_OneFootpadAtSpeed],
+  hiddenStates = $state<State[]>(
+    savedSettings?.hiddenStates ?? [State.Startup, State.StopHalf, State.Custom_OneFootpadAtSpeed],
   );
 
   /** user-defined cell count */
@@ -81,7 +81,7 @@ const settings = new (class {
   storedSettings = $derived(
     JSON.stringify({
       batterySpecs: this.batterySpecs,
-      hiddenFaults: this.hiddenFaults,
+      hiddenStates: this.hiddenStates,
       units: this.units,
       charts: this.charts,
     } satisfies ZSavedSettings),

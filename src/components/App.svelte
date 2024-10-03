@@ -1,6 +1,6 @@
 <script lang="ts">
   import Chart from './Chart.svelte';
-  import Map, { type FaultPoint } from './Map.svelte';
+  import Map, { type PointOfInterest } from './Map.svelte';
   import Details from './Details.svelte';
   import Header from './Header.svelte';
   import { demoFile, demoRows } from '../lib/parse/float-control';
@@ -15,6 +15,8 @@
   import { Charts, type ChartKey } from '../lib/chart-helpers';
   import { parse, supportedMimeTypes } from '../lib/parse';
   import { globalState } from '../lib/global.svelte';
+
+  const RIDE_GAP_THRESHOLD_SECONDS = 60;
 
   /** source of data*/
   let source = $state(DataSource.None);
@@ -34,7 +36,7 @@
       const curr = rows[i]!;
 
       gpsPoints.push([curr.gps_latitude, curr.gps_longitude]);
-      if (prev && curr.time - prev.time > 60) {
+      if (prev && curr.time - prev.time > RIDE_GAP_THRESHOLD_SECONDS) {
         gpsGaps.push(i);
       }
     }
@@ -63,28 +65,43 @@
 
     return { gpsPoints, gpsGaps };
   });
-  /** entire list of faults from `rows` */
-  let faultPoints = $derived.by(() => {
-    const points: FaultPoint[] = [];
+  /** entire list of states from `rows` */
+  let pointsOfInterest = $derived.by(() => {
+    const points: PointOfInterest[] = [];
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i]!;
 
-      let fault: string | undefined;
+      let states: string[] = [];
+
+      // fault from VESC
       if (row.state !== 'riding') {
-        fault = row.state;
-      } else if (row.speed > 2) {
+        states.push(row.state);
+      }
+
+      // custom footpad faults
+      if (row.speed > 2) {
         const combinedAdcVoltage = row.adc1 + row.adc2;
         if (combinedAdcVoltage < 2) {
-          fault = State.Custom_NoFootpadsAtSpeed;
+          states.push(State.Custom_NoFootpadsAtSpeed);
         } else if (combinedAdcVoltage < 4) {
-          fault = State.Custom_OneFootpadAtSpeed;
+          states.push(State.Custom_OneFootpadAtSpeed);
+        }
+      }
+
+      // inferred charge points
+      const prevRow = rows[i - 1];
+      if (prevRow !== undefined) {
+        if (row.time - prevRow.time > RIDE_GAP_THRESHOLD_SECONDS && row.voltage > prevRow.voltage) {
+          states.push(State.Custom_ChargePoint);
         }
       }
 
       // SAFETY: since the enum is non-exhaustive, just check it's not in here so
       // any ones we don't know about are shown
-      if (fault && !settings.hiddenFaults.includes(fault as State)) {
-        points.push({ index: i, fault });
+      for (const state of states) {
+        if (!settings.hiddenStates.includes(state as State)) {
+          points.push({ index: i, state });
+        }
       }
     }
 
@@ -273,7 +290,7 @@
     wide:relative wide:top-[unset] wide:h-[unset] wide:border-b-0"
     class:map-swapped={swapMapAndDetails}
   >
-    <Map {setSelectedIdx} {setVisible} {selectedRowIndex} {visibleRows} {gpsPoints} {gpsGaps} {faultPoints} />
+    <Map {setSelectedIdx} {setVisible} {selectedRowIndex} {visibleRows} {gpsPoints} {gpsGaps} {pointsOfInterest} />
   </div>
   <div
     class="place-self-center w-full h-full overflow-hidden

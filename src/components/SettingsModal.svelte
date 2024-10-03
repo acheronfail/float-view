@@ -64,7 +64,7 @@
     <ul class="text-left select-none">
       {#each Object.values(State) as state}
         {#if state !== State.Riding}
-          {@const checked = !settings.hiddenFaults.includes(state)}
+          {@const checked = !settings.hiddenStates.includes(state)}
           {@const { icon, className } = getIcon(state)}
           {@const html = icon.createIcon().innerHTML.trim()}
           <li class="flex flex-rol justify-start items-center gap-2">
@@ -73,10 +73,10 @@
               id="map_{state}"
               {checked}
               onchange={() => {
-                if (settings.hiddenFaults.includes(state)) {
-                  settings.hiddenFaults = settings.hiddenFaults.filter((s) => s !== state);
+                if (settings.hiddenStates.includes(state)) {
+                  settings.hiddenStates = settings.hiddenStates.filter((s) => s !== state);
                 } else {
-                  settings.hiddenFaults = settings.hiddenFaults.concat(state);
+                  settings.hiddenStates = settings.hiddenStates.concat(state);
                 }
               }}
             />
