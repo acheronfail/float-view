@@ -1,27 +1,8 @@
-<script lang="ts" module>
-  import Leaflet, { type LatLngExpression } from 'leaflet';
-  import type { RowWithIndex } from '../lib/parse/types';
-  import type { GpsGap } from './App';
-
-  export interface PointOfInterest {
-    index: number;
-    state: string;
-  }
-
-  export interface Props {
-    visibleRows: RowWithIndex[];
-    setVisible: (visible: boolean[]) => void;
-    setSelectedIdx: (index: number) => void;
-    selectedRowIndex: number;
-    gpsPoints: LatLngExpression[];
-    gpsGaps: GpsGap[];
-    pointsOfInterest: PointOfInterest[];
-  }
-</script>
-
 <script lang="ts">
+  import Leaflet from 'leaflet';
   import { untrack } from 'svelte';
   import { getIcon, MapLine, riderIcon, getPolyline, SegmentedPolyline } from '../lib/map-helpers';
+  import type { Props } from './Map';
 
   let map: Leaflet.Map | null = null;
   let basePolyline: SegmentedPolyline | null = null;

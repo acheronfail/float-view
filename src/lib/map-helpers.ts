@@ -17,7 +17,7 @@ export const warningIcon = Leaflet.divIcon({
   html: warningSvg,
   iconSize: [15, 15],
 });
-export const faultIcons: Record<string, Leaflet.DivIcon | undefined> = {
+export const stateIcons: Record<string, Leaflet.DivIcon | undefined> = {
   [State.Wheelslip]: warningIcon,
   [State.StopAngle]: warningIcon,
   [State.StopFull]: warningIcon,
@@ -28,7 +28,7 @@ export const faultIcons: Record<string, Leaflet.DivIcon | undefined> = {
 
 const stateToClassName = (state: string) => state.replace(/\W/g, '_');
 export const getIcon = (state: string): { icon: Leaflet.DivIcon; className: string } => ({
-  icon: faultIcons[state] ?? genericIcon,
+  icon: stateIcons[state] ?? genericIcon,
   className: stateToClassName(state),
 });
 
@@ -60,22 +60,23 @@ export const MapLineOptions: Record<MapLine, (index: number) => PolylineOptions>
 };
 
 export class SegmentedPolyline {
-  constructor(private readonly polylines: Leaflet.Polyline[]) {}
+  constructor(private readonly lines: Leaflet.Polyline[]) {}
+
   remove() {
-    this.polylines.forEach((line) => line.remove());
+    this.lines.forEach((line) => line.remove());
   }
 
   addTo(map: Leaflet.Map): SegmentedPolyline {
-    this.polylines.forEach((line) => line.addTo(map));
+    this.lines.forEach((line) => line.addTo(map));
     return this;
   }
 
   getBounds() {
-    return this.polylines.reduce((result, line) => result.extend(line.getBounds()), this.polylines[0]!.getBounds());
+    return this.lines.reduce((result, line) => result.extend(line.getBounds()), this.lines[0]!.getBounds());
   }
 
   getLatLngs() {
-    return this.polylines.map((line) => line.getLatLngs() as LatLng[]);
+    return this.lines.map((line) => line.getLatLngs() as LatLng[]);
   }
 }
 
