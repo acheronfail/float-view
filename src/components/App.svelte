@@ -15,9 +15,7 @@
   import { Charts, type ChartKey } from '../lib/chart-helpers';
   import { parse, supportedMimeTypes } from '../lib/parse';
   import { globalState } from '../lib/global.svelte';
-
-  const RIDE_GAP_THRESHOLD_SECONDS = 60;
-  const CHARGE_THRESHOLD_VOLTS = 2.5;
+  import { CHARGE_THRESHOLD_SECONDS, getChargeThreshold, RIDE_GAP_THRESHOLD_SECONDS, type GpsGap } from './App';
 
   /** source of data*/
   let source = $state(DataSource.None);
@@ -31,14 +29,17 @@
   let { gpsPoints, gpsGaps } = $derived.by(() => {
     const gpsPoints: [number, number][] = [];
     // TODO: verify paused sessions from Floaty
-    const gpsGaps: number[] = [0];
+    const gpsGaps: GpsGap[] = [{ index: 0, secondsElapsed: 0 }];
     for (let i = 0; i < rows.length; ++i) {
       const prev = rows[i - 1];
       const curr = rows[i]!;
 
       gpsPoints.push([curr.gps_latitude, curr.gps_longitude]);
-      if (prev && curr.time - prev.time > RIDE_GAP_THRESHOLD_SECONDS) {
-        gpsGaps.push(i);
+      if (prev) {
+        const secondsElapsed = curr.time - prev.time;
+        if (secondsElapsed > RIDE_GAP_THRESHOLD_SECONDS) {
+          gpsGaps.push({ index: i, secondsElapsed });
+        }
       }
     }
 
@@ -48,10 +49,10 @@
     // Either way, here we attempt to find the first "good" point and use that instead.
     if (source === DataSource.FloatControl) {
       for (let i = 0; i < gpsGaps.length; ++i) {
-        const start = gpsGaps[i]!;
+        const start = gpsGaps[i]!.index;
         const end = gpsGaps[i + 1];
         const curr = rows[start]!;
-        const guessedGoodValue = rows.slice(start, end).find((row) => {
+        const guessedGoodValue = rows.slice(start, end?.index).find((row) => {
           const samePoint = curr.gps_latitude === row.gps_latitude && curr.gps_longitude === row.gps_longitude;
           return row.gps_accuracy > 0 && !samePoint;
         });
@@ -92,10 +93,9 @@
       // inferred charge points
       const prevRow = rows[i - 1];
       if (prevRow !== undefined) {
-        if (
-          row.time - prevRow.time > RIDE_GAP_THRESHOLD_SECONDS &&
-          row.voltage - prevRow.voltage > CHARGE_THRESHOLD_VOLTS
-        ) {
+        const secondsElapsed = row.time - prevRow.time;
+        const voltageDifference = row.voltage - prevRow.voltage;
+        if (secondsElapsed > CHARGE_THRESHOLD_SECONDS && voltageDifference > getChargeThreshold()) {
           states.push(State.Custom_ChargePoint);
         }
       }

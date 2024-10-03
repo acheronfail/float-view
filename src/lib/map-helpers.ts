@@ -5,6 +5,7 @@ import chargeSvg from '../assets/charge-icon.svg?raw';
 import footpadSvg from '../assets/footpad.svg?raw';
 import warningSvg from '../assets/warning.svg?raw';
 import { State } from './parse/types';
+import { CHARGE_THRESHOLD_SECONDS, type GpsGap } from '../components/App';
 
 export { riderSvg };
 export const riderIcon = Leaflet.divIcon({ className: 'rider-icon', html: riderSvg });
@@ -80,19 +81,31 @@ export class SegmentedPolyline {
 
 export function getPolyline(
   gpsPoints: LatLngExpression[],
-  gpsGaps: number[],
+  gpsGaps: GpsGap[],
   selectedRowIndex: number,
   line: MapLine,
 ): SegmentedPolyline {
   const limit = line === MapLine.Travelled ? selectedRowIndex : gpsPoints.length;
 
-  const values: LatLngExpression[][] = [];
+  const values: { points: LatLngExpression[]; needsColour: boolean }[] = [];
   for (let i = 0; i < gpsGaps.length; ++i) {
-    const start = gpsGaps[i];
-    const end = Math.min(limit, gpsGaps[i + 1] ?? gpsPoints.length);
-    values.push(gpsPoints.slice(start, end));
-    if (limit === end) break;
+    const start = gpsGaps[i]!;
+    const end = Math.min(limit, gpsGaps[i + 1]?.index ?? gpsPoints.length);
+    values.push({
+      points: gpsPoints.slice(start.index, end),
+      needsColour: start.secondsElapsed > CHARGE_THRESHOLD_SECONDS,
+    });
+
+    if (limit === end) {
+      break;
+    }
   }
 
-  return new SegmentedPolyline(values.map((points, index) => Leaflet.polyline(points, MapLineOptions[line](index))));
+  let colourIdx = 0;
+  return new SegmentedPolyline(
+    values.map(({ points, needsColour }) => {
+      if (needsColour) colourIdx++;
+      return Leaflet.polyline(points, MapLineOptions[line](colourIdx));
+    }),
+  );
 }

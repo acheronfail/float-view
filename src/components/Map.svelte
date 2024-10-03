@@ -1,6 +1,7 @@
 <script lang="ts" module>
   import Leaflet, { type LatLngExpression } from 'leaflet';
   import type { RowWithIndex } from '../lib/parse/types';
+  import type { GpsGap } from './App';
 
   export interface PointOfInterest {
     index: number;
@@ -13,7 +14,7 @@
     setSelectedIdx: (index: number) => void;
     selectedRowIndex: number;
     gpsPoints: LatLngExpression[];
-    gpsGaps: number[];
+    gpsGaps: GpsGap[];
     pointsOfInterest: PointOfInterest[];
   }
 </script>

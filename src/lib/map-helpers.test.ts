@@ -11,7 +11,7 @@ const lineFixture = (): LatLngExpression[] => [
 
 describe(getPolyline.name, () => {
   test('builds the base line', () => {
-    const line = getPolyline(lineFixture(), [0], 2, MapLine.Base);
+    const line = getPolyline(lineFixture(), [{ index: 0, secondsElapsed: 0 }], 2, MapLine.Base);
     expect(line.getLatLngs()).toEqual([
       [
         { lat: 0, lng: 0 },
@@ -23,7 +23,15 @@ describe(getPolyline.name, () => {
   });
 
   test('builds the base line, with gap', () => {
-    const line = getPolyline(lineFixture(), [0, 2], 3, MapLine.Base);
+    const line = getPolyline(
+      lineFixture(),
+      [
+        { index: 0, secondsElapsed: 0 },
+        { index: 2, secondsElapsed: 120 },
+      ],
+      3,
+      MapLine.Base,
+    );
     expect(line.getLatLngs()).toEqual([
       [
         { lat: 0, lng: 0 },
@@ -37,7 +45,7 @@ describe(getPolyline.name, () => {
   });
 
   test('builds the travelled line', () => {
-    const line = getPolyline(lineFixture(), [0], 2, MapLine.Travelled);
+    const line = getPolyline(lineFixture(), [{ index: 0, secondsElapsed: 0 }], 2, MapLine.Travelled);
     expect(line.getLatLngs()).toEqual([
       [
         { lat: 0, lng: 0 },
@@ -47,7 +55,15 @@ describe(getPolyline.name, () => {
   });
 
   test('builds the travelled line, with gap', () => {
-    const line = getPolyline(lineFixture(), [0, 2], 3, MapLine.Travelled);
+    const line = getPolyline(
+      lineFixture(),
+      [
+        { index: 0, secondsElapsed: 0 },
+        { index: 2, secondsElapsed: 120 },
+      ],
+      3,
+      MapLine.Travelled,
+    );
     expect(line.getLatLngs()).toEqual([
       [
         { lat: 0, lng: 0 },
