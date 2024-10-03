@@ -80,7 +80,7 @@
                 }
               }}
             />
-            <div class="w-4 h-4 fault-icon {className} {html ? 'svg' : ''}">
+            <div class="w-4 h-4 state-icon {className} {html ? 'svg' : ''}">
               {#if html}
                 {@html html}
               {:else}
