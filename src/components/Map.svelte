@@ -1,18 +1,42 @@
 <script lang="ts">
   import Leaflet from 'leaflet';
   import { untrack } from 'svelte';
-  import { type Props, getIcon, MapLine, riderIcon, getPolyline, SegmentedPolyline } from './Map';
+  import {
+    type Props,
+    getIcon,
+    riderIcon,
+    getTravelledLine,
+    SegmentedPolyline,
+    computeSegmentedLines,
+    getBaseLine,
+    createMapButton,
+    getTravelledLineColor,
+  } from './Map';
+  import Modal from './Modal.svelte';
+  import Input from './Input.svelte';
 
   let map: Leaflet.Map | null = null;
-  let basePolyline: SegmentedPolyline | null = null;
-  let travelledPolyline: SegmentedPolyline | null = null;
   let riderMarker: Leaflet.Marker | null = null;
   const markers: Leaflet.Marker[] = [];
 
-  let { setSelectedIdx, selectedRowIndex, setVisible, visibleRows, gpsPoints, gpsGaps, pointsOfInterest }: Props =
-    $props();
+  let {
+    setSelectedIdx,
+    selectedRowIndex,
+    visible,
+    setVisible,
+    visibleRows,
+    gpsPoints,
+    gpsGaps,
+    pointsOfInterest,
+  }: Props = $props();
 
   let node = $state<HTMLDivElement | undefined>();
+  let travelledPolyline = $state<SegmentedPolyline | null>(null);
+  let basePolyline = $state<SegmentedPolyline | null>(null);
+  let segmentModalOpen = $state(false);
+  let hiddenRideSegments = $state<Set<number>>(new Set());
+  let polylineSegments = $derived(computeSegmentedLines(gpsGaps, gpsPoints.length, hiddenRideSegments));
+  let rideSegments = $derived<Set<number>>(new Set(polylineSegments.map((s) => s.segmentIdx)));
 
   $effect(() => {
     if (node && gpsPoints) {
@@ -28,51 +52,69 @@
 
   $effect(() => {
     if (map) {
-      if (riderMarker) {
-        riderMarker.remove();
-      }
+      untrack(() => {
+        if (riderMarker) {
+          riderMarker.remove();
+        }
+      });
 
+      const latLng = gpsPoints[selectedRowIndex];
+      if (latLng) {
+        riderMarker = Leaflet.marker(latLng, { icon: riderIcon }).addTo(map);
+      }
+    }
+  });
+
+  $effect(() => {
+    untrack(() => {
+      if (basePolyline) {
+        basePolyline.remove();
+      }
       if (travelledPolyline) {
         travelledPolyline.remove();
       }
+    });
 
-      const location = gpsPoints[selectedRowIndex];
-      if (location) {
-        riderMarker = Leaflet.marker(location, { icon: riderIcon }).addTo(map);
-        travelledPolyline = getPolyline(gpsPoints, gpsGaps, selectedRowIndex, MapLine.Travelled).addTo(map);
-      }
-    }
+    // ensure this is updated each time the visible rows change
+    visibleRows;
+
+    basePolyline = getBaseLine(gpsPoints, gpsGaps, hiddenRideSegments).addTo(map!);
+    travelledPolyline = getTravelledLine(gpsPoints, gpsGaps, selectedRowIndex, hiddenRideSegments).addTo(map!);
   });
 
   function setVisibleIndices() {
     // SAFETY: only called when a valid map has been created
     const bounds = map!.getBounds();
+    const polylineBounds = basePolyline!.getBounds();
     // SAFETY: only called when a valid line has been created
-    if (bounds.contains(basePolyline!.getBounds())) {
-      setVisible(new Array(gpsPoints.length).fill(true));
-    } else {
-      setVisible(gpsPoints.map((point) => bounds.contains(point)));
+    const newVisiblePoints =
+      polylineBounds && bounds.contains(polylineBounds)
+        ? new Array(gpsPoints.length).fill(true)
+        : gpsPoints.map((point) => bounds.contains(point));
+
+    // hide hidden segments
+    for (const { start, end, segmentIdx } of polylineSegments) {
+      if (hiddenRideSegments.has(segmentIdx)) {
+        for (let j = start; j < end; ++j) {
+          newVisiblePoints[j] = false;
+        }
+      }
     }
+
+    setVisible(newVisiblePoints);
   }
 
-  const ResetButton = Leaflet.Control.extend({
-    options: { position: 'topright' },
-    onAdd: () => {
-      const el = Leaflet.DomUtil.create('div');
-      el.style.backgroundColor = 'black';
-      el.style.border = '1px solid #333';
-      el.style.borderRadius = '3px';
-      el.style.padding = '2px 4px';
-      el.style.cursor = 'pointer';
-      el.textContent = 'reset';
-      // SAFETY: can't be clicked without these existing
-      el.onclick = () => {
-        map!.fitBounds(basePolyline!.getBounds());
-        setSelectedIdx(0);
-      };
-      return el;
-    },
+  const FitButton = createMapButton('re-center', 'topright', () => {
+    const polylineBounds = basePolyline?.getBounds();
+    if (polylineBounds) {
+      // SAFETY: can't be clicked without the map existing
+      map!.fitBounds(polylineBounds);
+    }
+
+    setSelectedIdx(0);
   });
+
+  const EditSegmentsButton = createMapButton('segments', 'bottomleft', () => (segmentModalOpen = !segmentModalOpen));
 
   function updateMarkers() {
     for (const marker of markers) {
@@ -81,11 +123,15 @@
     markers.length = 0;
 
     // add fault markers
-    for (const { index, state: id } of pointsOfInterest) {
-      const { icon, className } = getIcon(id);
+    for (const { index, state } of pointsOfInterest) {
+      if (!visible[index]) {
+        continue;
+      }
+
+      const { icon, className } = getIcon(state);
       const marker = Leaflet.marker(gpsPoints[index]!, {
         icon,
-        title: id,
+        title: state,
       });
 
       // SAFETY: this function is never called unless the map has been created
@@ -96,7 +142,7 @@
       if (element) {
         element.classList.add(className);
         element.addEventListener('click', () => {
-          // find the point in `visibleRows`, if it was clicked it was visible, so it must
+          // find the point in `visibleRows`: if it was clicked it was visible, so it must
           // be in this list
           for (let i = 0; i < visibleRows.length; i++) {
             if (visibleRows[i]!.index === index) {
@@ -127,14 +173,20 @@
     }).addTo(map);
 
     // create lines
-    basePolyline = getPolyline(gpsPoints, gpsGaps, selectedRowIndex, MapLine.Base).addTo(map);
-    travelledPolyline = getPolyline(gpsPoints, gpsGaps, selectedRowIndex, MapLine.Travelled).addTo(map);
+    basePolyline = getBaseLine(gpsPoints, gpsGaps, hiddenRideSegments).addTo(map);
+    travelledPolyline = getTravelledLine(gpsPoints, gpsGaps, selectedRowIndex, hiddenRideSegments).addTo(map);
 
     // fit ride in map
-    map.fitBounds(basePolyline.getBounds());
+    const polylineBounds = basePolyline.getBounds();
+    if (polylineBounds) {
+      map.fitBounds(polylineBounds);
+    }
 
-    // add a reset zoom button
-    map.addControl(new ResetButton());
+    // add map buttons
+    map.addControl(new FitButton());
+    if (polylineSegments.length > 1) {
+      map.addControl(new EditSegmentsButton());
+    }
 
     // add markers
     updateMarkers();
@@ -144,6 +196,34 @@
     setVisibleIndices();
   }
 </script>
+
+{#if travelledPolyline}
+  <Modal bind:open={segmentModalOpen} title="Ride Segments">
+    <p>You can show or hide particular segments of your ride here.</p>
+    <ul class="mt-2 w-[50%] flex flex-col gap-2">
+      {#each rideSegments as segmentIdx}
+        <li class="font-mono font-bold" style:color={getTravelledLineColor(segmentIdx)}>
+          <Input
+            id="segment-{segmentIdx}"
+            type="checkbox"
+            label="Segment #{segmentIdx}"
+            checked={!hiddenRideSegments.has(segmentIdx)}
+            onchange={() => {
+              if (hiddenRideSegments.has(segmentIdx)) {
+                hiddenRideSegments.delete(segmentIdx);
+              } else {
+                hiddenRideSegments.add(segmentIdx);
+              }
+
+              setVisibleIndices();
+              // TODO: would like to be able to re-center here after selecting segments
+            }}
+          />
+        </li>
+      {/each}
+    </ul>
+  </Modal>
+{/if}
 
 <div
   data-testid="map"

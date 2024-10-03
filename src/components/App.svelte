@@ -34,7 +34,7 @@
   let visible = $state<boolean[]>([]);
   /** filtered visible rows */
   let visibleRows = $derived(rows.filter((_, i) => visible[i]));
-  /** indices of gaps between non-contiguous ranges in `visibleRows` */
+  /** indices of gaps between non-contiguous ranges in `visibleRows`; used for rendering vertical lines in charts */
   let gapIndices = $derived.by(() => {
     let gaps: number[] = [];
     let prev = visibleRows[0]?.index ?? 0;
@@ -212,7 +212,16 @@
     wide:relative wide:top-[unset] wide:h-[unset] wide:border-b-0"
     class:map-swapped={swapMapAndDetails}
   >
-    <Map {setSelectedIdx} {setVisible} {selectedRowIndex} {visibleRows} {gpsPoints} {gpsGaps} {pointsOfInterest} />
+    <Map
+      {setSelectedIdx}
+      {visible}
+      {setVisible}
+      {selectedRowIndex}
+      {visibleRows}
+      {gpsPoints}
+      {gpsGaps}
+      {pointsOfInterest}
+    />
   </div>
   <div
     class="place-self-center w-full h-full overflow-hidden

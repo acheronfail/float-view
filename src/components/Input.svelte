@@ -21,9 +21,15 @@
 </script>
 
 <div class="{inline ? 'inline-flex' : 'flex'} flex-row space-between {propClass}">
-  <label class="grow text-left truncate" title={label} for={id}>{label}:</label>
+  <label class="grow text-left truncate select-none cursor-pointer" title={label} for={id}>{label}:</label>
   {#if type === 'checkbox'}
-    <input class="bg-slate-900 border rounded px-2 py min-w-24" {...rest} {id} type="checkbox" bind:checked />
+    <input
+      class="bg-slate-900 border rounded px-2 py min-w-24 cursor-pointer"
+      {...rest}
+      {id}
+      type="checkbox"
+      bind:checked
+    />
   {:else}
     <input class="bg-slate-900 border rounded px-2 py min-w-24" {...rest} {id} bind:value />
   {/if}
