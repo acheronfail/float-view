@@ -25,6 +25,7 @@ const UnitsSchema = z.nativeEnum(Units);
 const SavedSettingsSchema = z.object({
   batterySpecs: BatterySpecsSchema,
   hiddenStates: HiddenStateSchema,
+  mapIconsGreyscale: z.boolean().default(false),
   units: UnitsSchema,
   charts: z.string().array(),
 });
@@ -65,6 +66,9 @@ const settings = new (class {
   /** user selected charts */
   charts = $state<SelectedCharts>((savedSettings?.charts as SelectedCharts) ?? [...defaultSelectedCharts]);
 
+  /** whether icons in map should be greyed out */
+  mapIconsGreyscale = $state(savedSettings?.mapIconsGreyscale ?? false);
+
   /*
    * derived state
    */
@@ -82,6 +86,7 @@ const settings = new (class {
     JSON.stringify({
       batterySpecs: this.batterySpecs,
       hiddenStates: this.hiddenStates,
+      mapIconsGreyscale: this.mapIconsGreyscale,
       units: this.units,
       charts: this.charts,
     } satisfies ZSavedSettings),

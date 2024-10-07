@@ -14,6 +14,7 @@
     type,
     value = $bindable(),
     checked = $bindable(),
+    title = label,
     inline = false,
     class: propClass,
     ...rest
@@ -21,7 +22,7 @@
 </script>
 
 <div class="{inline ? 'inline-flex' : 'flex'} flex-row space-between {propClass}">
-  <label class="grow text-left truncate select-none cursor-pointer" title={label} for={id}>{label}:</label>
+  <label class="grow text-left truncate select-none cursor-pointer" {title} for={id}>{label}:</label>
   {#if type === 'checkbox'}
     <input
       class="bg-slate-900 border rounded px-2 py min-w-24 cursor-pointer"

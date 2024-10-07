@@ -14,6 +14,7 @@
   } from './Map';
   import Modal from './Modal.svelte';
   import Input from './Input.svelte';
+  import settings from '../lib/settings.svelte';
 
   let map: Leaflet.Map | null = null;
   let riderMarker: Leaflet.Marker | null = null;
@@ -63,14 +64,16 @@
         riderMarker = Leaflet.marker(latLng, { icon: riderIcon }).addTo(map);
       }
 
-      for (const marker of markers) {
-        const el = marker.getElement();
-        if (el && typeof el.dataset.index === 'string') {
-          const index = parseInt(el.dataset.index);
-          if (index > selectedRowIndex) {
-            el.classList.add('greyscale');
-          } else {
-            el.classList.remove('greyscale');
+      if (settings.mapIconsGreyscale) {
+        for (const marker of markers) {
+          const el = marker.getElement();
+          if (el && typeof el.dataset.index === 'string') {
+            const index = parseInt(el.dataset.index);
+            if (index > selectedRowIndex) {
+              el.classList.add('greyscale');
+            } else {
+              el.classList.remove('greyscale');
+            }
           }
         }
       }

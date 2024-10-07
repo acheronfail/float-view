@@ -61,6 +61,15 @@
       bind:value={settings.cellMaxVolt}
     />
     <h3 class="font-bold text-lg my-2">Map Options</h3>
+    <Input
+      class={inputClass}
+      id="map_greyscale_icons"
+      label="Unreached markers greyed out"
+      title="When moving the rider across the map, markers that the ride has not yet reached will be greyed out."
+      type="checkbox"
+      bind:checked={settings.mapIconsGreyscale}
+    />
+    <h4 class="font-bold text-md my-2">Visible map markers</h4>
     <ul class="text-left select-none">
       {#each Object.values(State) as state}
         {#if state !== State.Riding}
@@ -93,6 +102,7 @@
         {/if}
       {/each}
     </ul>
+
     <div class="grow flex flex-col justify-around items-center">
       <hr />
       <p>
