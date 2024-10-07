@@ -13,9 +13,9 @@ export const defaultSelectedCharts = Object.freeze([
 ]) as SelectedCharts;
 
 const BatterySpecsSchema = z.object({
-  cellCount: z.number().nullish(),
-  cellMinVolt: z.number().nullish(),
-  cellMaxVolt: z.number().nullish(),
+  cellCount: z.coerce.number().nullish(),
+  cellMinVolt: z.coerce.number().nullish(),
+  cellMaxVolt: z.coerce.number().nullish(),
 });
 export type ZBatterySpecs = z.infer<typeof BatterySpecsSchema>;
 
@@ -39,7 +39,7 @@ const savedSettings: ZSavedSettings | undefined = (() => {
       return SavedSettingsSchema.parse(json);
     }
   } catch (err) {
-    console.error('Failed to parse saved settings', err);
+    console.error('Failed to parse saved settings', err, value);
     window.localStorage.removeItem(localStorageKey);
   }
 })();
