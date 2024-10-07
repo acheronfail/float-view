@@ -67,6 +67,10 @@ hr {
   left: -15px;
 }
 
+.opaque {
+  opacity: 0.5;
+}
+
 /* state icons */
 .state-icon {
   background-color: magenta;

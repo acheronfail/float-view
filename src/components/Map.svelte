@@ -62,6 +62,18 @@
       if (latLng) {
         riderMarker = Leaflet.marker(latLng, { icon: riderIcon }).addTo(map);
       }
+
+      for (const marker of markers) {
+        const el = marker.getElement();
+        if (el && typeof el.dataset.index === 'string') {
+          const index = parseInt(el.dataset.index);
+          if (index > selectedRowIndex) {
+            el.classList.add('opaque');
+          } else {
+            el.classList.remove('opaque');
+          }
+        }
+      }
     }
   });
 
@@ -140,6 +152,7 @@
 
       const element = marker.getElement();
       if (element) {
+        element.dataset.index = index.toString();
         element.classList.add(className);
         element.addEventListener('click', () => {
           // find the point in `visibleRows`: if it was clicked it was visible, so it must
