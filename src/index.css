@@ -67,8 +67,8 @@ hr {
   left: -15px;
 }
 
-.opaque {
-  opacity: 0.2;
+.greyscale {
+  filter: grayscale(1);
 }
 
 /* state icons */

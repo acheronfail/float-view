@@ -68,9 +68,9 @@
         if (el && typeof el.dataset.index === 'string') {
           const index = parseInt(el.dataset.index);
           if (index > selectedRowIndex) {
-            el.classList.add('opaque');
+            el.classList.add('greyscale');
           } else {
-            el.classList.remove('opaque');
+            el.classList.remove('greyscale');
           }
         }
       }
