@@ -32,6 +32,7 @@
         <strong>Float Control</strong>
       </li>
       <li>an exported <span class="font-mono">JSON</span> file from <strong>Floaty</strong></li>
+      <li>... or drag and drop a supported file onto this window!</li>
     </ul>
     <input
       class="text-center file:mr-4 file:py-2 file:px-4

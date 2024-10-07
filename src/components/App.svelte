@@ -154,8 +154,12 @@
   const ondragleave: DragEventHandler<HTMLElement> = (_) => (draggingFile = false);
   const ondragover: DragEventHandler<HTMLElement> = (e) => {
     e.preventDefault();
-    if (draggingFile && e.dataTransfer) {
+    if (!e.dataTransfer) return;
+
+    if (draggingFile) {
       e.dataTransfer.dropEffect = 'copy';
+    } else {
+      e.dataTransfer.dropEffect = 'none';
     }
   };
   const ondrop: DragEventHandler<HTMLElement> = (e) => {
@@ -173,21 +177,6 @@
 
 <Header bind:file />
 
-<SettingsModal />
-
-{#if !file}
-  <Picker bind:file {ondragenter} />
-{:else if loading}
-  <Modal open closable={false} title="Loading...">
-    <div>
-      <h3 class="font-bold mb-4 animate-bounce">Parsing your ride...</h3>
-      <div class="inline-block animate-spin">
-        {@html riderSvg}
-      </div>
-    </div>
-  </Modal>
-{/if}
-
 <main
   class="grid w-full bg-slate-600 gap-px grid-flow-dense
   h-[unset]
@@ -198,6 +187,21 @@
   {ondragover}
   {ondrop}
 >
+  <SettingsModal />
+
+  {#if !file}
+    <Picker bind:file {ondragenter} />
+  {:else if loading}
+    <Modal open closable={false} title="Loading...">
+      <div>
+        <h3 class="font-bold mb-4 animate-bounce">Parsing your ride...</h3>
+        <div class="inline-block animate-spin">
+          {@html riderSvg}
+        </div>
+      </div>
+    </Modal>
+  {/if}
+
   {#if draggingFile}
     <Modal title="File drag detected!" open closable={false} {ondragleave}>
       <div class="h-full w-full flex flex-row justify-center items-center border border-dashed border-4 rounded-2xl">
