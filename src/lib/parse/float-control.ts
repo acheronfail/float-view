@@ -1,24 +1,11 @@
-import csv, { type ParseResult } from 'papaparse';
-import { floatControlKeyMap, FloatControlRawHeader } from './float-control.types';
+import csv from 'papaparse';
+import { floatControlToRowMap, FloatControlRawHeader } from './float-control.types';
 import demoCsv from '../../assets/demo.csv?raw';
-import { attachIndex } from '../misc';
-import { RowKey, State, type Row, type RowWithIndex, Units } from './types';
+import { attachIndex, createHeaderTransformer, parseFloatValue } from '../misc';
+import { RowKey, State, type Row, type RowWithIndex, Units, DataSource } from './types';
+import { ParseError, type ParseResult } from './index';
 
-const transformHeader = (header: string) => {
-  const key = floatControlKeyMap[header as FloatControlRawHeader];
-  if (!key) console.warn('Unknown header found in CSV file', { header });
-  return key ?? header;
-};
-
-const parseFloatValue = (input: string): number => {
-  const float = parseFloat(input);
-  if (Number.isNaN(float)) {
-    console.warn(`Failed to parse CSV! Expected a number, but got: '${input}'`);
-    return 0;
-  }
-
-  return float;
-};
+const transformHeader = createHeaderTransformer(floatControlToRowMap);
 
 const transform = <C extends RowKey>(value: string, column: C): Row[C] => {
   switch (column) {
@@ -56,12 +43,7 @@ const parseOptions = {
   transform,
 };
 
-export interface FloatControlData {
-  csv: ParseResult<RowWithIndex>;
-  units: Units;
-}
-
-export function parseFloatControlCsv(input: string | File): Promise<FloatControlData> {
+export function parseFloatControlCsv(input: string | File): Promise<ParseResult> {
   let units = Units.Imperial;
   return new Promise((resolve) => {
     csv.parse<Row>(input, {
@@ -74,10 +56,15 @@ export function parseFloatControlCsv(input: string | File): Promise<FloatControl
         return transformHeader(header);
       },
       complete: (results) => {
-        results.data = attachIndex(results.data);
+        const data = attachIndex(results.data);
         resolve({
-          csv: results as ParseResult<RowWithIndex>,
+          source: DataSource.FloatControl,
+          data,
           units,
+          error:
+            results.errors.length > 0
+              ? new ParseError('Failed to parse Float Control CSV!', results.errors)
+              : undefined,
         });
       },
     });

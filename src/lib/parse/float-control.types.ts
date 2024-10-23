@@ -44,7 +44,7 @@ export enum FloatControlRawHeader {
   WhCharged = 'Wh Charged',
 }
 
-export const floatControlKeyMap: Record<FloatControlRawHeader, RowKey> = {
+export const floatControlToRowMap: Record<FloatControlRawHeader, RowKey> = {
   [FloatControlRawHeader.Adc1]: RowKey.Adc1,
   [FloatControlRawHeader.Adc2]: RowKey.Adc2,
   [FloatControlRawHeader.Ah]: RowKey.Ah,
