@@ -26,3 +26,24 @@ export const formatFloat = (n: number | undefined, allowInt = false) => {
   if (allowInt && Number.isInteger(n)) return n.toString();
   return n.toFixed(1);
 };
+
+const loggedHeaders = new Set<string>();
+export const createHeaderTransformer = (mapper: Record<string, string | undefined>) => (header: string) => {
+  const key = mapper[header];
+  if (key === undefined && !loggedHeaders.has(header)) {
+    console.warn('Unknown header found in CSV file', { header });
+    loggedHeaders.add(header);
+  }
+
+  return key ?? header;
+};
+
+export const parseFloatValue = (input: string): number => {
+  const float = parseFloat(input);
+  if (Number.isNaN(float)) {
+    console.warn(`Failed to parse CSV! Expected a number, but got: '${input}'`);
+    return 0;
+  }
+
+  return float;
+};

@@ -2,6 +2,7 @@ export enum DataSource {
   None = 'none',
   FloatControl = 'float_control',
   Floaty = 'floaty',
+  VescTool = 'vesc_tool',
 }
 
 export enum Units {
@@ -63,6 +64,7 @@ export const empty: RowWithIndex = {
   wh: 0,
 };
 
+// TODO: make keyof
 export enum RowKey {
   Adc1 = 'adc1',
   Adc2 = 'adc2',
