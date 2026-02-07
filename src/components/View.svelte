@@ -271,6 +271,7 @@
       </div>
     </Modal>
   {/if}
+
   <div
     class="sticky top-[--header-height] h-[--grid-width] z-50 border-b
     wide:relative wide:top-[unset] wide:h-[unset] wide:border-b-0"
