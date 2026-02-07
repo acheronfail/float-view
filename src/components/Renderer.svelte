@@ -178,6 +178,8 @@
   let overlayFieldsEnabled = new SavedState<Record<string, boolean>>('overlayFields', DEFAULT_OVERLAY_FIELDS);
   let overlayPosition = new SavedState<OverlayPosition>('overlayPosition', DEFAULT_OVERLAY_POSITION);
   let overlayFieldPositions = new SavedState<FieldPositions>('overlayFieldPositions', {});
+  let overlayBackgroundColor = new SavedState<string>('overlayBackgroundColor', 'rgba(15, 23, 42, 0.85)');
+  let overlayTextColor = new SavedState<string>('overlayTextColor', '#e2e8f0');
 
   const overlayItemsForPreview = $derived.by(() => {
     const row = overlayRows[overlaySelectedRowIndex] ?? overlayRows[0];
@@ -327,7 +329,11 @@
           const pos = overlayFieldPositions.v[def.id] ?? defaultPositions[i]!;
           return { label: def.label, value: def.getValue(row), x: pos.x, y: pos.y };
         });
-        drawVideoOverlayHud(ctx, vw, vh, { items: hudItems });
+        drawVideoOverlayHud(ctx, vw, vh, {
+          items: hudItems,
+          backgroundColor: overlayBackgroundColor.v,
+          textColor: overlayTextColor.v,
+        });
         const frame = new VideoFrame(canvas, { timestamp: i * frameDurationMicros });
         encoder.encode(frame, { keyFrame: i % 30 === 0 });
         frame.close();
@@ -1028,14 +1034,17 @@
                     </Button>
                   </div>
                 </div>
-                <Input
-                  id="overlay-fps"
-                  label="FPS"
-                  type="number"
-                  defaultValue={inputFps.v}
-                  placeholder={`${defaultFps}`}
-                  onblur={(e) => (inputFps.v = e.currentTarget.value)}
-                />
+                <div>
+                  <Input
+                    id="overlay-fps"
+                    label="Output FPS"
+                    type="number"
+                    defaultValue={inputFps.v}
+                    placeholder={`${defaultFps}`}
+                    onblur={(e) => (inputFps.v = e.currentTarget.value)}
+                  />
+                  <p class="text-xs text-slate-500 mt-1">Match your source video’s frame rate (e.g. 24, 25, 30) for 1:1 quality.</p>
+                </div>
                 <div class="flex flex-wrap items-center gap-2">
                   <label for="overlay-time-offset" class="text-sm text-slate-300">Time offset (s):</label>
                   <input
@@ -1046,6 +1055,42 @@
                     bind:value={overlayTimeOffset}
                   />
                   <span class="text-xs text-slate-500">Ride start = video time − offset</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-4">
+                  <div class="flex items-center gap-2">
+                    <label for="overlay-bg-color" class="text-sm text-slate-300">Background:</label>
+                    <input
+                      id="overlay-bg-color"
+                      type="text"
+                      class="w-40 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-slate-200 font-mono text-sm"
+                      placeholder="rgba(15, 23, 42, 0.85)"
+                      bind:value={overlayBackgroundColor.v}
+                    />
+                    <input
+                      type="color"
+                      class="h-8 w-8 cursor-pointer rounded border border-slate-600"
+                      value={overlayBackgroundColor.v.startsWith('#') ? overlayBackgroundColor.v : '#0f172a'}
+                      oninput={(e) => (overlayBackgroundColor.v = e.currentTarget.value)}
+                      title="Pick background color"
+                    />
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label for="overlay-text-color" class="text-sm text-slate-300">Text:</label>
+                    <input
+                      id="overlay-text-color"
+                      type="text"
+                      class="w-28 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-slate-200 font-mono text-sm"
+                      placeholder="#e2e8f0"
+                      bind:value={overlayTextColor.v}
+                    />
+                    <input
+                      type="color"
+                      class="h-8 w-8 cursor-pointer rounded border border-slate-600"
+                      value={overlayTextColor.v.startsWith('#') ? overlayTextColor.v : '#e2e8f0'}
+                      oninput={(e) => (overlayTextColor.v = e.currentTarget.value)}
+                      title="Pick text color"
+                    />
+                  </div>
                 </div>
               </div>
             {/if}
@@ -1092,6 +1137,8 @@
                     setSelectedRowIndex={(i) => (overlaySelectedRowIndex = i)}
                     timeOffset={overlayTimeOffset}
                     overlayItems={overlayItemsForPreview}
+                    overlayBackgroundColor={overlayBackgroundColor.v}
+                    overlayTextColor={overlayTextColor.v}
                     onPositionChange={(id, x, y) => {
                       overlayFieldPositions.v = { ...overlayFieldPositions.v, [id]: { x, y } };
                     }}

@@ -543,6 +543,10 @@ function drawFootpad(params: FootpadParams) {
 export interface VideoOverlayHudOptions {
   /** Each item has label, value, and position in 0–1 (relative to canvas size) */
   items: { label: string; value: string; x: number; y: number }[];
+  /** Background color for each field box (CSS color, e.g. rgba(15,23,42,0.85)) */
+  backgroundColor?: string;
+  /** Text color for label and value (CSS color) */
+  textColor?: string;
 }
 
 /** Draw overlay HUD on a canvas (e.g. over a video frame). Used when exporting video with burned-in stats. */
@@ -552,7 +556,7 @@ export function drawVideoOverlayHud(
   height: number,
   options: VideoOverlayHudOptions,
 ): void {
-  const { items } = options;
+  const { items, backgroundColor = 'rgba(15, 23, 42, 0.85)', textColor = colors.fg } = options;
   if (items.length === 0) return;
 
   // Use smaller padding so export box size matches preview (preview uses ~16px / tailwind px-4)
@@ -573,7 +577,7 @@ export function drawVideoOverlayHud(
     if (py + boxHeight > height) py = height - boxHeight;
     if (py < 0) py = 0;
 
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.fillStyle = backgroundColor;
     ctx.strokeStyle = 'rgba(71, 85, 105, 0.6)';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -581,11 +585,10 @@ export function drawVideoOverlayHud(
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = colors.fgSubtle;
+    ctx.fillStyle = textColor;
     ctx.textAlign = 'left';
     ctx.fillText(label, px + pad * 0.5, py + boxHeight / 2);
 
-    ctx.fillStyle = colors.fg;
     ctx.textAlign = 'right';
     ctx.fillText(value, px + boxWidth - pad * 0.5, py + boxHeight / 2);
   }

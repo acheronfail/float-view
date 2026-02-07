@@ -22,6 +22,10 @@
     timeOffset?: number;
     /** Overlay items with position (x, y in 0–1) */
     overlayItems?: OverlayItem[];
+    /** Background color for all overlay fields (CSS color) */
+    overlayBackgroundColor?: string;
+    /** Text color for all overlay fields (CSS color) */
+    overlayTextColor?: string;
     /** Called when user drags a field to a new position */
     onPositionChange?: (id: string, x: number, y: number) => void;
   }
@@ -33,6 +37,8 @@
     setSelectedRowIndex,
     timeOffset = 0,
     overlayItems = [],
+    overlayBackgroundColor = 'rgba(15, 23, 42, 0.85)',
+    overlayTextColor = '#e2e8f0',
     onPositionChange,
   }: Props = $props();
 
@@ -187,10 +193,10 @@
         {@const x = isDragging ? dragX : item.x}
         {@const y = isDragging ? dragY : item.y}
         <div
-          class="absolute w-fit max-w-[85%] flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900/85 backdrop-blur border border-slate-600/50 cursor-grab active:cursor-grabbing select-none pointer-events-auto touch-none {isDragging
+          class="absolute w-fit max-w-[85%] flex items-center gap-2 px-4 py-2 rounded-lg backdrop-blur border border-slate-600/50 cursor-grab active:cursor-grabbing select-none pointer-events-auto touch-none {isDragging
             ? 'ring-2 ring-cyan-400'
             : ''}"
-          style="left: {x * 100}%; top: {y * 100}%; transform: translate(0, 0);"
+          style="left: {x * 100}%; top: {y * 100}%; transform: translate(0, 0); background: {overlayBackgroundColor}; color: {overlayTextColor};"
           role="button"
           tabindex="-1"
           onpointerdown={(e) => onPositionChange && startDrag(e, item)}
@@ -199,8 +205,8 @@
           onpointercancel={endDrag}
           onpointerleave={(e) => e.buttons === 0 && endDrag(e)}
         >
-          <span class="text-slate-400 text-sm font-medium">{item.label}</span>
-          <span class="text-white font-mono font-bold text-lg tabular-nums">{item.value}</span>
+          <span class="text-sm font-medium opacity-90">{item.label}</span>
+          <span class="font-mono font-bold text-lg tabular-nums">{item.value}</span>
         </div>
       {/each}
     </div>
