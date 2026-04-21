@@ -14,6 +14,7 @@
  *
  * Additional updates from acheronfail:
  * - added a simple ESM export
+ * - removed CommonJS export branches
  *
  * Released under the WTFPLv2 https://en.wikipedia.org/wiki/WTFPL
  */
@@ -220,11 +221,7 @@
     }
   };
 
-  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-    module.exports = ArrayBufferDataStream;
-  } else {
-    self.ArrayBufferDataStream = ArrayBufferDataStream;
-  }
+  self.ArrayBufferDataStream = ArrayBufferDataStream;
 })();
 ('use strict');
 
@@ -461,11 +458,7 @@
     };
   };
 
-  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-    module.exports = BlobBuffer(require('fs'));
-  } else {
-    self.BlobBuffer = BlobBuffer(null);
-  }
+  self.BlobBuffer = BlobBuffer(null);
 })();
 /**
  * WebM video encoder for Google Chrome. This implementation is suitable for
@@ -1150,11 +1143,7 @@
     };
   };
 
-  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-    module.exports = WebMWriter(require('./ArrayBufferDataStream'), require('./BlobBuffer'));
-  } else {
-    self.WebMWriter = WebMWriter(self.ArrayBufferDataStream, self.BlobBuffer);
-  }
+  self.WebMWriter = WebMWriter(self.ArrayBufferDataStream, self.BlobBuffer);
 })();
 
 const WebMWriter = self.WebMWriter;
