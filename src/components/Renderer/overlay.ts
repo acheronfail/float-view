@@ -40,18 +40,8 @@ export const DEFAULT_OVERLAY_FIELDS: Record<string, boolean> = {
 /** CSS classes for positioning the overlay container (Tailwind-style: insets + flex). */
 export function getOverlayPositionClasses(pos: OverlayPosition): string {
   const v = pos.vertical === 'top' ? 'top-4' : pos.vertical === 'bottom' ? 'bottom-4' : 'top-1/2 -translate-y-1/2';
-  const h =
-    pos.horizontal === 'left'
-      ? 'left-4'
-      : pos.horizontal === 'right'
-        ? 'right-4'
-        : 'left-1/2 -translate-x-1/2';
-  const flex =
-    pos.vertical === 'top'
-      ? 'flex-col'
-      : pos.vertical === 'bottom'
-        ? 'flex-col-reverse'
-        : 'flex-col';
+  const h = pos.horizontal === 'left' ? 'left-4' : pos.horizontal === 'right' ? 'right-4' : 'left-1/2 -translate-x-1/2';
+  const flex = pos.vertical === 'top' ? 'flex-col' : pos.vertical === 'bottom' ? 'flex-col-reverse' : 'flex-col';
   return `${v} ${h} flex ${flex} gap-2`;
 }
 
@@ -94,10 +84,7 @@ const GAP_FRAC = 0.02;
 const BOX_WIDTH_FRAC = 0.28;
 
 /** Default (x, y) in 0–1 for each item when stacked at the given position. Used when no custom position is set. */
-export function getDefaultItemPositions(
-  pos: OverlayPosition,
-  itemCount: number,
-): { x: number; y: number }[] {
+export function getDefaultItemPositions(pos: OverlayPosition, itemCount: number): { x: number; y: number }[] {
   const result: { x: number; y: number }[] = [];
   let x: number;
   if (pos.horizontal === 'left') x = PAD_FRAC;

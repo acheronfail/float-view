@@ -31,6 +31,7 @@
     type OverlayPosition,
     type FieldPositions,
   } from './Renderer/overlay';
+  import { chooseOutputFolder, getOutputDirectory, loadOutputHandle } from '../lib/output-directory-handle';
 
   const defaultFps = 20;
   const defaultWidth = 1080;
@@ -78,75 +79,17 @@
   let renderMode = new SavedState<'render' | 'overlay'>('renderMode', 'render');
 
   // output folder (persisted to IndexedDB so it survives reload)
-  const OUTPUT_HANDLE_DB = 'float-renderer-output';
-  const OUTPUT_HANDLE_KEY = 'outputDirectory';
-
   let outputDirectoryHandle = $state<FileSystemDirectoryHandle | null>(null);
   let outputDirectoryName = $derived(outputDirectoryHandle?.name ?? null);
 
-  function saveOutputHandle(handle: FileSystemDirectoryHandle): void {
-    try {
-      const req = indexedDB.open(OUTPUT_HANDLE_DB, 1);
-      req.onupgradeneeded = () => req.result.createObjectStore('handles');
-      req.onsuccess = () => {
-        req.result.transaction('handles', 'readwrite').objectStore('handles').put(handle, OUTPUT_HANDLE_KEY);
-      };
-    } catch (e) {
-      console.warn('Could not save output folder:', e);
-    }
+  async function chooseAndSetOutputDirectory(): Promise<FileSystemDirectoryHandle | null> {
+    outputDirectoryHandle = await chooseOutputFolder();
+    return outputDirectoryHandle;
   }
 
-  function loadOutputHandle(): Promise<FileSystemDirectoryHandle | null> {
-    return new Promise((resolve) => {
-      try {
-        const req = indexedDB.open(OUTPUT_HANDLE_DB, 1);
-        req.onupgradeneeded = () => req.result.createObjectStore('handles');
-        req.onsuccess = () => {
-          const tx = req.result.transaction('handles', 'readonly');
-          const get = tx.objectStore('handles').get(OUTPUT_HANDLE_KEY);
-          get.onsuccess = () => resolve(get.result ?? null);
-          get.onerror = () => resolve(null);
-        };
-        req.onerror = () => resolve(null);
-      } catch {
-        resolve(null);
-      }
-    });
-  }
-
-  async function chooseOutputFolder(): Promise<FileSystemDirectoryHandle | null> {
-    try {
-      const dir = await window.showDirectoryPicker({
-        id: 'output',
-        mode: 'readwrite',
-        startIn: 'videos',
-      });
-      outputDirectoryHandle = dir;
-      saveOutputHandle(dir);
-      return dir;
-    } catch (e) {
-      if ((e as Error).name !== 'AbortError') console.error(e);
-      return null;
-    }
-  }
-
-  async function getOutputDirectory(): Promise<FileSystemDirectoryHandle | null> {
-    if (outputDirectoryHandle) {
-      try {
-        if ('requestPermission' in outputDirectoryHandle && (outputDirectoryHandle as FileSystemDirectoryHandle).requestPermission) {
-          const perm = await (outputDirectoryHandle as FileSystemDirectoryHandle).requestPermission({ mode: 'readwrite' });
-          if (perm !== 'granted') {
-            outputDirectoryHandle = null;
-            return await chooseOutputFolder();
-          }
-        }
-        return outputDirectoryHandle;
-      } catch {
-        outputDirectoryHandle = null;
-        return await chooseOutputFolder();
-      }
-    }
-    return await chooseOutputFolder();
+  async function getAndSetOutputDirectory(): Promise<FileSystemDirectoryHandle | null> {
+    outputDirectoryHandle = await getOutputDirectory(outputDirectoryHandle);
+    return outputDirectoryHandle;
   }
 
   // saved user input
@@ -214,11 +157,13 @@
       overlayRows = [];
       return;
     }
-    parse(rideFile).then((result) => {
-      overlayRows = result.data;
-    }).catch(() => {
-      overlayRows = [];
-    });
+    parse(rideFile)
+      .then((result) => {
+        overlayRows = result.data;
+      })
+      .catch(() => {
+        overlayRows = [];
+      });
   });
 
   function rowAtTime(rows: RowWithIndex[], rideTime: number): RowWithIndex {
@@ -242,7 +187,7 @@
       alert('Please load both a ride file and a video first.');
       return;
     }
-    const dir = await getOutputDirectory();
+    const dir = await getAndSetOutputDirectory();
     if (!dir) return;
     Notification.requestPermission();
     const overlayFilename = filename ? `${filename} - overlay` : 'ride-overlay';
@@ -341,6 +286,8 @@
           elProgressBar2.value = i + 1;
           elProgressText2.textContent = `${(((i + 1) / totalFrames) * 100).toFixed(1)}% (${i + 1} frames)`;
         }
+
+        // yield to event loop every 30 frames to keep UI responsive and allow cancellation
         if (i % 30 === 0) {
           await new Promise((r) => setTimeout(r, 0));
         }
@@ -465,7 +412,7 @@
       alert('Please enter a filename!');
       return;
     }
-    const directoryHandle = await getOutputDirectory();
+    const directoryHandle = await getAndSetOutputDirectory();
     if (!directoryHandle) return;
     Notification.requestPermission();
 
@@ -811,7 +758,10 @@
           <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4 shadow-lg backdrop-blur-sm">
             <h2 class="text-sm font-semibold text-slate-300 mb-2">Output folder</h2>
             <div class="flex flex-wrap items-center gap-2">
-              <Button onclick={() => chooseOutputFolder()} class="bg-slate-600 hover:bg-slate-500 text-white text-sm">
+              <Button
+                onclick={async () => chooseAndSetOutputDirectory()}
+                class="bg-slate-600 hover:bg-slate-500 text-white text-sm"
+              >
                 {outputDirectoryName ? 'Change folder' : 'Choose folder'}
               </Button>
               <span class="text-sm font-mono text-slate-400 truncate max-w-[200px]" title={outputDirectoryName ?? ''}>
@@ -847,10 +797,7 @@
                 >
                   📁 Clear file
                 </Button>
-                <span
-                  class="text-sm font-mono text-slate-400 truncate max-w-[200px]"
-                  title={inputFile?.name ?? ''}
-                >
+                <span class="text-sm font-mono text-slate-400 truncate max-w-[200px]" title={inputFile?.name ?? ''}>
                   {inputFile?.name ?? 'No ride file selected'}
                 </span>
               </div>
@@ -916,24 +863,24 @@
                       📁 Clear video
                     </Button>
                   </div>
+                {:else if !inputFile}
+                  <p class="text-sm text-slate-500">Load a ride file above first.</p>
                 {:else}
-                  {#if !inputFile}
-                    <p class="text-sm text-slate-500">Load a ride file above first.</p>
-                  {:else}
-                    <label class="cursor-pointer inline-flex items-center gap-2 rounded bg-cyan-600 hover:bg-cyan-500 px-3 py-2 text-sm font-medium text-white w-fit">
-                      Load video
-                      <input
-                        type="file"
-                        accept="video/*"
-                        class="hidden"
-                        onchange={(e) => {
-                          const f = e.currentTarget.files?.[0];
-                          if (f) overlayVideoFile = f;
-                          e.currentTarget.value = '';
-                        }}
-                      />
-                    </label>
-                  {/if}
+                  <label
+                    class="cursor-pointer inline-flex items-center gap-2 rounded bg-cyan-600 hover:bg-cyan-500 px-3 py-2 text-sm font-medium text-white w-fit"
+                  >
+                    Load video
+                    <input
+                      type="file"
+                      accept="video/*"
+                      class="hidden"
+                      onchange={(e) => {
+                        const f = e.currentTarget.files?.[0];
+                        if (f) overlayVideoFile = f;
+                        e.currentTarget.value = '';
+                      }}
+                    />
+                  </label>
                 {/if}
               </div>
             {/if}
@@ -984,7 +931,10 @@
                           type="checkbox"
                           checked={overlayFieldsEnabled.v[def.id] ?? false}
                           onchange={() => {
-                            overlayFieldsEnabled.v = { ...overlayFieldsEnabled.v, [def.id]: !overlayFieldsEnabled.v[def.id] };
+                            overlayFieldsEnabled.v = {
+                              ...overlayFieldsEnabled.v,
+                              [def.id]: !overlayFieldsEnabled.v[def.id],
+                            };
                           }}
                         />
                         {def.label}
@@ -992,7 +942,9 @@
                     {/each}
                   </div>
                 </div>
-                <p class="text-sm text-slate-500">Drag fields on the preview to move them. Position is used when exporting.</p>
+                <p class="text-sm text-slate-500">
+                  Drag fields on the preview to move them. Position is used when exporting.
+                </p>
                 <div>
                   <p class="text-sm text-slate-400 mb-2">Default position (for new fields)</p>
                   <div class="flex flex-wrap gap-3">
@@ -1043,7 +995,9 @@
                     placeholder={`${defaultFps}`}
                     onblur={(e) => (inputFps.v = e.currentTarget.value)}
                   />
-                  <p class="text-xs text-slate-500 mt-1">Match your source video’s frame rate (e.g. 24, 25, 30) for 1:1 quality.</p>
+                  <p class="text-xs text-slate-500 mt-1">
+                    Match your source video’s frame rate (e.g. 24, 25, 30) for 1:1 quality.
+                  </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                   <label for="overlay-time-offset" class="text-sm text-slate-300">Time offset (s):</label>

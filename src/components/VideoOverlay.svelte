@@ -165,8 +165,6 @@
       v.removeEventListener('seeked', onSeeked);
     };
   });
-
-  const currentRow = $derived(rows[selectedRowIndex] ?? rows[0]);
 </script>
 
 <div class="video-overlay-container relative w-full h-full bg-black overflow-hidden rounded-lg">
@@ -196,7 +194,8 @@
           class="absolute w-fit max-w-[85%] flex items-center gap-2 px-4 py-2 rounded-lg backdrop-blur border border-slate-600/50 cursor-grab active:cursor-grabbing select-none pointer-events-auto touch-none {isDragging
             ? 'ring-2 ring-cyan-400'
             : ''}"
-          style="left: {x * 100}%; top: {y * 100}%; transform: translate(0, 0); background: {overlayBackgroundColor}; color: {overlayTextColor};"
+          style="left: {x * 100}%; top: {y *
+            100}%; transform: translate(0, 0); background: {overlayBackgroundColor}; color: {overlayTextColor};"
           role="button"
           tabindex="-1"
           onpointerdown={(e) => onPositionChange && startDrag(e, item)}

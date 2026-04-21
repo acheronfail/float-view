@@ -550,12 +550,7 @@ export interface VideoOverlayHudOptions {
 }
 
 /** Draw overlay HUD on a canvas (e.g. over a video frame). Used when exporting video with burned-in stats. */
-export function drawVideoOverlayHud(
-  ctx: Ctx,
-  width: number,
-  height: number,
-  options: VideoOverlayHudOptions,
-): void {
+export function drawVideoOverlayHud(ctx: Ctx, width: number, height: number, options: VideoOverlayHudOptions): void {
   const { items, backgroundColor = 'rgba(15, 23, 42, 0.85)', textColor = colors.fg } = options;
   if (items.length === 0) return;
 
