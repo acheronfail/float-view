@@ -2,6 +2,7 @@ import * as fflate from 'fflate';
 
 import { parseFloatControlCsv } from './float-control';
 import { parseFloatyJson } from './floaty';
+import { parseVescToolCsv } from './vesc-tool';
 import { DataSource, Units, type RowWithIndex } from './types';
 import { ParseError } from './errors';
 
@@ -50,7 +51,18 @@ export async function parse(file: File): Promise<ParseResult> {
   }
 
   if (file.type === SupportedMimeTypes.Csv || lowerName.endsWith('.csv')) {
-    const parsed = await parseFloatControlCsv(file);
+    const text = await file.text();
+    const firstLine = text.split(/\r?\n/, 1)[0] ?? '';
+    const semicolonCount = (firstLine.match(/;/g) ?? []).length;
+    const commaCount = (firstLine.match(/,/g) ?? []).length;
+
+    // Heuristic: VESC Tool exports are semicolon-delimited, while Float Control uses commas.
+    // If this does not look like VESC Tool, we fall back to Float Control parsing.
+    if (semicolonCount > commaCount) {
+      return await parseVescToolCsv(text);
+    }
+
+    const parsed = await parseFloatControlCsv(text);
     return {
       source: DataSource.FloatControl,
       data: parsed.csv.data,

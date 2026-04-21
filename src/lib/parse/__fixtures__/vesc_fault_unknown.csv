@@ -1,0 +1,2 @@
+ms_today;input_voltage;temp_mos_max;temp_motor;current_motor;current_in;erpm;duty_cycle;amp_hours_used;watt_hours_used;tacho_meters;fault_code;speed_meters_per_sec;roll;pitch;gnss_lat;gnss_lon;gnss_alt;gnss_hAcc;
+2000;80.0;19.1;27.0;14;11;1300;0.45;0.7000;60.0;2000;99;1.5;0.2;0.1;41.0;-76.0;150;1.2;

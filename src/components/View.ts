@@ -153,6 +153,16 @@ export function extractGpsInformation(rows: RowWithIndex[], source: DataSource) 
     }
   }
 
+  // Some logs begin before GNSS has a fix, producing leading (0, 0) values.
+  // Replace only the leading invalid points with the first non-zero coordinate
+  const firstGoodPointIndex = gpsPoints.findIndex(([lat, lon]) => lat !== 0 || lon !== 0);
+  if (firstGoodPointIndex > 0) {
+    const firstGoodPoint = gpsPoints[firstGoodPointIndex]!;
+    for (let i = 0; i < firstGoodPointIndex; ++i) {
+      gpsPoints[i] = firstGoodPoint;
+    }
+  }
+
   // When Float Control starts recording a ride, it appears that the first few data points
   // have incorrect GPS data. If it's the start of the ride, it's (0, 0), but if it's a resumed
   // ride, then it seems to be the last known point from the paused ride.
@@ -178,8 +188,13 @@ export function extractGpsInformation(rows: RowWithIndex[], source: DataSource) 
   return { gpsPoints, gpsGaps };
 }
 
+export function hasAdcTelemetry(rows: RowWithIndex[]): boolean {
+  return rows.some((row) => row.adc1 !== 0 || row.adc2 !== 0);
+}
+
 export function findPointsOfInterest(rows: RowWithIndex[]): PointOfInterest[] {
   const points: PointOfInterest[] = [];
+  const adcFaultsEnabled = hasAdcTelemetry(rows);
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]!;
 
@@ -191,7 +206,7 @@ export function findPointsOfInterest(rows: RowWithIndex[]): PointOfInterest[] {
     }
 
     // custom footpad faults
-    if (row.speed > 2) {
+    if (adcFaultsEnabled && row.speed > 2) {
       const combinedAdcVoltage = row.adc1 + row.adc2;
       if (combinedAdcVoltage < 2) {
         states.push(State.Custom_NoFootpadsAtSpeed);

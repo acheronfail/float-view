@@ -2,6 +2,7 @@ export enum DataSource {
   None = 'none',
   FloatControl = 'float_control',
   Floaty = 'floaty',
+  VescTool = 'vesc_tool',
 }
 
 export enum Units {
