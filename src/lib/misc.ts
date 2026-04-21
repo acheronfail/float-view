@@ -31,3 +31,12 @@ export const formatInt = (n: number | undefined, allowInt = false) => {
   if (typeof n !== 'number' || Number.isNaN(n)) return '??';
   return n.toString();
 };
+
+// formats seconds into "[__h] [__m] __s"
+export const formatTime = (seconds: number) => {
+  if (typeof seconds !== 'number' || Number.isNaN(seconds)) return '??';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  return `${h > 0 ? `${h}h ` : ''}${m > 0 ? `${m}m ` : ''}${s}s`;
+};

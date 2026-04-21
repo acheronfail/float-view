@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import { Units, type RowWithIndex } from '../lib/parse/types';
+  import { RowKey, Units, type RowWithIndex } from '../lib/parse/types';
   import type { RideStats } from './View';
 
   export interface Props {
@@ -20,7 +20,7 @@
   import Button from './Button.svelte';
   import { ChartColours } from './Chart';
   import { empty, State } from '../lib/parse/types';
-  import { formatFloat, formatInt } from '../lib/misc';
+  import { formatFloat, formatInt, formatTime } from '../lib/misc';
   import { globalState } from '../lib/global.svelte';
 
   let { data = empty, stats, batterySpecs, units, hasAdcTelemetry }: Props = $props();
@@ -137,9 +137,10 @@
           { label: 'Total Distance', value: `${formatFloat(stats.totalDistanceMeters)} m` },
           '-',
           {
-            label: 'Index',
-            value: formatInt(data.index + 1),
-            htmlTitle: 'Line number from the CSV file, or the specific log from the JSON file',
+            label: 'Time (index)',
+            value: `${formatTime(data[RowKey.Time])} (${formatInt(data.index + 1)})`,
+            htmlTitle:
+              'Time from log (index is the line number from the CSV file, or the specific log from the JSON file)',
           },
           { value: swapDetailsButton },
         ]}
@@ -156,9 +157,10 @@
           '-',
           { label: 'State', value: data.state.toUpperCase(), color: getStateColor(data.state) },
           {
-            label: 'Index',
-            value: formatInt(data.index + 1),
-            htmlTitle: 'Line number from the CSV file, or the specific log from the JSON file',
+            label: 'Time (index)',
+            value: `${formatTime(data[RowKey.Time])} (${formatInt(data.index + 1)})`,
+            htmlTitle:
+              'Time from log (index is the line number from the CSV file, or the specific log from the JSON file)',
           },
           { value: swapDetailsButton },
         ]}
