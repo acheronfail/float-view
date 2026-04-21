@@ -12,7 +12,14 @@
   import Button from './Button.svelte';
   import { parse, supportedMimeTypes } from '../lib/parse';
   import { globalState } from '../lib/global.svelte';
-  import { computeStats, extractGpsInformation, findPointsOfInterest, type Banner, type RideStats } from './View';
+  import {
+    computeStats,
+    extractGpsInformation,
+    findPointsOfInterest,
+    hasAdcTelemetry,
+    type Banner,
+    type RideStats,
+  } from './View';
   import { type ChartKey, Charts } from './Chart';
   import { riderSvg } from './Map';
   import PickerFull from './PickerFull.svelte';
@@ -62,6 +69,8 @@
   let visible = $state<boolean[]>([]);
   /** filtered visible rows */
   let visibleRows = $derived(rows.filter((_, i) => visible[i]));
+  /** whether this ride appears to include footpad ADC telemetry */
+  let adcsEnabled = $derived(hasAdcTelemetry(rows));
   /** indices of gaps between non-contiguous ranges in `visibleRows`; used for rendering vertical lines in charts */
   let gapIndices = $derived.by(() => {
     let gaps: number[] = [];
@@ -294,7 +303,13 @@
     wide:[grid-column:span_2] wide:[grid-row:unset]"
     class:details-swapped={swapMapAndDetails}
   >
-    <Details {stats} data={visibleRows[selectedIndex]} batterySpecs={settings.batterySpecs} units={settings.units} />
+    <Details
+      {stats}
+      data={visibleRows[selectedIndex]}
+      batterySpecs={settings.batterySpecs}
+      units={settings.units}
+      hasAdcTelemetry={adcsEnabled}
+    />
   </div>
 
   {#each settings.charts as key, index}

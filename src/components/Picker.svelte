@@ -31,6 +31,7 @@
         an exported <span class="font-mono">CSV</span> or <span class="font-mono">ZIP</span> file from
         <strong>Float Control</strong>
       </li>
+      <li>an exported <span class="font-mono">CSV</span> file from <strong>VESC Tool</strong></li>
       <li>an exported <span class="font-mono">JSON</span> file from <strong>Floaty</strong></li>
       <li>... or drag and drop a supported file onto this window!</li>
     </ul>

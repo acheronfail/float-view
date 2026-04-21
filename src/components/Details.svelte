@@ -7,6 +7,7 @@
     stats: RideStats;
     batterySpecs: ZBatterySpecs;
     units: Units;
+    hasAdcTelemetry: boolean;
   }
 </script>
 
@@ -22,7 +23,7 @@
   import { formatFloat, formatInt } from '../lib/misc';
   import { globalState } from '../lib/global.svelte';
 
-  let { data = empty, stats, batterySpecs, units }: Props = $props();
+  let { data = empty, stats, batterySpecs, units, hasAdcTelemetry }: Props = $props();
 
   let showStats = $state(false);
 
@@ -76,7 +77,7 @@
         ]}
       />
     {:else}
-      <Footpads {data} />
+      <Footpads {data} {hasAdcTelemetry} />
     {/if}
   </div>
 
