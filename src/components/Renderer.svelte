@@ -1,9 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { demoFile, demoRow } from '../lib/parse/float-control';
+  import { RowKey } from '../lib/parse/types';
+  import type { RowWithIndex } from '../lib/parse/types';
+  import { parse, supportedMimeTypeString } from '../lib/parse';
   import Picker from './Picker.svelte';
   import Button from './Button.svelte';
   import Input from './Input.svelte';
+  import VideoOverlay from './VideoOverlay.svelte';
   import { SvgImage } from './Renderer/svg';
   import rollSvg from '../assets/roll.svg?raw';
   import pitchSvg from '../assets/pitch.svg?raw';
@@ -16,7 +20,18 @@
     type Renderer,
   } from './Renderer/types';
   import { createRenderer } from './Renderer/render';
+  import { drawVideoOverlayHud } from './Renderer/2d';
+  import WebMWriter from '../lib/webm-writer2.js';
   import Pill from './Pill.svelte';
+  import {
+    OVERLAY_FIELD_DEFS,
+    DEFAULT_OVERLAY_FIELDS,
+    DEFAULT_OVERLAY_POSITION,
+    getDefaultItemPositions,
+    type OverlayPosition,
+    type FieldPositions,
+  } from './Renderer/overlay';
+  import { chooseOutputFolder, getOutputDirectory, loadOutputHandle } from '../lib/output-directory-handle';
 
   const defaultFps = 20;
   const defaultWidth = 1080;
@@ -60,6 +75,23 @@
   // state
   let isRendering = $state(false);
 
+  // mode: render (board animation) vs overlay (stats on video)
+  let renderMode = new SavedState<'render' | 'overlay'>('renderMode', 'render');
+
+  // output folder (persisted to IndexedDB so it survives reload)
+  let outputDirectoryHandle = $state<FileSystemDirectoryHandle | null>(null);
+  let outputDirectoryName = $derived(outputDirectoryHandle?.name ?? null);
+
+  async function chooseAndSetOutputDirectory(): Promise<FileSystemDirectoryHandle | null> {
+    outputDirectoryHandle = await chooseOutputFolder();
+    return outputDirectoryHandle;
+  }
+
+  async function getAndSetOutputDirectory(): Promise<FileSystemDirectoryHandle | null> {
+    outputDirectoryHandle = await getOutputDirectory(outputDirectoryHandle);
+    return outputDirectoryHandle;
+  }
+
   // saved user input
   let interpolate = new SavedState('interpolate', false);
   let showRemoteTilt = new SavedState('showRemoteTilt', false);
@@ -80,6 +112,207 @@
   let inputStartingIndex = $state('');
   let inputEndingIndex = $state('');
 
+  // Video overlay: overlay ride stats on an imported video (preview + export as new file)
+  let overlayVideoFile = $state<File | undefined>(undefined);
+  let overlayVideoUrl = $state<string | undefined>(undefined);
+  let overlayTimeOffset = $state(0);
+  let overlayRows = $state<RowWithIndex[]>([]);
+  let overlaySelectedRowIndex = $state(0);
+  let overlayFieldsEnabled = new SavedState<Record<string, boolean>>('overlayFields', DEFAULT_OVERLAY_FIELDS);
+  let overlayPosition = new SavedState<OverlayPosition>('overlayPosition', DEFAULT_OVERLAY_POSITION);
+  let overlayFieldPositions = new SavedState<FieldPositions>('overlayFieldPositions', {});
+  let overlayBackgroundColor = new SavedState<string>('overlayBackgroundColor', 'rgba(15, 23, 42, 0.85)');
+  let overlayTextColor = new SavedState<string>('overlayTextColor', '#e2e8f0');
+
+  const overlayItemsForPreview = $derived.by(() => {
+    const row = overlayRows[overlaySelectedRowIndex] ?? overlayRows[0];
+    if (!row) return [];
+    const enabled = OVERLAY_FIELD_DEFS.filter((def) => overlayFieldsEnabled.v[def.id]);
+    const defaultPositions = getDefaultItemPositions(overlayPosition.v, enabled.length);
+    return enabled.map((def, i) => {
+      const pos = overlayFieldPositions.v[def.id] ?? defaultPositions[i]!;
+      return {
+        id: def.id,
+        label: def.label,
+        value: def.getValue(row),
+        x: pos.x,
+        y: pos.y,
+      };
+    });
+  });
+
+  $effect(() => {
+    const f = overlayVideoFile;
+    const url = f ? URL.createObjectURL(f) : undefined;
+    overlayVideoUrl = url;
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  });
+
+  $effect(() => {
+    const rideFile = inputFile;
+    const videoFile = overlayVideoFile;
+    if (!rideFile || !videoFile) {
+      overlayRows = [];
+      return;
+    }
+    parse(rideFile)
+      .then((result) => {
+        overlayRows = result.data;
+      })
+      .catch(() => {
+        overlayRows = [];
+      });
+  });
+
+  function rowAtTime(rows: RowWithIndex[], rideTime: number): RowWithIndex {
+    if (rows.length === 0) return null!;
+    if (rideTime <= rows[0]![RowKey.Time]) return rows[0]!;
+    if (rideTime >= rows[rows.length - 1]![RowKey.Time]) return rows[rows.length - 1]!;
+    let lo = 0;
+    let hi = rows.length - 1;
+    while (lo < hi - 1) {
+      const mid = (lo + hi) >> 1;
+      if (rows[mid]![RowKey.Time] <= rideTime) lo = mid;
+      else hi = mid;
+    }
+    const tLo = rows[lo]![RowKey.Time];
+    const tHi = rows[hi]![RowKey.Time];
+    return rideTime - tLo <= tHi - rideTime ? rows[lo]! : rows[hi]!;
+  }
+
+  async function renderVideoWithOverlay() {
+    if (!overlayVideoUrl || !inputFile || overlayRows.length === 0) {
+      alert('Please load both a ride file and a video first.');
+      return;
+    }
+    const dir = await getAndSetOutputDirectory();
+    if (!dir) return;
+    Notification.requestPermission();
+    const overlayFilename = filename ? `${filename} - overlay` : 'ride-overlay';
+
+    const video = document.createElement('video');
+    video.src = overlayVideoUrl;
+    video.crossOrigin = 'anonymous';
+    video.muted = true;
+    video.playsInline = true;
+
+    await new Promise<void>((resolve, reject) => {
+      video.onloadedmetadata = () => resolve();
+      video.onerror = () => reject(new Error('Failed to load video'));
+    });
+
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    const duration = video.duration;
+    const totalFrames = Math.ceil(duration * fps);
+    const frameDurationMicros = (1_000_000 / fps) | 0;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = vw;
+    canvas.height = vh;
+    const ctx = canvas.getContext('2d')!;
+
+    const fileHandle = await dir!.getFileHandle(`${overlayFilename}.webm`, { create: true });
+    const fileWritableStream = await fileHandle.createWritable();
+    const webmWriter = new WebMWriter({
+      fileWriter: fileWritableStream,
+      codec: 'VP8',
+      width: vw,
+      height: vh,
+      frameRate: fps,
+    });
+
+    const encoderConfig: VideoEncoderConfig = {
+      codec: 'vp8',
+      width: vw,
+      height: vh,
+      bitrate: 2_000_000,
+      framerate: fps,
+    };
+    const { supported } = await VideoEncoder.isConfigSupported(encoderConfig);
+    if (!supported) {
+      await fileWritableStream.close();
+      alert('VP8 encoding is not supported in this browser.');
+      return;
+    }
+
+    const encoder = new VideoEncoder({
+      output: (chunk) => webmWriter.addFrame(chunk),
+      error: (e) => console.error('Video overlay encoder error:', e),
+    });
+    encoder.configure(encoderConfig);
+
+    isRendering = true;
+    if (elProgressBar1 && elProgressBar2 && elProgressText1 && elProgressText2) {
+      elProgressBar1.max = 1;
+      elProgressBar1.value = 0;
+      elProgressBar2.max = totalFrames;
+      elProgressBar2.value = 0;
+      elProgressText1.textContent = 'Video overlay';
+      elProgressText2.textContent = '0% (0 frames)';
+    }
+
+    function seekVideo(t: number): Promise<void> {
+      return new Promise((resolve) => {
+        video.onseeked = () => resolve();
+        video.currentTime = t;
+      });
+    }
+
+    try {
+      for (let i = 0; i < totalFrames && isRendering; i++) {
+        const T = i / fps;
+        const rideTime = T - overlayTimeOffset;
+        const row = rowAtTime(overlayRows, rideTime);
+        await seekVideo(T);
+        ctx.drawImage(video, 0, 0);
+        const enabled = OVERLAY_FIELD_DEFS.filter((def) => overlayFieldsEnabled.v[def.id]);
+        const defaultPositions = getDefaultItemPositions(overlayPosition.v, enabled.length);
+        const hudItems = enabled.map((def, i) => {
+          const pos = overlayFieldPositions.v[def.id] ?? defaultPositions[i]!;
+          return { label: def.label, value: def.getValue(row), x: pos.x, y: pos.y };
+        });
+        drawVideoOverlayHud(ctx, vw, vh, {
+          items: hudItems,
+          backgroundColor: overlayBackgroundColor.v,
+          textColor: overlayTextColor.v,
+        });
+        const frame = new VideoFrame(canvas, { timestamp: i * frameDurationMicros });
+        encoder.encode(frame, { keyFrame: i % 30 === 0 });
+        frame.close();
+        if (elProgressBar2 && elProgressText2) {
+          elProgressBar2.value = i + 1;
+          elProgressText2.textContent = `${(((i + 1) / totalFrames) * 100).toFixed(1)}% (${i + 1} frames)`;
+        }
+
+        // yield to event loop every 30 frames to keep UI responsive and allow cancellation
+        if (i % 30 === 0) {
+          await new Promise((r) => setTimeout(r, 0));
+        }
+      }
+
+      await encoder.flush();
+      encoder.close();
+      await webmWriter.complete();
+      await fileWritableStream.close();
+      if (elProgressBar1 && elProgressBar2) {
+        elProgressBar1.value = elProgressBar1.max;
+        elProgressBar2.value = elProgressBar2.max;
+      }
+      if (elLogOutput) elLogOutput.textContent += 'Video overlay export finished.\n';
+      if (Notification.permission === 'granted') {
+        new Notification('Video overlay export finished');
+      }
+    } catch (err) {
+      console.error('Video overlay export failed:', err);
+      alert(`Export failed: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      isRendering = false;
+    }
+  }
+
   // derived values
   let startingIndex = $derived(inputStartingIndex ? parseInt(inputStartingIndex, 10) : 0);
   let endingIndex = $derived(inputEndingIndex ? parseInt(inputEndingIndex, 10) : 0);
@@ -90,16 +323,17 @@
     inputGapThresholdSecs.v ? parseInt(inputGapThresholdSecs.v, 10) : defaultGapThresholdSecs,
   );
 
-  // when relevant values change, update debug
+  // when relevant values change, update debug (only in render mode)
   $effect(() => {
+    if (renderMode.v !== 'render') return;
     width;
     height;
     showRemoteTilt.v;
     use3dRenderer.v;
     renderInUi.v;
-    backgroundColor.v;
     boardPosition3d.v;
     boardPosition3dRaised.v;
+    backgroundColor.v;
     drawDebug();
   });
 
@@ -174,25 +408,20 @@
   });
 
   async function chooseOutputAndRender() {
-    Notification.requestPermission();
-
     if (!filename) {
       alert('Please enter a filename!');
       return;
     }
-
-    const directoryHandle = await window.showDirectoryPicker({
-      id: 'output',
-      mode: 'readwrite',
-      startIn: 'videos',
-    });
+    const directoryHandle = await getAndSetOutputDirectory();
+    if (!directoryHandle) return;
+    Notification.requestPermission();
 
     const canvas = document.createElement('canvas').transferControlToOffscreen();
     isRendering = true;
     worker.postMessage(
       {
         type: 'start',
-        directoryHandle,
+        directoryHandle: directoryHandle,
         fps,
         width,
         height,
@@ -288,6 +517,9 @@
 
   const images: Record<string, ImageBitmap> = {};
   onMount(async () => {
+    const savedHandle = await loadOutputHandle();
+    if (savedHandle) outputDirectoryHandle = savedHandle;
+
     // NOTE: web workers can't render SVGs, even though the spec says they should
     // so we render them in the UI thread here to a bitmap, and pass that to the worker
     // See: https://stackoverflow.com/a/79196371/5552584
@@ -456,7 +688,7 @@
         </div>
         <div class="relative max-w-2xl mx-auto">
           <p class="text-xl md:text-2xl text-slate-300 font-light tracking-wide">
-            Convert your
+            {renderMode.v === 'overlay' ? 'Overlay' : 'Convert'} your
             <span class="text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text font-semibold"
               >recorded ride</span
             >
@@ -497,36 +729,161 @@
               </div>
             </div>
           </div>
-          <!-- Action Buttons -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-6 shadow-lg backdrop-blur-sm">
-            <h2 class="text-lg font-semibold text-slate-100 mb-4">🎯 Actions</h2>
-            <div class="space-y-3">
-              <Button
-                onclick={() => chooseOutputAndRender()}
-                class="w-full bg-blue-600/80 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/25 {isRendering
-                  ? 'opacity-50 cursor-not-allowed'
-                  : ''}"
-                disabled={isRendering}
+          <!-- Mode: Render vs Overlay -->
+          <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4 shadow-lg backdrop-blur-sm">
+            <h2 class="text-sm font-semibold text-slate-300 mb-2">Mode</h2>
+            <div class="flex rounded-lg overflow-hidden border border-slate-600 bg-slate-900/50 p-0.5">
+              <button
+                type="button"
+                class="flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors {renderMode.v === 'render'
+                  ? 'bg-slate-600 text-white'
+                  : 'text-slate-400 hover:text-slate-200'}"
+                onclick={() => (renderMode.v = 'render')}
               >
-                {isRendering ? '🎬 Rendering...' : '🎬 Choose Output & Render'}
+                Render
+              </button>
+              <button
+                type="button"
+                class="flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors {renderMode.v === 'overlay'
+                  ? 'bg-slate-600 text-white'
+                  : 'text-slate-400 hover:text-slate-200'}"
+                onclick={() => (renderMode.v = 'overlay')}
+              >
+                Overlay
+              </button>
+            </div>
+          </div>
+
+          <!-- Output folder (shared) -->
+          <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4 shadow-lg backdrop-blur-sm">
+            <h2 class="text-sm font-semibold text-slate-300 mb-2">Output folder</h2>
+            <div class="flex flex-wrap items-center gap-2">
+              <Button
+                onclick={async () => chooseAndSetOutputDirectory()}
+                class="bg-slate-600 hover:bg-slate-500 text-white text-sm"
+              >
+                {outputDirectoryName ? 'Change folder' : 'Choose folder'}
               </Button>
-              <div class="grid grid-cols-2 gap-3">
-                <Button
-                  onclick={() => stop()}
-                  class="disabled:opacity-50 disabled:cursor-not-allowed w-full bg-red-600/80 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-red-500/25"
-                  disabled={!isRendering}
+              <span class="text-sm font-mono text-slate-400 truncate max-w-[200px]" title={outputDirectoryName ?? ''}>
+                {outputDirectoryName ?? 'No folder selected'}
+              </span>
+            </div>
+          </div>
+
+          <!-- Ride file (overlay mode only) -->
+          {#if renderMode.v === 'overlay'}
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4 shadow-lg backdrop-blur-sm">
+              <h2 class="text-sm font-semibold text-slate-300 mb-2">Ride file</h2>
+              <div class="flex flex-wrap items-center gap-2">
+                <label
+                  class="cursor-pointer inline-flex items-center gap-2 rounded bg-slate-600 hover:bg-slate-500 px-3 py-2 text-sm font-medium text-white w-fit"
                 >
-                  ❌ Cancel
-                </Button>
+                  {inputFile ? 'Change ride file' : 'Choose ride file'}
+                  <input
+                    type="file"
+                    accept={supportedMimeTypeString}
+                    class="hidden"
+                    onchange={(e) => {
+                      const f = e.currentTarget.files?.[0];
+                      if (f) inputFile = f;
+                      e.currentTarget.value = '';
+                    }}
+                  />
+                </label>
                 <Button
                   onclick={() => clear()}
-                  class="disabled:opacity-50 disabled:cursor-not-allowed w-full bg-slate-600/80 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-slate-500/25"
+                  class="disabled:opacity-50 disabled:cursor-not-allowed bg-slate-600/80 hover:bg-slate-600 text-white text-sm"
                   disabled={!inputFile}
                 >
-                  📁 Choose another file
+                  📁 Clear file
                 </Button>
+                <span class="text-sm font-mono text-slate-400 truncate max-w-[200px]" title={inputFile?.name ?? ''}>
+                  {inputFile?.name ?? 'No ride file selected'}
+                </span>
               </div>
             </div>
+          {/if}
+
+          <!-- Actions (content by mode) -->
+          <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-6 shadow-lg backdrop-blur-sm">
+            <h2 class="text-lg font-semibold text-slate-100 mb-4">🎯 Actions</h2>
+            {#if renderMode.v === 'render'}
+              <div class="space-y-3">
+                <Button
+                  onclick={() => chooseOutputAndRender()}
+                  class="w-full bg-blue-600/80 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/25 {isRendering
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''}"
+                  disabled={isRendering}
+                >
+                  {isRendering ? '🎬 Rendering...' : '🎬 Render'}
+                </Button>
+                <div class="grid grid-cols-2 gap-3">
+                  <Button
+                    onclick={() => stop()}
+                    class="disabled:opacity-50 disabled:cursor-not-allowed w-full bg-red-600/80 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg"
+                    disabled={!isRendering}
+                  >
+                    ❌ Cancel
+                  </Button>
+                  <Button
+                    onclick={() => clear()}
+                    class="disabled:opacity-50 disabled:cursor-not-allowed w-full bg-slate-600/80 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg"
+                    disabled={!inputFile}
+                  >
+                    📁 Clear file
+                  </Button>
+                </div>
+              </div>
+            {:else}
+              <div class="space-y-3">
+                {#if overlayVideoUrl && overlayRows.length > 0}
+                  <Button
+                    onclick={() => renderVideoWithOverlay()}
+                    class="w-full bg-blue-600/80 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/25 {isRendering
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''}"
+                    disabled={isRendering}
+                  >
+                    {isRendering ? '🎬 Exporting…' : '🎬 Export video with overlay'}
+                  </Button>
+                  <div class="grid grid-cols-2 gap-3">
+                    <Button
+                      onclick={() => (isRendering = false)}
+                      class="disabled:opacity-50 disabled:cursor-not-allowed w-full bg-red-600/80 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg"
+                      disabled={!isRendering}
+                    >
+                      ❌ Cancel
+                    </Button>
+                    <Button
+                      onclick={() => (overlayVideoFile = undefined)}
+                      class="disabled:opacity-50 disabled:cursor-not-allowed w-full bg-slate-600/80 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg"
+                      disabled={!overlayVideoFile}
+                    >
+                      📁 Clear video
+                    </Button>
+                  </div>
+                {:else if !inputFile}
+                  <p class="text-sm text-slate-500">Load a ride file above first.</p>
+                {:else}
+                  <label
+                    class="cursor-pointer inline-flex items-center gap-2 rounded bg-cyan-600 hover:bg-cyan-500 px-3 py-2 text-sm font-medium text-white w-fit"
+                  >
+                    Load video
+                    <input
+                      type="file"
+                      accept="video/*"
+                      class="hidden"
+                      onchange={(e) => {
+                        const f = e.currentTarget.files?.[0];
+                        if (f) overlayVideoFile = f;
+                        e.currentTarget.value = '';
+                      }}
+                    />
+                  </label>
+                {/if}
+              </div>
+            {/if}
           </div>
 
           <!-- Progress Section -->
@@ -558,43 +915,207 @@
             </div>
           </div>
 
-          <!-- Output Settings -->
+          <!-- Settings (content by mode) -->
           <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-6 shadow-lg backdrop-blur-sm">
-            {@render outputSettings()}
+            {#if renderMode.v === 'render'}
+              {@render outputSettings()}
+            {:else}
+              <h2 class="text-lg font-semibold text-slate-100 mb-4">🎬 Overlay settings</h2>
+              <div class="space-y-4">
+                <div>
+                  <p class="text-sm text-slate-400 mb-2">Fields to show</p>
+                  <div class="flex flex-wrap gap-x-4 gap-y-1">
+                    {#each OVERLAY_FIELD_DEFS as def}
+                      <label class="inline-flex items-center gap-1.5 text-sm text-slate-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={overlayFieldsEnabled.v[def.id] ?? false}
+                          onchange={() => {
+                            overlayFieldsEnabled.v = {
+                              ...overlayFieldsEnabled.v,
+                              [def.id]: !overlayFieldsEnabled.v[def.id],
+                            };
+                          }}
+                        />
+                        {def.label}
+                      </label>
+                    {/each}
+                  </div>
+                </div>
+                <p class="text-sm text-slate-500">
+                  Drag fields on the preview to move them. Position is used when exporting.
+                </p>
+                <div>
+                  <p class="text-sm text-slate-400 mb-2">Default position (for new fields)</p>
+                  <div class="flex flex-wrap gap-3">
+                    <label class="text-sm text-slate-300">
+                      Vertical
+                      <select
+                        class="ml-2 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-slate-200 text-sm"
+                        value={overlayPosition.v.vertical}
+                        onchange={(e) => {
+                          const vertical = (e.currentTarget.value || 'bottom') as OverlayPosition['vertical'];
+                          overlayPosition.v = { ...overlayPosition.v, vertical };
+                        }}
+                      >
+                        <option value="top">Top</option>
+                        <option value="center">Center</option>
+                        <option value="bottom">Bottom</option>
+                      </select>
+                    </label>
+                    <label class="text-sm text-slate-300">
+                      Horizontal
+                      <select
+                        class="ml-2 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-slate-200 text-sm"
+                        value={overlayPosition.v.horizontal}
+                        onchange={(e) => {
+                          const horizontal = (e.currentTarget.value || 'left') as OverlayPosition['horizontal'];
+                          overlayPosition.v = { ...overlayPosition.v, horizontal };
+                        }}
+                      >
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                      </select>
+                    </label>
+                    <Button
+                      onclick={() => (overlayFieldPositions.v = {})}
+                      class="bg-slate-600 hover:bg-slate-500 text-white text-sm"
+                    >
+                      Reset custom positions
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Input
+                    id="overlay-fps"
+                    label="Output FPS"
+                    type="number"
+                    defaultValue={inputFps.v}
+                    placeholder={`${defaultFps}`}
+                    onblur={(e) => (inputFps.v = e.currentTarget.value)}
+                  />
+                  <p class="text-xs text-slate-500 mt-1">
+                    Match your source video’s frame rate (e.g. 24, 25, 30) for 1:1 quality.
+                  </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <label for="overlay-time-offset" class="text-sm text-slate-300">Time offset (s):</label>
+                  <input
+                    id="overlay-time-offset"
+                    type="number"
+                    step="0.5"
+                    class="w-20 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-slate-200 font-mono text-sm"
+                    bind:value={overlayTimeOffset}
+                  />
+                  <span class="text-xs text-slate-500">Ride start = video time − offset</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-4">
+                  <div class="flex items-center gap-2">
+                    <label for="overlay-bg-color" class="text-sm text-slate-300">Background:</label>
+                    <input
+                      id="overlay-bg-color"
+                      type="text"
+                      class="w-40 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-slate-200 font-mono text-sm"
+                      placeholder="rgba(15, 23, 42, 0.85)"
+                      bind:value={overlayBackgroundColor.v}
+                    />
+                    <input
+                      type="color"
+                      class="h-8 w-8 cursor-pointer rounded border border-slate-600"
+                      value={overlayBackgroundColor.v.startsWith('#') ? overlayBackgroundColor.v : '#0f172a'}
+                      oninput={(e) => (overlayBackgroundColor.v = e.currentTarget.value)}
+                      title="Pick background color"
+                    />
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label for="overlay-text-color" class="text-sm text-slate-300">Text:</label>
+                    <input
+                      id="overlay-text-color"
+                      type="text"
+                      class="w-28 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-slate-200 font-mono text-sm"
+                      placeholder="#e2e8f0"
+                      bind:value={overlayTextColor.v}
+                    />
+                    <input
+                      type="color"
+                      class="h-8 w-8 cursor-pointer rounded border border-slate-600"
+                      value={overlayTextColor.v.startsWith('#') ? overlayTextColor.v : '#e2e8f0'}
+                      oninput={(e) => (overlayTextColor.v = e.currentTarget.value)}
+                      title="Pick text color"
+                    />
+                  </div>
+                </div>
+              </div>
+            {/if}
           </div>
         </div>
 
-        <!-- Right Column -->
+        <!-- Right Column (Preview first, then Log) -->
         <div class="space-y-3">
+          <!-- Preview (content by mode) -->
+          <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-6 shadow-lg backdrop-blur-sm">
+            <h2 class="text-lg font-semibold text-slate-100 mb-4">
+              {#if renderMode.v === 'render'}
+                🎨 Render Preview
+                {#if renderInUi.v}
+                  <Pill text="live" appearance="rose" class="animate-pulse" />
+                {/if}
+              {:else}
+                🎨 Overlay preview
+              {/if}
+            </h2>
+            {#if renderMode.v === 'render'}
+              {#if import.meta.env.DEV}
+                <div class="flex items-center justify-between mb-2">
+                  <Button onclick={() => (fullscreenPreview.v = true)} class="bg-blue-600/80 hover:bg-blue-600">
+                    Fullscreen Preview
+                  </Button>
+                </div>
+              {/if}
+              <div
+                bind:this={elDemoContainer}
+                class="relative flex justify-center items-center h-[400px] bg-slate-900/50 border border-slate-600/50 rounded-lg overflow-hidden"
+              >
+                <!-- Preview canvas will be inserted here -->
+              </div>
+            {:else}
+              <div
+                class="relative flex justify-center items-center min-h-[280px] bg-slate-900/50 border border-slate-600/50 rounded-lg overflow-hidden"
+              >
+                {#if overlayVideoUrl && overlayRows.length > 0}
+                  <VideoOverlay
+                    videoUrl={overlayVideoUrl}
+                    rows={overlayRows}
+                    selectedRowIndex={overlaySelectedRowIndex}
+                    setSelectedRowIndex={(i) => (overlaySelectedRowIndex = i)}
+                    timeOffset={overlayTimeOffset}
+                    overlayItems={overlayItemsForPreview}
+                    overlayBackgroundColor={overlayBackgroundColor.v}
+                    overlayTextColor={overlayTextColor.v}
+                    onPositionChange={(id, x, y) => {
+                      overlayFieldPositions.v = { ...overlayFieldPositions.v, [id]: { x, y } };
+                    }}
+                  />
+                {:else}
+                  <p class="text-slate-500 text-sm p-4 text-center">
+                    {#if !inputFile}
+                      Load a ride file, then load a video to preview.
+                    {:else}
+                      Load a video to preview overlay.
+                    {/if}
+                  </p>
+                {/if}
+              </div>
+            {/if}
+          </div>
+
           <!-- Log Output -->
           <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-6 shadow-lg backdrop-blur-sm">
             <h2 class="text-lg font-semibold text-slate-100 mb-4">📝 Log Output</h2>
             <pre
               bind:this={elLogOutput}
               class="h-[300px] w-full p-4 text-xs font-mono bg-slate-950/80 text-green-400 rounded-lg overflow-y-auto border border-slate-700/50 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800"></pre>
-          </div>
-
-          <!-- Preview -->
-          <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-6 shadow-lg backdrop-blur-sm">
-            <h2 class="text-lg font-semibold text-slate-100 mb-4">
-              🎨 Render Preview
-              {#if renderInUi.v}
-                <Pill text="live" appearance="rose" class="animate-pulse" />
-              {/if}
-            </h2>
-            {#if import.meta.env.DEV}
-              <div class="flex items-center justify-between mb-2">
-                <Button onclick={() => (fullscreenPreview.v = true)} class="bg-blue-600/80 hover:bg-blue-600">
-                  Fullscreen Preview
-                </Button>
-              </div>
-            {/if}
-            <div
-              bind:this={elDemoContainer}
-              class="relative flex justify-center items-center h-[400px] bg-slate-900/50 border border-slate-600/50 rounded-lg overflow-hidden"
-            >
-              <!-- Preview canvas will be inserted here -->
-            </div>
           </div>
         </div>
       </div>

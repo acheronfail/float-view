@@ -539,3 +539,52 @@ function drawFootpad(params: FootpadParams) {
     ctx.restore();
   }
 }
+
+export interface VideoOverlayHudOptions {
+  /** Each item has label, value, and position in 0–1 (relative to canvas size) */
+  items: { label: string; value: string; x: number; y: number }[];
+  /** Background color for each field box (CSS color, e.g. rgba(15,23,42,0.85)) */
+  backgroundColor?: string;
+  /** Text color for label and value (CSS color) */
+  textColor?: string;
+}
+
+/** Draw overlay HUD on a canvas (e.g. over a video frame). Used when exporting video with burned-in stats. */
+export function drawVideoOverlayHud(ctx: Ctx, width: number, height: number, options: VideoOverlayHudOptions): void {
+  const { items, backgroundColor = 'rgba(15, 23, 42, 0.85)', textColor = colors.fg } = options;
+  if (items.length === 0) return;
+
+  // Use smaller padding so export box size matches preview (preview uses ~16px / tailwind px-4)
+  const pad = Math.min(width, height) * 0.015;
+  const fontSize = Math.max(14, Math.min(width, height) * 0.04);
+  const boxHeight = fontSize * 2.2;
+
+  ctx.font = getCtxFont(fontSize);
+  ctx.textBaseline = 'middle';
+
+  for (const { label, value, x, y } of items) {
+    const boxWidth = ctx.measureText(label + ' ').width + ctx.measureText(value).width + pad * 2;
+    // Position in pixels; clamp so box stays fully inside frame (avoids "a few px too far right")
+    let px = x * width;
+    let py = y * height;
+    if (px + boxWidth > width) px = width - boxWidth;
+    if (px < 0) px = 0;
+    if (py + boxHeight > height) py = height - boxHeight;
+    if (py < 0) py = 0;
+
+    ctx.fillStyle = backgroundColor;
+    ctx.strokeStyle = 'rgba(71, 85, 105, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(px, py, boxWidth, boxHeight, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'left';
+    ctx.fillText(label, px + pad * 0.5, py + boxHeight / 2);
+
+    ctx.textAlign = 'right';
+    ctx.fillText(value, px + boxWidth - pad * 0.5, py + boxHeight / 2);
+  }
+}
