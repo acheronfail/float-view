@@ -57,9 +57,11 @@
     showMin,
   }: Props = $props();
   let dataLen = $derived(data[0]?.values.length ?? 0);
-  assert(
-    data.every(({ values }) => values.length === dataLen),
-    'All input data lists must be the same length',
+  $effect(() =>
+    assert(
+      data.every(({ values }) => values.length === dataLen),
+      'All input data lists must be the same length',
+    ),
   );
 
   /** wrapper svg element */
@@ -68,7 +70,7 @@
   /** how many data-points map to a single coord in svg space */
   let chunkSize = $state(1);
   /** scaled points representing the data */
-  let dataPoints = $state<number[][]>(data.map(() => []));
+  let dataPoints = $derived<number[][]>(data.map(() => []));
   let dataPointsLen = $derived(dataPoints[0]?.length ?? 0);
   /** start and end coordinates of where 0 is on the x axis */
   let zeroPath = $state<[[number, number], [number, number]] | undefined>();
