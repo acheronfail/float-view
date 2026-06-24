@@ -21,6 +21,8 @@ export interface Props {
   gpsPoints: LatLngExpression[];
   gpsGaps: GpsGap[];
   pointsOfInterest: PointOfInterest[];
+  trimStart: number;
+  trimEnd: number;
 }
 
 export { riderSvg };
@@ -141,16 +143,32 @@ export interface PolylineSegment {
   segmentIdx: number;
 }
 
-export function computeSegmentedLines(gpsGaps: GpsGap[], maxLength: number, hiddenSegmentIndices: Set<number>) {
+export function computeSegmentedLines(
+  gpsGaps: GpsGap[],
+  maxLength: number,
+  hiddenSegmentIndices: Set<number>,
+  trimStart = 0,
+  trimEnd = maxLength - 1,
+) {
   const result: PolylineSegment[] = [];
+  const trimEndExclusive = trimEnd + 1;
   for (let segmentIdx = 0, i = 0; i < gpsGaps.length; ++i) {
     const { secondsElapsed, index: start } = gpsGaps[i]!;
     if (secondsElapsed > CHARGE_THRESHOLD_SECONDS) segmentIdx++;
 
+    const segStart = start;
+    const segEnd = gpsGaps[i + 1]?.index ?? maxLength;
+
+    // clip to trim range
+    const clippedStart = Math.max(segStart, trimStart);
+    const clippedEnd = Math.min(segEnd, trimEndExclusive);
+
+    if (clippedStart >= clippedEnd) continue;
+
     if (!hiddenSegmentIndices.has(segmentIdx)) {
       result.push({
-        start,
-        end: gpsGaps[i + 1]?.index ?? maxLength,
+        start: clippedStart,
+        end: clippedEnd,
         segmentIdx,
       });
     }
@@ -163,9 +181,17 @@ export function getBaseLine(
   gpsPoints: LatLngExpression[],
   gpsGaps: GpsGap[],
   hiddenSegmentIndices: Set<number>,
+  trimStart = 0,
+  trimEnd = gpsPoints.length - 1,
 ): SegmentedPolyline {
   const values: { points: LatLngExpression[]; options: PolylineOptions }[] = [];
-  for (const { start, end, segmentIdx } of computeSegmentedLines(gpsGaps, gpsPoints.length, hiddenSegmentIndices)) {
+  for (const { start, end, segmentIdx } of computeSegmentedLines(
+    gpsGaps,
+    gpsPoints.length,
+    hiddenSegmentIndices,
+    trimStart,
+    trimEnd,
+  )) {
     values.push({
       points: gpsPoints.slice(start, end),
       options: MapLineOptions[MapLine.Base](segmentIdx),
@@ -180,15 +206,27 @@ export function getTravelledLine(
   gpsGaps: GpsGap[],
   limit: number,
   hiddenSegmentIndices: Set<number>,
+  trimStart = 0,
+  trimEnd = gpsPoints.length - 1,
 ): SegmentedPolyline {
   const values: { points: LatLngExpression[]; options: PolylineOptions }[] = [];
-  for (const { start, end, segmentIdx } of computeSegmentedLines(gpsGaps, gpsPoints.length, hiddenSegmentIndices)) {
-    values.push({
-      points: gpsPoints.slice(start, Math.min(limit, end)),
-      options: MapLineOptions[MapLine.Travelled](segmentIdx),
-    });
+  for (const { start, end, segmentIdx } of computeSegmentedLines(
+    gpsGaps,
+    gpsPoints.length,
+    hiddenSegmentIndices,
+    trimStart,
+    trimEnd,
+  )) {
+    // ensure we don't include points past the selected index
+    const sliceEnd = Math.min(limit, end);
+    if (start < sliceEnd) {
+      values.push({
+        points: gpsPoints.slice(start, sliceEnd),
+        options: MapLineOptions[MapLine.Travelled](segmentIdx),
+      });
+    }
 
-    if (limit === end) {
+    if (limit <= end) {
       break;
     }
   }
