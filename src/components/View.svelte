@@ -3,6 +3,7 @@
   import Map from './Map.svelte';
   import Details from './Details.svelte';
   import Header from './Header.svelte';
+  import TrimSlider from './TrimSlider.svelte';
   import { demoFile, demoRows } from '../lib/parse/float-control';
   import type { DragEventHandler, EventHandler } from 'svelte/elements';
   import { DataSource, type RowWithIndex } from '../lib/parse/types';
@@ -63,10 +64,23 @@
         },
   );
 
+  /** whether trim slider overlay is open */
+  let sliderOpen = $state(false);
   let banners = $state<Banner[]>([]);
 
-  /** array-as-map of whether particular rows are visible or not */
-  let visible = $state<boolean[]>([]);
+  /** array-as-map of whether particular rows are visible from map/bounds */
+  let visibleFromMap = $state<boolean[]>([]);
+  /** trimming range start index */
+  let trimStart = $state(0);
+  /** trimming range end index */
+  let trimEnd = $derived(rows.length ? rows.length - 1 : 0);
+
+  /** derived visible array after applying trim range to map-driven visibility */
+  let visible = $derived.by(() => {
+    const s = Math.min(trimStart, trimEnd);
+    const e = Math.max(trimStart, trimEnd);
+    return visibleFromMap.map((v, i) => (v && i >= s && i <= e) ?? false);
+  });
   /** filtered visible rows */
   let visibleRows = $derived(rows.filter((_, i) => visible[i]));
   /** whether this ride appears to include footpad ADC telemetry */
@@ -92,7 +106,7 @@
   let swapMapAndDetails = $state(false);
 
   const setVisible = (arrayAsMap: boolean[]) => {
-    visible = arrayAsMap;
+    visibleFromMap = arrayAsMap;
     if (!visible[selectedRowIndex]) {
       // it's not the best, but try to find a point on the line that's somewhat in the middle
       // this doesn't really work well if there are multiple lines going in different directions
@@ -140,6 +154,10 @@
           }
 
           rows = results.data;
+          // initialize visibility and trimming to full range for the newly loaded ride
+          visibleFromMap = new Array(rows.length).fill(true);
+          trimStart = 0;
+          trimEnd = rows.length ? rows.length - 1 : 0;
           selectedIndex = 0;
 
           stats = computeStats(rows, pointsOfInterest);
@@ -236,7 +254,7 @@
   </div>
 {/snippet}
 
-<Header bind:file />
+<Header bind:file bind:trimSliderOpen={sliderOpen} />
 
 <main
   class="grid w-full bg-slate-600 gap-px grid-flow-dense
@@ -295,6 +313,8 @@
       {gpsPoints}
       {gpsGaps}
       {pointsOfInterest}
+      {trimStart}
+      {trimEnd}
     />
   </div>
   <div
@@ -368,7 +388,12 @@
       →
     </Button>
   </div>
+  <div class="pointer-events-auto">
+    <Button class="text-xl" onpointerdown={() => (sliderOpen = !sliderOpen)}>✂</Button>
+  </div>
 </div>
+
+<TrimSlider bind:open={sliderOpen} bind:trimStart bind:trimEnd rowsLength={rows.length} {rows} units={settings.units} />
 
 <style>
   /* NOTE: must match up with `wide` breakpoint */

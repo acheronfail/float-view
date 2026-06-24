@@ -29,6 +29,8 @@
     gpsPoints,
     gpsGaps,
     pointsOfInterest,
+    trimStart,
+    trimEnd,
   }: Props = $props();
 
   let node = $state<HTMLDivElement | undefined>();
@@ -36,7 +38,9 @@
   let basePolyline = $state<SegmentedPolyline | null>(null);
   let segmentModalOpen = $state(false);
   let hiddenRideSegments = $state<Set<number>>(new Set());
-  let polylineSegments = $derived(computeSegmentedLines(gpsGaps, gpsPoints.length, hiddenRideSegments));
+  let polylineSegments = $derived(
+    computeSegmentedLines(gpsGaps, gpsPoints.length, hiddenRideSegments, trimStart, trimEnd),
+  );
   let rideSegments = $derived<Set<number>>(new Set(polylineSegments.map((s) => s.segmentIdx)));
 
   $effect(() => {
@@ -90,11 +94,18 @@
       }
     });
 
-    // ensure this is updated each time the visible rows change
+    // ensure this is updated each time the visible rows or trim range change
     visibleRows;
 
-    basePolyline = getBaseLine(gpsPoints, gpsGaps, hiddenRideSegments).addTo(map!);
-    travelledPolyline = getTravelledLine(gpsPoints, gpsGaps, selectedRowIndex, hiddenRideSegments).addTo(map!);
+    basePolyline = getBaseLine(gpsPoints, gpsGaps, hiddenRideSegments, trimStart, trimEnd).addTo(map!);
+    travelledPolyline = getTravelledLine(
+      gpsPoints,
+      gpsGaps,
+      selectedRowIndex,
+      hiddenRideSegments,
+      trimStart,
+      trimEnd,
+    ).addTo(map!);
   });
 
   function setVisibleIndices() {
@@ -106,6 +117,11 @@
       polylineBounds && bounds.contains(polylineBounds)
         ? new Array(gpsPoints.length).fill(true)
         : gpsPoints.map((point) => bounds.contains(point));
+
+    // apply trim range
+    for (let i = 0; i < newVisiblePoints.length; i++) {
+      if (i < trimStart || i > trimEnd) newVisiblePoints[i] = false;
+    }
 
     // hide hidden segments
     for (const { start, end, segmentIdx } of polylineSegments) {
@@ -188,9 +204,16 @@
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
 
-    // create lines
-    basePolyline = getBaseLine(gpsPoints, gpsGaps, hiddenRideSegments).addTo(map);
-    travelledPolyline = getTravelledLine(gpsPoints, gpsGaps, selectedRowIndex, hiddenRideSegments).addTo(map);
+    // create lines (respect trim range)
+    basePolyline = getBaseLine(gpsPoints, gpsGaps, hiddenRideSegments, trimStart, trimEnd).addTo(map);
+    travelledPolyline = getTravelledLine(
+      gpsPoints,
+      gpsGaps,
+      selectedRowIndex,
+      hiddenRideSegments,
+      trimStart,
+      trimEnd,
+    ).addTo(map);
 
     // fit ride in map
     const polylineBounds = basePolyline.getBounds();

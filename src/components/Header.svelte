@@ -5,13 +5,15 @@
 
   export interface Props {
     file: File | undefined;
+    trimSliderOpen: boolean;
   }
 </script>
 
 <script lang="ts">
-  let { file = $bindable() }: Props = $props();
+  let { file = $bindable(), trimSliderOpen = $bindable() }: Props = $props();
 
   const closeRide = () => (file = undefined);
+  const toggleTrimSlider = () => (trimSliderOpen = !trimSliderOpen);
 </script>
 
 <div class="fixed z-[9000] h-[calc(var(--header-height)+1000px)] top-[-1000px] left-0 right-0 bg-slate-950">
@@ -30,6 +32,9 @@
   </h1>
   {#if file}
     <Button data-testid="close-ride-button" onclick={closeRide}>close ride</Button>
+    <div class="hidden wide:block">
+      <Button onclick={toggleTrimSlider}>trim</Button>
+    </div>
   {/if}
   <Button onclick={() => (settings.open = true)}>configure</Button>
 </header>
