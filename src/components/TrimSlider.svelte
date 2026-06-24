@@ -3,6 +3,7 @@
   import { formatTime } from '../lib/misc';
   import { globalState } from '../lib/global.svelte';
   import { Units, type RowWithIndex } from '../lib/parse/types';
+  import { getStateColor } from './Details';
 
   let {
     open = $bindable(false),
@@ -23,23 +24,40 @@
   let container = $state<HTMLDivElement | null>(null);
   let dragging = $state<'start' | 'end' | null>(null);
 
-  let startIndex = $derived(Math.min(trimStart, trimEnd));
-  let endIndex = $derived(Math.max(trimStart, trimEnd));
+  // use draft values while the modal is open
+  let draftStart = $state(0);
+  let draftEnd = $state(0);
+
+  $effect(() => {
+    if (open) {
+      draftStart = trimStart;
+      draftEnd = trimEnd;
+    }
+  });
+
+  let startIndex = $derived(Math.min(draftStart, draftEnd));
+  let endIndex = $derived(Math.max(draftStart, draftEnd));
   let startRow = $derived(rows[clampIndex(startIndex)]);
   let endRow = $derived(rows[clampIndex(endIndex)]);
   let distanceLabel = $derived(units === Units.Metric ? 'km' : 'mi');
+  let speedLabel = $derived(units === Units.Metric ? 'km/h' : 'mph');
   let formatDistance = (distance: number) => {
     const formatted = globalState.mapSpeed(distance);
     return Number.isNaN(formatted) ? '??' : formatted.toFixed(1);
   };
+  let formatSpeed = (speed: number) => {
+    const formatted = globalState.mapSpeed(speed);
+    return Number.isNaN(formatted) ? '??' : formatted.toFixed(1);
+  };
+  let formatVoltage = (v: number) => (Number.isFinite(v) ? v.toFixed(1) : '??');
 
   function clampIndex(i: number) {
     return Math.max(0, Math.min(rowsLength - 1, i));
   }
 
   function reset() {
-    trimStart = 0;
-    trimEnd = rowsLength ? rowsLength - 1 : 0;
+    draftStart = 0;
+    draftEnd = rowsLength ? rowsLength - 1 : 0;
   }
 
   function close() {
@@ -55,8 +73,8 @@
   }
 
   function selectNearestHandle(index: number) {
-    const startDist = Math.abs(index - trimStart);
-    const endDist = Math.abs(index - trimEnd);
+    const startDist = Math.abs(index - draftStart);
+    const endDist = Math.abs(index - draftEnd);
     return startDist <= endDist ? 'start' : 'end';
   }
 
@@ -64,9 +82,9 @@
     const idx = posToIndex(e.clientX);
     const nearestHandle = selectNearestHandle(idx);
     if (nearestHandle === 'start') {
-      trimStart = idx;
+      draftStart = idx;
     } else {
-      trimEnd = idx;
+      draftEnd = idx;
     }
     dragging = nearestHandle;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -76,28 +94,33 @@
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     dragging = 'start';
-    trimStart = posToIndex(e.clientX);
+    draftStart = posToIndex(e.clientX);
   }
 
   function onPointerDownEnd(e: PointerEvent) {
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     dragging = 'end';
-    trimEnd = posToIndex(e.clientX);
+    draftEnd = posToIndex(e.clientX);
   }
 
   function onPointerMove(e: PointerEvent) {
     if (!dragging) return;
     const idx = posToIndex(e.clientX);
     if (dragging === 'start') {
-      trimStart = idx;
+      draftStart = idx;
     } else {
-      trimEnd = idx;
+      draftEnd = idx;
     }
   }
 
   function onPointerUp() {
     dragging = null;
+
+    // apply draft values and perform trim on pointer up... if this is too expensive
+    // for mobile devices, we could do then when the trim modal closes instead.
+    trimStart = draftStart;
+    trimEnd = draftEnd;
   }
 
   function onKeyDown(e: KeyboardEvent) {
@@ -140,16 +163,62 @@
 
       <div class="grid gap-2 text-xs text-slate-300 grid-cols-[repeat(2,minmax(0,1fr))]">
         <div class="rounded border border-slate-700 p-2 bg-slate-950">
-          <div class="font-mono text-[11px] uppercase tracking-widest text-slate-500">Start</div>
-          <div class="mt-1 font-semibold">Log index: {startIndex + 1}</div>
-          <div>Time: {formatTime(startRow?.time ?? 0)}</div>
-          <div>Distance: {formatDistance(startRow?.distance ?? 0)} {distanceLabel}</div>
+          <div class="font-mono text-sm uppercase tracking-widest text-center">Start</div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">Log index</div>
+            <div class="font-semibold">{startIndex + 1}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">Ride Time</div>
+            <div class="font-semibold">{formatTime(startRow?.time ?? 0)}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">Distance</div>
+            <div class="font-semibold">{formatDistance(startRow?.distance ?? 0)} {distanceLabel}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">Speed</div>
+            <div class="font-semibold">{formatSpeed(startRow?.speed ?? NaN)} {speedLabel}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">Voltage</div>
+            <div class="font-semibold">{formatVoltage(startRow?.voltage ?? NaN)} V</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">State</div>
+            <div class="font-semibold" style={startRow?.state ? `color: ${getStateColor(startRow.state)}` : ''}>
+              {(startRow?.state ?? 'unknown').toUpperCase()}
+            </div>
+          </div>
         </div>
         <div class="rounded border border-slate-700 p-2 bg-slate-950">
-          <div class="font-mono text-[11px] uppercase tracking-widest text-slate-500">End</div>
-          <div class="mt-1 font-semibold">Log index: {endIndex + 1}</div>
-          <div>Time: {formatTime(endRow?.time ?? 0)}</div>
-          <div>Distance: {formatDistance(endRow?.distance ?? 0)} {distanceLabel}</div>
+          <div class="font-mono text-sm uppercase tracking-widest text-center">End</div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">Log index</div>
+            <div class="font-semibold">{endIndex + 1}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">Ride Time</div>
+            <div class="font-semibold">{formatTime(endRow?.time ?? 0)}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">Distance</div>
+            <div class="font-semibold">{formatDistance(endRow?.distance ?? 0)} {distanceLabel}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">Speed</div>
+            <div class="font-semibold">{formatSpeed(endRow?.speed ?? NaN)} {speedLabel}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">Voltage</div>
+            <div class="font-semibold">{formatVoltage(endRow?.voltage ?? NaN)} V</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-20 text-right text-[11px] uppercase tracking-widest text-slate-500">State</div>
+            <div class="font-semibold" style={endRow?.state ? `color: ${getStateColor(endRow.state)}` : ''}>
+              {(endRow?.state ?? 'unknown').toUpperCase()}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -162,23 +231,23 @@
           <!-- left filler -->
           <div
             class="absolute left-0 top-0 bottom-0 bg-slate-600"
-            style="width: {(Math.min(trimStart, trimEnd) / Math.max(1, rowsLength - 1)) * 100}%"
+            style="width: {(Math.min(draftStart, draftEnd) / Math.max(1, rowsLength - 1)) * 100}%"
           ></div>
           <!-- middle selected -->
           <div
             class="absolute top-0 bottom-0 bg-cyan-600"
-            style="left: {(Math.min(trimStart, trimEnd) / Math.max(1, rowsLength - 1)) * 100}%; width: {((Math.max(
-              trimStart,
-              trimEnd,
+            style="left: {(Math.min(draftStart, draftEnd) / Math.max(1, rowsLength - 1)) * 100}%; width: {((Math.max(
+              draftStart,
+              draftEnd,
             ) -
-              Math.min(trimStart, trimEnd)) /
+              Math.min(draftStart, draftEnd)) /
               Math.max(1, rowsLength - 1)) *
               100}%"
           ></div>
           <!-- right filler -->
           <div
             class="absolute right-0 top-0 bottom-0 bg-slate-600"
-            style="width: {(1 - Math.max(trimStart, trimEnd) / Math.max(1, rowsLength - 1)) * 100}%"
+            style="width: {(1 - Math.max(draftStart, draftEnd) / Math.max(1, rowsLength - 1)) * 100}%"
           ></div>
 
           <!-- start handle -->
@@ -189,7 +258,7 @@
             aria-valuemax={rowsLength - 1}
             aria-valuenow={startIndex}
             class="absolute top-0 bottom-0 w-4 -translate-x-1/2 bg-white/90 rounded-full shadow-lg cursor-grab"
-            style="left: {(trimStart / Math.max(1, rowsLength - 1)) * 100}%"
+            style="left: {(draftStart / Math.max(1, rowsLength - 1)) * 100}%"
             onpointerdown={onPointerDownStart}
             tabindex="0"
           ></div>
@@ -202,7 +271,7 @@
             aria-valuemax={rowsLength - 1}
             aria-valuenow={endIndex}
             class="absolute top-0 bottom-0 w-4 -translate-x-1/2 bg-white/90 rounded-full shadow-lg cursor-grab"
-            style="left: {(trimEnd / Math.max(1, rowsLength - 1)) * 100}%"
+            style="left: {(draftEnd / Math.max(1, rowsLength - 1)) * 100}%"
             onpointerdown={onPointerDownEnd}
             tabindex="0"
           ></div>
