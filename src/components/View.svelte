@@ -329,10 +329,26 @@
         {/each}
       </select>
       {#if Charts[key]}
-        <Chart title={key} {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts[key](visibleRows)} />
+        <Chart
+          {...Charts[key](visibleRows)}
+          title={key}
+          {selectedIndex}
+          {setSelectedIdx}
+          {gapIndices}
+          xValues={visibleRows.map((row) => row.time)}
+          spacingByTime={settings.chartSpacingByTime}
+        />
       {:else}
         {@const fallback = defaultSelectedCharts[index]!}
-        <Chart title={fallback} {selectedIndex} {setSelectedIdx} {gapIndices} {...Charts[fallback](visibleRows)} />
+        <Chart
+          {...Charts[fallback](visibleRows)}
+          title={fallback}
+          {selectedIndex}
+          {setSelectedIdx}
+          {gapIndices}
+          xValues={visibleRows.map((row) => row.time)}
+          spacingByTime={settings.chartSpacingByTime}
+        />
       {/if}
     </div>
   {/each}

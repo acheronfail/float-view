@@ -26,6 +26,7 @@ const SavedSettingsSchema = z.object({
   batterySpecs: BatterySpecsSchema,
   hiddenStates: HiddenStateSchema,
   mapIconsGreyscale: z.boolean().default(false),
+  chartSpacingByTime: z.boolean().default(false),
   units: UnitsSchema,
   charts: z.string().array(),
 });
@@ -67,6 +68,9 @@ const settings = new (class {
   /** whether icons in map should be greyed out */
   mapIconsGreyscale = $state(savedSettings?.mapIconsGreyscale ?? false);
 
+  /** whether chart x-axis spacing should be proportional to time */
+  chartSpacingByTime = $state(savedSettings?.chartSpacingByTime ?? false);
+
   /*
    * derived state
    */
@@ -85,6 +89,7 @@ const settings = new (class {
       batterySpecs: this.batterySpecs,
       hiddenStates: this.hiddenStates,
       mapIconsGreyscale: this.mapIconsGreyscale,
+      chartSpacingByTime: this.chartSpacingByTime,
       units: this.units,
       charts: this.charts,
     } satisfies ZSavedSettings),

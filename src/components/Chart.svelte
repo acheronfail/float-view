@@ -31,10 +31,46 @@
   const GAP_LINE_DASHARRAY = '1 1';
 
   const getYValueHeight = (y: number, min: number, max: number) => ((y - min) / (max - min)) * 100;
-  const indexToXPct = (i: number): number => (100 / dataPointsLen) * (i + 0.5);
   const valueToYPct = (y: number, min: number, max: number) => 100 - getYValueHeight(y, min, max);
   // FIXME: better aggregation for this one? e.g., can't see lowest battery voltage value...
   const aggMaxAbs = (acc: number, n: number) => (Math.abs(acc) > Math.abs(n) ? acc : n);
+  const avg = (values: number[]) => values.reduce((total, value) => total + value, 0) / values.length;
+
+  const getUniformXPcts = (len: number): number[] => {
+    if (len <= 0) return [];
+    return new Array(len).fill(0).map((_, i) => (100 / len) * (i + 0.5));
+  };
+
+  const createTimeToXPct = (values: number[]): ((value: number) => number) | undefined => {
+    if (!values.length || values.some((value) => !Number.isFinite(value))) return undefined;
+    const min = values[0]!;
+    const max = values[values.length - 1]!;
+    if (max <= min) return undefined;
+    const range = max - min;
+    return (value: number) => ((value - min) / range) * 100;
+  };
+
+  const findClosestIndex = (xPct: number, xPcts: number[]): number => {
+    if (!xPcts.length) return 0;
+    if (xPct <= xPcts[0]!) return 0;
+    if (xPct >= xPcts[xPcts.length - 1]!) return xPcts.length - 1;
+
+    let low = 0;
+    let high = xPcts.length - 1;
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const midValue = xPcts[mid]!;
+      if (midValue < xPct) {
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+
+    const right = Math.min(low, xPcts.length - 1);
+    const left = Math.max(right - 1, 0);
+    return Math.abs(xPcts[left]! - xPct) <= Math.abs(xPcts[right]! - xPct) ? left : right;
+  };
 
   type ReduceWithIndex<T> = { index: number; value: T } | null;
   const reduceWithIndex = <T,>(arr: T[], cmp: (curr: T, next: T) => boolean): ReduceWithIndex<T> =>
@@ -46,6 +82,8 @@
 
   let {
     data,
+    xValues,
+    spacingByTime = false,
     selectedIndex,
     setSelectedIdx,
     gapIndices,
@@ -63,6 +101,9 @@
       'All input data lists must be the same length',
     ),
   );
+  $effect(() =>
+    assert(!xValues || xValues.length === dataLen, 'xValues must be omitted or have the same length as chart data'),
+  );
 
   /** wrapper svg element */
   let svg = $state<SVGElement | undefined>();
@@ -72,11 +113,16 @@
   /** scaled points representing the data */
   let dataPoints = $derived<number[][]>(data.map(() => []));
   let dataPointsLen = $derived(dataPoints[0]?.length ?? 0);
+  /** x-axis positions for each aggregated chart point */
+  let pointXPcts = $state<number[]>([]);
+  /** x-axis positions for each visible row */
+  let indexXPcts = $state<number[]>([]);
   /** start and end coordinates of where 0 is on the x axis */
   let zeroPath = $state<[[number, number], [number, number]] | undefined>();
   /** x coordinate of where the vertical line indicator should be */
   let selectedDataPointIndex = $derived(Math.floor(selectedIndex / chunkSize));
-  let selectedX = $derived(indexToXPct(selectedDataPointIndex) * scaleFactor);
+  let selectedXPct = $derived(pointXPcts[selectedDataPointIndex] ?? 50);
+  let selectedX = $derived(selectedXPct * scaleFactor);
   /** ticks for the y-axis */
   let yTicks: [number, string][] = $derived(
     ticks(dataPoints.flat(), yAxis).map((n) => [n, `${Number.isInteger(n) ? n : n.toFixed(1)}${unit}`]),
@@ -102,11 +148,34 @@
       return aggregated;
     });
 
+    const canUseTimeSpacing = spacingByTime && xValues && xValues.length === dataLen;
+    const aggregatedLen = dataPoints[0]?.length ?? 0;
+    if (canUseTimeSpacing) {
+      const toXPct = createTimeToXPct(xValues!);
+      if (toXPct) {
+        indexXPcts = xValues!.map((value) => toXPct(value));
+        pointXPcts = [];
+        for (let i = 0; i < dataLen; i += chunkSize) {
+          const chunkTimes = xValues!.slice(i, i + chunkSize).filter((value) => Number.isFinite(value));
+          const chunkTime = chunkTimes.length ? avg(chunkTimes) : xValues![i]!;
+          pointXPcts.push(toXPct(chunkTime));
+        }
+      } else {
+        indexXPcts = getUniformXPcts(dataLen);
+        pointXPcts = getUniformXPcts(aggregatedLen);
+      }
+    } else {
+      indexXPcts = getUniformXPcts(dataLen);
+      pointXPcts = getUniformXPcts(aggregatedLen);
+    }
+
     const yZero = valueToYPct(0, yTickMin, yTickMax);
     if (dataPointsLen && 0 >= yTickMin && 0 <= yTickMax) {
+      const leftX = canUseTimeSpacing ? 0 : (100 / dataPointsLen) * -0.5;
+      const rightX = canUseTimeSpacing ? 100 : (100 / dataPointsLen) * (dataPointsLen + 0.5);
       zeroPath = [
-        [indexToXPct(-1) * scaleFactor, yZero * scaleFactor],
-        [indexToXPct(dataPointsLen) * scaleFactor, yZero * scaleFactor],
+        [leftX * scaleFactor, yZero * scaleFactor],
+        [rightX * scaleFactor, yZero * scaleFactor],
       ];
     } else {
       zeroPath = undefined;
@@ -115,6 +184,8 @@
 
   $effect(() => {
     yAxis; // re-render chart when this changes
+    spacingByTime;
+    xValues;
     if (data) {
       untrack(() => renderChart(svg!.getBoundingClientRect().width));
     }
@@ -140,9 +211,12 @@
     // pixel coords ARE the viewbox points
     const bounds = svg!.getBoundingClientRect();
     const pixelX = clientX - bounds.left;
+    const xPct = Math.max(Math.min((pixelX / bounds.width) * 100, 100), 0);
 
     // translate from visible indices to real indices
-    setSelectedIdx(Math.max(Math.min(Math.floor(pixelX * (dataLen / bounds.width)), dataLen - 1), 0));
+    setSelectedIdx(
+      spacingByTime ? findClosestIndex(xPct, indexXPcts) : findClosestIndex(xPct, getUniformXPcts(dataLen)),
+    );
   };
 
   const onmousemove: MouseEventHandler<SVGSVGElement> = (e) => selectPoint(e.clientX);
@@ -284,7 +358,7 @@
             stroke={data[i]?.color ?? DEFAULT_COLOUR}
             d="M{values
               .map((y, i) => {
-                const pixelX = indexToXPct(i) * scaleFactor;
+                const pixelX = (pointXPcts[i] ?? 50) * scaleFactor;
                 const pixelY = valueToYPct(Number.isNaN(y) ? 0 : y, yTickMin, yTickMax) * scaleFactor;
                 return `${pixelX},${pixelY}`;
               })
@@ -294,7 +368,7 @@
 
         <!-- lines indicating gaps in data -->
         {#each gapIndices as gapIndex}
-          {@const x = indexToXPct(Math.floor(gapIndex / chunkSize)) * scaleFactor}
+          {@const x = (pointXPcts[Math.floor(gapIndex / chunkSize)] ?? 50) * scaleFactor}
           <path
             fill="none"
             stroke={GAP_LINE_COLOUR}
@@ -403,7 +477,7 @@
     class="absolute top-2/4 translate-x-[-50%] whitespace-nowrap text-xs
       text-slate-100 bg-slate-800 border rounded p-2 text-center font-mono
       flex flex-col justify-center items-center pointer-events-none"
-    style:left="{dataPointsLen > 0 ? indexToXPct(selectedDataPointIndex) : 50}%"
+    style:left="{selectedXPct}%"
   >
     {#if dataPointsLen > 0}
       {#if selectedDataPointIndex > -1}

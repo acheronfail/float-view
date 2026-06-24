@@ -9,6 +9,8 @@ export interface Props {
     label?: string;
     values: number[];
   }[];
+  xValues?: number[];
+  spacingByTime?: boolean;
   selectedIndex: number;
   setSelectedIdx: (index: number) => void;
   gapIndices: number[];

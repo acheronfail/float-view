@@ -70,6 +70,15 @@
       type="checkbox"
       bind:checked={settings.mapIconsGreyscale}
     />
+    <h3 class="font-bold text-lg my-2">Chart Options</h3>
+    <Input
+      class={inputClass}
+      id="chart_spacing_by_time"
+      label="Space chart points by time"
+      title="When enabled, distances between chart points are proportional to elapsed time between log entries."
+      type="checkbox"
+      bind:checked={settings.chartSpacingByTime}
+    />
     <h4 class="font-bold text-md my-2">Visible map markers</h4>
     <ul class="text-left select-none">
       {#each Object.values(State) as state}
