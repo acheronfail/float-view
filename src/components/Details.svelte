@@ -19,9 +19,10 @@
   import settings, { type ZBatterySpecs } from '../lib/settings.svelte';
   import Button from './Button.svelte';
   import { ChartColours } from './Chart';
-  import { empty, State } from '../lib/parse/types';
+  import { empty } from '../lib/parse/types';
   import { formatFloat, formatInt, formatTime } from '../lib/misc';
   import { globalState } from '../lib/global.svelte';
+  import { getStateColor } from './Details';
 
   let { data = empty, stats, batterySpecs, units, hasAdcTelemetry }: Props = $props();
 
@@ -30,22 +31,6 @@
   let voltsPerCell = $derived(batterySpecs.cellCount ? data.voltage / batterySpecs.cellCount : NaN);
   let cellVoltsLow = $derived(voltsPerCell && batterySpecs.cellMinVolt && voltsPerCell < batterySpecs.cellMinVolt);
   let formatSpeed = $derived((x: number) => (Number.isNaN(x) ? '??' : globalState.mapSpeed(x).toFixed(1)));
-
-  const getStateColor = (state: string): string | undefined => {
-    switch (state.toLowerCase()) {
-      case 'riding':
-        return 'yellowgreen';
-      case State.Startup:
-        return 'grey';
-      case State.StopHalf:
-      case State.Quickstop:
-      case State.Wheelslip:
-        return 'orange';
-      case State.StopFull:
-      case State.StopAngle:
-        return 'red';
-    }
-  };
 
   const itemClass =
     'text-xs wide:text-sm relative bg-slate-900 text-slate-100 flex justify-around items-center h-full w-full';
