@@ -5,6 +5,13 @@ import { attachIndex } from '../misc';
 import { RowKey, State, type Row, type RowWithIndex, Units } from './types';
 import { FloatControlLimitedError, ParseError } from './errors';
 
+export function looksLikeFloatControlCsv(headerLine: string): boolean {
+  return headerLine
+    .split(',')
+    .map((header) => header.trim())
+    .some((header) => header in floatControlKeyMap);
+}
+
 const transformHeader = (header: string) => {
   const key = floatControlKeyMap[header as FloatControlRawHeader];
   if (!key && !Object.values(RowKey).includes(header as RowKey)) {

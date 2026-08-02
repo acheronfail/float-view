@@ -1,0 +1,4 @@
+timestamp,speed,dutyCycle,batteryVolts,batteryPercent,batteryCurrent,motorCurrent,motorTemp,controllerTemp,tripDistance,lifeDistance,remainingDistance,rollAngle,pitchAngle,truePitchAngle,inputTilt,throttle,ampHours,wattHours,state,switchState,setpointAdjustmentType,faultCode,adc1,adc2,sessionId,altitude,latitude,longitude,accuracy,gpsSpeed,gpsTimestamp
+105,0.4,0.03,81.9,0.92,0.2,9.9,18,18,0,592.211,0,-4,1,0,0,0,0,0,1,1,0,0,3.1,0.08,00000000-0000-0000-0000-000000000000,122.16287420969456,-1.0,1.5,4.55257009550728,0.23000000417232513,110.0522
+115,0.7,0.04,81.8,0.92,0.4,14,21,18,0.5,592.211,0,-4,0,-1,0,0,0,0,1,1,2,0,3.1,0.08,00000000-0000-0000-0000-000000000000,123.54580882564187,-1.1,1.6,4.552570096263577,0.769999980926508,120.0503
+125,,,,0.92,,,0,0,0,592.211,0,-4,0,-1,0,0,0,0,1,3,2,0,3.1,3.08,00000000-0000-0000-0000-000000000000,123.54580882564187,-1.1,1.6,4.552570096263577,0.769999980926508,120.0503

@@ -140,6 +140,7 @@
             });
           }
 
+          const parseErrors = results.errors.filter((err) => err instanceof ParseError);
           for (const err of results.errors) {
             if (err instanceof FloatControlLimitedError) {
               banners.push({ text: err.message, kind: 'warning' });
@@ -147,10 +148,21 @@
 
             if (err instanceof ParseError) {
               console.error(err, err.cause);
-              alert(
-                `An error occurred when parsing ride, displayed data may be incomplete or incorrect! (${err.message})`,
-              );
             }
+          }
+
+          // Fatal: nothing usable to show — surface the error and return to the file picker.
+          if (results.data.length === 0 && parseErrors.length > 0) {
+            alert(`Could not load ride:\n\n${parseErrors.map((err) => err.message).join('\n')}`);
+            file = undefined;
+            source = DataSource.None;
+            return;
+          }
+
+          if (parseErrors.length > 0) {
+            alert(
+              `An error occurred when parsing ride, displayed data may be incomplete or incorrect! (${parseErrors.map((err) => err.message).join('; ')})`,
+            );
           }
 
           rows = results.data;
@@ -160,7 +172,14 @@
           trimEnd = rows.length ? rows.length - 1 : 0;
           selectedIndex = 0;
 
-          stats = computeStats(rows, pointsOfInterest);
+          stats = computeStats(rows, findPointsOfInterest(rows));
+        })
+        .catch((error) => {
+          clearTimeout(timer);
+          console.error(error);
+          alert(`Could not load ride:\n\n${error instanceof Error ? error.message : String(error)}`);
+          file = undefined;
+          source = DataSource.None;
         })
         .finally(() => (loading = false));
     }

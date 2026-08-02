@@ -32,7 +32,7 @@ Now you'll have `Float View` all the time, even offline!
 ## How do I use it?
 
 1. Get on your board and record a ride with [Float Control] or [Floaty]
-2. Export your ride data (Float Control will put it in a `.csv.zip`, Floaty in a `.json`)
+2. Export your ride data (Float Control will put it in a `.csv.zip`, Floaty in a `.json` or `.csv`)
 3. Load it up in <https://acheronfail.github.io/float-view/> (if it's zipped, unzip it first!)
 4. Enjoy!
 
