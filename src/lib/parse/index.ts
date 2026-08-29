@@ -1,10 +1,11 @@
 import * as fflate from 'fflate';
 
 import { parseFloatControlCsv } from './float-control';
-import { parseFloatyJson } from './floaty';
+import { parseFloatyCsv, parseFloatyJson } from './floaty';
 import { parseVescToolCsv } from './vesc-tool';
 import { DataSource, Units, type RowWithIndex } from './types';
 import { ParseError } from './errors';
+import { CsvFormat, detectCsvFormat } from './csv-format';
 
 export interface ParseResult {
   data: RowWithIndex[];
@@ -52,22 +53,31 @@ export async function parse(file: File): Promise<ParseResult> {
 
   if (file.type === SupportedMimeTypes.Csv || lowerName.endsWith('.csv')) {
     const text = await file.text();
-    const firstLine = text.split(/\r?\n/, 1)[0] ?? '';
-    const semicolonCount = (firstLine.match(/;/g) ?? []).length;
-    const commaCount = (firstLine.match(/,/g) ?? []).length;
-
-    // Heuristic: VESC Tool exports are semicolon-delimited, while Float Control uses commas.
-    // If this does not look like VESC Tool, we fall back to Float Control parsing.
-    if (semicolonCount > commaCount) {
-      return await parseVescToolCsv(text);
+    switch (detectCsvFormat(text)) {
+      case CsvFormat.Floaty:
+        return await parseFloatyCsv(text);
+      case CsvFormat.FloatControl: {
+        const parsed = await parseFloatControlCsv(text);
+        return {
+          source: DataSource.FloatControl,
+          data: parsed.csv.data,
+          units: parsed.units,
+          errors: parsed.errors,
+        };
+      }
+      case CsvFormat.VescTool:
+        return await parseVescToolCsv(text);
     }
 
-    const parsed = await parseFloatControlCsv(text);
     return {
-      source: DataSource.FloatControl,
-      data: parsed.csv.data,
-      units: parsed.units,
-      errors: parsed.errors,
+      source: DataSource.None,
+      data: [],
+      units: Units.Metric,
+      errors: [
+        new ParseError('Unrecognised CSV headers. Expected a Float Control, Floaty, or VESC Tool export.', {
+          header: text.split(/\r?\n/, 1)[0] ?? '',
+        }),
+      ],
     };
   }
 

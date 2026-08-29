@@ -112,7 +112,7 @@ export function computeStats(rows: RowWithIndex[], pois: PointOfInterest[]): Rid
     highestFieldWeakeningCurrent,
     highestTempMotor,
     highestTempController,
-    totalDistanceMeters: rows[rows.length - 1]!.distance,
+    totalDistanceMeters: rows.at(-1)?.distance ?? 0,
   };
 }
 
