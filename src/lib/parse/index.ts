@@ -1,10 +1,11 @@
 import * as fflate from 'fflate';
 
-import { parseFloatControlCsv, looksLikeFloatControlCsv } from './float-control';
-import { looksLikeFloatyCsv, parseFloatyCsv, parseFloatyJson } from './floaty';
+import { parseFloatControlCsv } from './float-control';
+import { parseFloatyCsv, parseFloatyJson } from './floaty';
 import { parseVescToolCsv } from './vesc-tool';
 import { DataSource, Units, type RowWithIndex } from './types';
 import { ParseError } from './errors';
+import { CsvFormat, detectCsvFormat } from './csv-format';
 
 export interface ParseResult {
   data: RowWithIndex[];
@@ -52,27 +53,20 @@ export async function parse(file: File): Promise<ParseResult> {
 
   if (file.type === SupportedMimeTypes.Csv || lowerName.endsWith('.csv')) {
     const text = await file.text();
-    const firstLine = text.split(/\r?\n/, 1)[0] ?? '';
-    const semicolonCount = (firstLine.match(/;/g) ?? []).length;
-    const commaCount = (firstLine.match(/,/g) ?? []).length;
-
-    // Heuristic: VESC Tool exports are semicolon-delimited, while Float Control / Floaty use commas.
-    if (semicolonCount > commaCount) {
-      return await parseVescToolCsv(text);
-    }
-
-    if (looksLikeFloatyCsv(firstLine)) {
-      return await parseFloatyCsv(text);
-    }
-
-    if (looksLikeFloatControlCsv(firstLine)) {
-      const parsed = await parseFloatControlCsv(text);
-      return {
-        source: DataSource.FloatControl,
-        data: parsed.csv.data,
-        units: parsed.units,
-        errors: parsed.errors,
-      };
+    switch (detectCsvFormat(text)) {
+      case CsvFormat.Floaty:
+        return await parseFloatyCsv(text);
+      case CsvFormat.FloatControl: {
+        const parsed = await parseFloatControlCsv(text);
+        return {
+          source: DataSource.FloatControl,
+          data: parsed.csv.data,
+          units: parsed.units,
+          errors: parsed.errors,
+        };
+      }
+      case CsvFormat.VescTool:
+        return await parseVescToolCsv(text);
     }
 
     return {
@@ -81,7 +75,7 @@ export async function parse(file: File): Promise<ParseResult> {
       units: Units.Metric,
       errors: [
         new ParseError('Unrecognised CSV headers. Expected a Float Control, Floaty, or VESC Tool export.', {
-          header: firstLine,
+          header: text.split(/\r?\n/, 1)[0] ?? '',
         }),
       ],
     };

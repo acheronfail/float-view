@@ -1,24 +1,18 @@
 import csv, { type ParseResult } from 'papaparse';
-import { floatControlKeyMap, FloatControlRawHeader } from './float-control.types';
+import { FloatControlRawHeader } from './float-control.types';
 import demoCsv from '../../assets/demo.csv?raw';
 import { attachIndex } from '../misc';
 import { RowKey, State, type Row, type RowWithIndex, Units } from './types';
 import { FloatControlLimitedError, ParseError } from './errors';
-
-export function looksLikeFloatControlCsv(headerLine: string): boolean {
-  return headerLine
-    .split(',')
-    .map((header) => header.trim())
-    .some((header) => header in floatControlKeyMap);
-}
+import { isNormalizedRowKey, normalizeFloatControlHeader } from './csv-format';
 
 const transformHeader = (header: string) => {
-  const key = floatControlKeyMap[header as FloatControlRawHeader];
-  if (!key && !Object.values(RowKey).includes(header as RowKey)) {
+  const normalized = normalizeFloatControlHeader(header);
+  if (normalized === header.trim() && !isNormalizedRowKey(normalized)) {
     console.warn('Unknown header found in CSV file', { header });
   }
 
-  return key ?? header;
+  return normalized;
 };
 
 const parseFloatValue = (input: string): number => {

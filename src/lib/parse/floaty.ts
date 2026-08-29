@@ -5,14 +5,7 @@ import { attachIndex } from '../misc';
 import { FloatyJsonSchema, type ZFloatyJson, type ZLocation, type ZLog } from './floaty.types';
 import { DataSource, stateCodeMap, Units, type Row } from './types';
 import { ParseError } from './errors';
-
-/** Headers that uniquely identify a Floaty CSV export (vs Float Control / VESC Tool). */
-const FLOATY_CSV_MARKERS = ['dutyCycle', 'batteryVolts', 'tripDistance'] as const;
-
-export function looksLikeFloatyCsv(headerLine: string): boolean {
-  const headers = new Set(headerLine.split(',').map((header) => header.trim()));
-  return FLOATY_CSV_MARKERS.every((marker) => headers.has(marker));
-}
+import { cleanCsvHeader } from './csv-format';
 
 /**
  * NOTE: sometimes Floaty doesn't record values, and seems to just put `null` (or 0) in its logs.
@@ -154,6 +147,7 @@ export async function parseFloatyCsv(input: string | File): Promise<ParseResult>
     csv.parse<FloatyCsvRow>(text, {
       header: true,
       skipEmptyLines: true,
+      transformHeader: cleanCsvHeader,
       complete: (results) => {
         try {
           if (results.data.length === 0) {
