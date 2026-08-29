@@ -86,4 +86,18 @@ describe(parseFloatyCsv.name, () => {
     expect(data[2]!.temp_motor).toBe(data[1]!.temp_motor);
     expect(data[2]!.distance).toBe(data[1]!.distance);
   });
+
+  test('backfills the second row from the first row', async () => {
+    const header =
+      'timestamp,speed,dutyCycle,batteryVolts,tripDistance,latitude,longitude,altitude,accuracy,gpsSpeed,gpsTimestamp';
+    const input = `${header}\n1000,1,0.1,80,1,1,2,3,4,5,1000\n1010,,,,,1,2,3,4,5,1010`;
+    const { data } = await parseFloatyCsv(input);
+
+    expect(data[1]).toMatchObject({
+      speed: 1,
+      duty: 10,
+      voltage: 80,
+      distance: 1,
+    });
+  });
 });

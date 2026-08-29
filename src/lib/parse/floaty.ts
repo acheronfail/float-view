@@ -25,7 +25,7 @@ function findValue(logs: ZLog[], index: number, key: keyof ZLog, floatyEmptyValu
   }
 
   let i = index - 1;
-  while (i > 0) {
+  while (i >= 0) {
     const value = logs[i]![key];
     if (value !== null && (floatyEmptyValue === undefined || value !== floatyEmptyValue)) {
       return value as number;
