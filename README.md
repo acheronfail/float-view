@@ -1,4 +1,4 @@
-# Float View
+# Float View (web)
 
 A tool to view rides recorded with [Float Control] or [Floaty]. I made it so I could easily analyze specific parts of my ride when troubleshooting custom boards, whether I'm using a desktop or mobile device.
 
