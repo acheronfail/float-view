@@ -51,6 +51,7 @@
   const warningLabel = $derived(warning === 'low' ? 'Battery low' : warning === 'overVoltage' ? 'Over voltage' : null);
   const showCharging = $derived(charging && !warning);
   const battery = $derived(batteryPresentation(estimate, sample?.batteryLevel, savedBoard));
+  const batteryMismatch = $derived(savedBoard && estimate?.unavailableReason === 'series_mismatch');
   const batteryPercent = $derived(battery.percent);
   const batterySeriesCells = $derived(estimate?.seriesCount);
   const batteryColor = $derived(colorForBattery(batteryPercent));
@@ -74,8 +75,8 @@
           >Pack {sample?.packVoltageV == null ? '—' : `${sample.packVoltageV.toFixed(1)} V`}</span
         >
       </div>
-      <p class="power-value font-mono font-semibold tabular-nums">
-        {batteryPercent == null ? '—' : `${batteryPercent.toFixed(0)}%`}
+      <p class="power-value font-mono font-semibold tabular-nums" class:setup-mismatch={batteryMismatch}>
+        {batteryMismatch ? 'Setup mismatch' : batteryPercent == null ? '—' : `${batteryPercent.toFixed(0)}%`}
       </p>
       <div class="power-bar">
         <GaugeBar
@@ -147,6 +148,7 @@
       </span>
     </div>
 
+    {#if batteryMismatch}<p class="mb-2 text-xs text-warning" role="status">Battery setup mismatch</p>{/if}
     <div class="flex min-h-0 flex-1 items-start gap-1">
       <div class="min-w-0 flex-1">
         <GaugeBar
@@ -251,6 +253,11 @@
   .power-value {
     font-size: 14px;
     line-height: 20px;
+  }
+  .power-value.setup-mismatch {
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--color-warning);
   }
   .power-bar {
     height: 6px;

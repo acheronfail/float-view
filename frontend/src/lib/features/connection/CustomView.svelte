@@ -112,7 +112,7 @@
     loading = true;
     error = null;
     try {
-      const value = await backendState.readDashboardProfile(id);
+      const value = await backendState.readBoardProfile(id);
       if (generation !== requestGeneration || boardId !== id) return;
       const data = value.values.customDashboard;
       if (data != null && !validCustomDashboard(data)) throw new Error('This dashboard is unsupported or unreadable.');

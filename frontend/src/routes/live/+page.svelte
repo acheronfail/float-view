@@ -103,7 +103,7 @@
       viewReady = true;
     } else if (target) {
       void backendState
-        .readDashboardProfile(target)
+        .readBoardProfile(target)
         .then((profile) => {
           if (generation !== viewGeneration) return;
           view = profile.values.lastLiveView ?? 'normal';
@@ -715,6 +715,7 @@
   {#if connection && !flywheelOverlayVisible(connection)}
     <LiveWarnings
       {connection}
+      onconfigure={openBatteryConfigure}
       onfaulthistory={() => {
         appHeader.closeMenu();
         faultHistoryOpen = true;

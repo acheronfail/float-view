@@ -817,7 +817,7 @@ describe('live box save ownership', () => {
     );
     await store.connect();
     store.selectedBoardProfile = { savedDeviceId: 'other', revision: 4, values: {}, missingFields: [] };
-    expect((await store.readDashboardProfile('first')).revision).toBe(7);
+    expect((await store.readBoardProfile('first')).revision).toBe(7);
     await expect(store.saveDashboard('first', 7, { version: 1, widgets: [] })).rejects.toMatchObject({
       code: 'conflict',
     });

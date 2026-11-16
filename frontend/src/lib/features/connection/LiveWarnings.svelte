@@ -10,7 +10,18 @@
     connection,
     onfaulthistory,
     onenablerefloat,
-  }: { connection: ActiveConnection; onfaulthistory: () => void; onenablerefloat: () => void } = $props();
+    onconfigure,
+  }: {
+    connection: ActiveConnection;
+    onfaulthistory: () => void;
+    onenablerefloat: () => void;
+    onconfigure?: (trigger: HTMLButtonElement) => void;
+  } = $props();
+  const batteryMismatch = $derived(
+    !!connection.savedDeviceId &&
+      connection.deviceKind === 'board' &&
+      connection.batteryEstimate.unavailableReason === 'series_mismatch'
+  );
   const sample = $derived(connection.latestSample);
   const faultWarning = $derived(firmwareFaultWarning(sample));
   const enableRefloat = $derived(
@@ -26,7 +37,7 @@
   }
 </script>
 
-{#if sample?.imuTimeoutActive || faultWarning || connection.refloatControls?.packageEnabled === false}
+{#if batteryMismatch || sample?.imuTimeoutActive || faultWarning || connection.refloatControls?.packageEnabled === false}
   <div use:warningLayer class="live-warning-layer absolute inset-x-2 top-0 z-30 shrink-0" aria-label="Board warnings">
     <div class="flex flex-col gap-2">
       {#if sample?.imuTimeoutActive}
@@ -73,6 +84,28 @@
             onclick={(event) => activateFromKeyboardOrAssistiveClick(event, enable)}
             >{enableRefloat?.pending ? 'Enabling…' : 'Enable'}</button
           >
+        </div>
+      {/if}
+      {#if batteryMismatch}
+        <div role="status" class="rounded-xl border border-warning bg-surface px-3 py-2 text-warning shadow-lg">
+          <p class="text-sm font-semibold">Battery setup mismatch</p>
+          <p class="text-xs">
+            The selected battery’s series cell count does not match the controller. Battery percentage is unavailable.
+          </p>
+          {#if onconfigure}
+            <button
+              type="button"
+              class="mt-2 min-h-11 touch-manipulation rounded-lg border border-warning px-3 py-2 text-sm font-semibold"
+              onpointerdown={(event) => {
+                const trigger = event.currentTarget;
+                activateFromPointer(event, () => onconfigure?.(trigger), { scrollable: true });
+              }}
+              onclick={(event) => {
+                const trigger = event.currentTarget;
+                activateFromKeyboardOrAssistiveClick(event, () => onconfigure?.(trigger));
+              }}>Review battery settings</button
+            >
+          {/if}
         </div>
       {/if}
     </div>

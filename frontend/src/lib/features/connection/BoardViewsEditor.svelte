@@ -82,7 +82,7 @@
     loading = true;
     error = null;
     try {
-      const result = await backendState.readDashboardProfile(id);
+      const result = await backendState.readBoardProfile(id);
       if (current === generation) {
         profile = result;
         view = result.values.lastLiveView === 'custom' ? 'custom' : 'normal';

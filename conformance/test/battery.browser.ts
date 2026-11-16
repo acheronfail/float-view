@@ -209,6 +209,71 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await page.getByRole('button', { name: 'Configure board', exact: true }).click();
       assert.equal(await selector.inputValue(), 'molicel-p45b');
       assert.equal(await minimum.inputValue(), '2.7');
+      await page.getByRole('dialog').getByRole('button', { name: 'Done', exact: true }).click();
+      const beforeMismatch = await client.request('boardProfile.get', { savedDeviceId: id });
+      await client.request('boardProfile.update', {
+        savedDeviceId: id,
+        expectedRevision: beforeMismatch.revision,
+        patch: { batteryPresetId: 'onewheel-xr-vtc6-30q' },
+      });
+      await client.waitForState((s) => s.activeConnection?.batteryEstimate.unavailableReason === 'series_mismatch');
+      const review = page.getByRole('button', { name: 'Review battery settings', exact: true });
+      await review.waitFor();
+      await page.getByText('Battery setup mismatch', { exact: true }).first().waitFor();
+      assert.equal(await gauge.getAttribute('aria-valuetext'), 'Unavailable');
+      await review.click({ button: 'right' });
+      assert.equal(await page.getByRole('dialog').count(), 0);
+      await review.evaluate((el) =>
+        el.addEventListener(
+          'pointerdown',
+          (event) => {
+            el.setAttribute('data-test-pointer', String((event as PointerEvent).pointerId));
+          },
+          { once: true }
+        )
+      );
+      await review.hover();
+      await page.mouse.down();
+      const reviewPointer = Number(await review.getAttribute('data-test-pointer'));
+      await review.dispatchEvent('pointercancel', { pointerId: reviewPointer });
+      await page.mouse.up();
+      assert.equal(await page.getByRole('dialog').count(), 0);
+      await review.focus();
+      await page.keyboard.press('Enter');
+      await batteryDialog.waitFor();
+      await batteryDialog.getByRole('status').filter({ hasText: 'controller reports 18 series cells' }).waitFor();
+      await page.keyboard.press('Escape');
+      await batteryDialog.waitFor({ state: 'hidden' });
+      await page.getByRole('button', { name: 'Board actions', exact: true }).tap();
+      await page.getByRole('button', { name: 'Detailed View', exact: true }).tap();
+      const batteryConfig = page.getByRole('region', { name: 'Battery configuration', exact: true });
+      await batteryConfig.getByText('15S2P', { exact: true }).waitFor();
+      await batteryConfig.getByText('18S', { exact: true }).waitFor();
+      for (const label of ['Saved pack configuration:', 'Controller series cells:']) {
+        const row = batteryConfig.getByText(label, { exact: true }).locator('..');
+        assert.ok((await row.getAttribute('class'))?.includes('border-warning'));
+        const colors = await row.evaluate((el) => ({
+          row: getComputedStyle(el).color,
+          label: getComputedStyle(el.querySelector('dt')!).color,
+          value: getComputedStyle(el.querySelector('dd')!).color,
+        }));
+        assert.equal(colors.label, colors.row);
+        assert.equal(colors.value, colors.row);
+      }
+      await batteryConfig.getByText('XR (VTC6 / 30Q)', { exact: true }).waitFor();
+      await review.tap();
+      await batteryDialog.waitFor();
+      await batteryDialog
+        .getByRole('combobox', { name: 'Battery', exact: true })
+        .selectOption('onewheel-gt-molicel-p42a');
+      await client.waitForState((s) => s.activeConnection?.batteryEstimate.level != null);
+      await review.waitFor({ state: 'hidden' });
+      await batteryDialog.getByRole('button', { name: 'Done', exact: true }).click();
+      await batteryConfig.getByText('18S2P', { exact: true }).waitFor();
+      assert.equal(await batteryConfig.locator('.border-warning').count(), 0);
+      await batteryConfig.getByText('GT (Molicel P42A)', { exact: true }).waitFor();
+      await page.getByRole('button', { name: 'Board actions', exact: true }).tap();
+      await page.getByRole('button', { name: 'Configure board', exact: true }).tap();
       projection = 'other-board';
       await page.getByRole('dialog').waitFor({ state: 'hidden' });
       assert.deepEqual(errors, []);

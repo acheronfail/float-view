@@ -117,3 +117,20 @@ it('does not invent charge when a voltage warning has no charge estimate', () =>
   expect(body).toContain('aria-valuetext="Unavailable"');
   expect(body).not.toContain('aria-valuenow=');
 });
+
+for (const dashboard of [false, true]) {
+  it(`explains a cell-count mismatch without substituting controller charge (dashboard=${dashboard})`, () => {
+    const { body } = render(GaugePower, {
+      props: {
+        dashboard,
+        savedBoard: true,
+        sample: { packVoltageV: 57.7, batteryLevel: 0.55 } as LiveSample,
+        estimate: { ...emptyEstimate(), unavailableReason: 'series_mismatch' },
+      },
+    });
+    expect(body).toContain(dashboard ? 'Setup mismatch' : 'Battery setup mismatch');
+    expect(body).toContain('aria-valuetext="Unavailable"');
+    expect(body).not.toContain('aria-valuenow=');
+    expect(body).not.toContain('55%');
+  });
+}

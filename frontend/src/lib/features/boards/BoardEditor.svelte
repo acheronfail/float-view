@@ -257,6 +257,13 @@
     {#if batteryOnly}
       <p class="text-sm text-muted">Set up your battery for a more accurate charge estimate.</p>
     {/if}
+    {#if backendState.snapshot?.activeConnection?.savedDeviceId === savedDeviceId && backendState.snapshot.activeConnection.batteryEstimate.unavailableReason === 'series_mismatch'}
+      <p role="status" class="mt-3 text-sm text-warning">
+        Battery setup mismatch. The controller reports {backendState.snapshot.activeConnection.currentLimits
+          ?.batterySeriesCells ?? 'an unknown number of'} series cells. Choose the matching battery or correct the series
+        count in Advanced. Battery percentage is unavailable until the counts match.
+      </p>
+    {/if}
     <div class="mt-4 grid gap-3 sm:grid-cols-2">
       {#if !batteryOnly}
         <div class="text-sm sm:col-span-2">

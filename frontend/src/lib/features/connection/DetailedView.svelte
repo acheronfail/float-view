@@ -3,6 +3,7 @@
   import { formatDistanceM, formatSpeedKph, formatTemperatureC } from '$lib/features/measurements/format';
   import { batteryPresentation } from './battery';
   import { beepReasonLabel, stopReasonLabel } from './live-status';
+  import BatteryConfigurationDetails from './BatteryConfigurationDetails.svelte';
   import BatterySetupWarning from './BatterySetupWarning.svelte';
   let { onconfigure, charging = false }: { onconfigure?: (trigger: HTMLButtonElement) => void; charging?: boolean } =
     $props();
@@ -163,6 +164,7 @@
         ['ATR speed boost', scalar(sample?.atrSpeedBoost, 3)],
       ] as [string, string][]}
     />
+    <BatteryConfigurationDetails {connection} />
     <TelemetrySection
       title="Battery charge"
       items={[[battery.label, batteryPercent == null ? 'Unavailable' : `${batteryPercent}%`]]}

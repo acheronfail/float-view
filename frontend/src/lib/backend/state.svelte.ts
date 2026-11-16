@@ -611,8 +611,8 @@ export class BackendState {
     return opened && generation === this.boardProfileGeneration;
   }
 
-  /** Request-scoped dashboard reads do not replace an open Board Profile editor. */
-  async readDashboardProfile(savedDeviceId: string): Promise<BoardProfile> {
+  /** Request-scoped profile reads do not replace an open Board Profile editor. */
+  async readBoardProfile(savedDeviceId: string): Promise<BoardProfile> {
     if (!this.client?.isOpen) throw new Error('Backend is not connected');
     return this.client.request('boardProfile.get', { savedDeviceId });
   }

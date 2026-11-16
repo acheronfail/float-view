@@ -1031,3 +1031,26 @@ The live dashboard SHALL identify an active IMU timeout as a Refloat error witho
 
 - **WHEN** a cleared timeout leaves stop condition `imuTimeout`, or the frontend is recreated after history was saved
 - **THEN** the stop label and recorded history recover from authoritative state without asserting a currently active timeout
+
+### Requirement: Explain battery configuration conflicts
+
+For saved-board `series_mismatch` estimates, all live views SHALL explain that the selected battery's series count disagrees with the controller, the percentage is unavailable, and offer the battery configuration modal. Widgets SHALL identify the mismatch. The editor SHALL explain the conflict and show the controller count when known. Correcting configuration SHALL remove the warning without reconnecting.
+
+#### Scenario: Wrong battery variant
+
+- **WHEN** a user selects an 18S XR Classic battery for a controller reporting 15S
+- **THEN** live views explain the cell-count mismatch and offer battery settings
+- **AND** percentage remains unavailable rather than substituting controller charge
+- **WHEN** the user selects a matching 15S battery
+- **THEN** the warning disappears when the authoritative estimate becomes available
+
+### Requirement: Detailed battery configuration
+
+The detailed view SHALL show the saved battery name, series and parallel counts, cell profile and optional pack capacity alongside the controller-reported series count. Saved configuration SHALL remain visible during a series mismatch and refresh after profile revisions without polling on telemetry updates. Missing values and failed reads SHALL be explicit; switching boards SHALL never display the previous board's configuration.
+
+#### Scenario: Inspect conflicting configuration
+
+- **WHEN** the saved battery is 18S2P and the controller reports 15S
+- **THEN** the detailed view shows both counts even though the estimate has no resolved series count
+- **AND** the saved configuration remains distinct from controller facts
+- **AND** both conflicting series-count rows use the warning accent until the mismatch is corrected
