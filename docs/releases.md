@@ -1,8 +1,10 @@
 # App releases
 
-Stable and candidate commands show the proposed tag and source commit, then ask
-for confirmation before creating or pushing the tag. Enter `y` or `yes` to
-continue; empty input, any other answer, or end of input cancels the release.
+Stable and candidate commands list all numbered RC tags on the current history
+newer than the latest stable ancestor, across all version targets. They then show
+the proposed tag and source commit and ask for confirmation before creating or
+pushing the tag. Enter `y` or `yes` to continue. Empty input, any other answer,
+or end of input cancels the release.
 Fetching and validation happen before the prompt. Preview commands do not prompt.
 
 `just release preview` prints the next patch release's Markdown notes from the latest
@@ -11,6 +13,8 @@ to inspect another commit. It uses the same note generator as publication, works
 and on dirty or unpushed branches, and does not create tags or publish anything.
 Only committed changes appear; fetch tags first if the local release history is stale.
 
+`just release` defaults to the last candidate in the version-sorted list, with
+the `-rc.N` suffix removed. If the list is empty, it defaults to the next patch.
 `just release patch` fetches tags and creates/pushes the next annotated stable
 version on a clean `master` matching `origin/master`. Use `minor` or `major` to
 reset lower version components. The greatest numeric stable ancestor is the
@@ -21,9 +25,7 @@ If a helper push fails, its local tag remains for inspection and an explicit
 `git push origin <tag>` retry. Tagging does not modify app source or package manifests.
 
 `just release candidate` fetches version tags and pushes the next annotated,
-immutable candidate tag from clean `master` matching `origin/master`. Before the
-confirmation prompt, it lists all numbered RC tags newer than the latest stable
-ancestor on the current history, across all version targets (or states there are none).
+immutable candidate tag from clean `master` matching `origin/master`.
 Before the first stable v1.0.0 it targets `v1.0.0-rc.N`; afterward it targets the next patch.
 Pass `patch`, `minor` or `major` explicitly to choose the bump from the latest
 stable ancestor: `just release candidate minor` after v1.0.0 creates

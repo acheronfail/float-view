@@ -26,13 +26,13 @@ function confirmRelease(version: string, commit: string): boolean {
 }
 
 export function release(
-  bump: string,
+  bump = '',
   cwd = process.cwd(),
   candidateBump?: string,
   confirm: (version: string, commit: string) => boolean = confirmRelease
 ): string {
-  if (!['patch', 'minor', 'major', 'candidate'].includes(bump))
-    throw new Error('Usage: just release patch|minor|major|candidate');
+  if (!['', 'patch', 'minor', 'major', 'candidate'].includes(bump))
+    throw new Error('Usage: just release [patch|minor|major|candidate]');
   if (candidateBump !== undefined && (bump !== 'candidate' || !['patch', 'minor', 'major'].includes(candidateBump)))
     throw new Error('Usage: just release candidate [patch|minor|major]');
   if (git(['status', '--porcelain'], cwd)) throw new Error('Release requires a clean working tree');
@@ -46,16 +46,16 @@ export function release(
     throw new Error('Master must match origin/master; push or pull first');
   const stable = latestStable(commit, cwd);
   const base = stable ?? 'v0.0.0';
+  const candidates = git(['tag', '--list', '--merged', commit], cwd)
+    .split('\n')
+    .filter((tag) => isCandidateVersion(tag) && (!stable || compareRelease(tag, stable) > 0))
+    .sort(compareRelease);
+  process.stderr.write(
+    `Current release candidates since ${stable ?? 'the start of history'}:\n` +
+    (candidates.length ? candidates.map((tag) => `  ${tag}\n`).join('') : '  (none)\n')
+  );
   let version: string;
   if (bump === 'candidate') {
-    const candidates = git(['tag', '--list', '--merged', commit], cwd)
-      .split('\n')
-      .filter((tag) => isCandidateVersion(tag) && (!stable || compareRelease(tag, stable) > 0))
-      .sort(compareRelease);
-    process.stderr.write(
-      `Current release candidates since ${stable ?? 'the start of history'}:\n` +
-      (candidates.length ? candidates.map((tag) => `  ${tag}\n`).join('') : '  (none)\n')
-    );
     const target = candidateBump
       ? bumpVersion(base, candidateBump as Bump)
       : parseVersion(base).major < 1
@@ -70,7 +70,12 @@ export function release(
       .map(Number);
     version = `${prefix}${Math.max(0, ...numbers) + 1}`;
     parseVersion(version);
-  } else version = bumpVersion(base, bump as Bump);
+  } else {
+    const latestCandidate = candidates.at(-1);
+    version = !bump && latestCandidate
+      ? `v${parseVersion(latestCandidate).appVersion}`
+      : bumpVersion(base, (bump || 'patch') as Bump);
+  }
   if (git(['tag', '--list', version], cwd)) throw new Error(`Tag ${version} is already reserved`);
   if (!confirm(version, commit)) throw new Error('Release cancelled; no tag created or pushed');
   git(['tag', '-a', version, '-m', `Float View ${version}`, commit], cwd);
@@ -84,7 +89,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const ref = process.argv[3];
   if (process.argv.length > 4 || (!['preview', 'candidate'].includes(action) && ref))
     throw new Error(
-      'Usage: just release patch|minor|major, just release candidate [patch|minor|major], or just release preview [ref]'
+      'Usage: just release [patch|minor|major], just release candidate [patch|minor|major], or just release preview [ref]'
     );
   if (action === 'preview') {
     const result = preview(ref);

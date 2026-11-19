@@ -321,7 +321,7 @@ test('candidate bumps reserve separate immutable sequences and CLI supports mino
   assert.throws(() => release('minor', dir, 'minor'), /Usage/);
 });
 
-test('candidate CLI lists fetched RCs across version targets before confirmation', () => {
+test('release CLI lists fetched RCs before default, explicit and candidate prompts', () => {
   const dir = repository();
   git(['tag', 'v1.2.1-rc.1'], dir);
   commit(dir);
@@ -329,7 +329,7 @@ test('candidate CLI lists fetched RCs across version targets before confirmation
   // Candidates may share the stable commit and must still be shown.
   git(['tag', 'v1.3.0-rc.10'], dir);
   git(['tag', 'v1.3.0-rc.2'], dir);
-  git(['tag', 'v2.0.0-rc.1'], dir);
+  git(['tag', 'v1.4.0-rc.2'], dir);
   git(['tag', 'v1.3.0-rc.0'], dir);
   git(['tag', 'v1.2.2-nightly.1.gabcdef0'], dir);
   const origin = remote(dir);
@@ -340,40 +340,52 @@ test('candidate CLI lists fetched RCs across version targets before confirmation
   git(['tag', 'v9.0.0'], dir);
   git(['checkout', 'master'], dir);
   const tagsBefore = git(['tag', '--list'], origin);
-  const result = spawnSync(
-    process.execPath,
-    ['--strip-types', new URL('./release.ts', import.meta.url).pathname, 'candidate'],
-    { cwd: dir, encoding: 'utf8', input: 'n\n' }
-  );
-  assert.notEqual(result.status, 0);
-  assert.ok(result.stderr.includes(
-    'Current release candidates since v1.2.1:\n' +
-    '  v1.2.2-rc.1\n  v1.3.0-rc.2\n  v1.3.0-rc.10\n  v2.0.0-rc.1\nCreate tag v1.2.2-rc.2'
-  ), result.stderr);
-  assert.doesNotMatch(result.stderr, /v1\.2\.1-rc|v9\.0\.0|rc\.0|nightly/);
-  assert.match(result.stderr, /Release cancelled/);
-  assert.equal(git(['tag', '--list', 'v1.2.2-rc.2'], dir), '');
-  assert.equal(git(['tag', '--list'], origin), tagsBefore);
+  const script = new URL('./release.ts', import.meta.url).pathname;
+  for (const [args, version] of [
+    [[], 'v1.4.0'],
+    [['patch'], 'v1.2.2'],
+    [['minor'], 'v1.3.0'],
+    [['major'], 'v2.0.0'],
+    [['candidate'], 'v1.2.2-rc.2'],
+  ] as const) {
+    const result = spawnSync(process.execPath, ['--strip-types', script, ...args], {
+      cwd: dir, encoding: 'utf8', input: 'n\n',
+    });
+    assert.notEqual(result.status, 0);
+    assert.ok(result.stderr.includes(
+      'Current release candidates since v1.2.1:\n' +
+      `  v1.2.2-rc.1\n  v1.3.0-rc.2\n  v1.3.0-rc.10\n  v1.4.0-rc.2\nCreate tag ${version} at `
+    ), result.stderr);
+    assert.doesNotMatch(result.stderr, /v1\.2\.1-rc|v9\.0\.0|rc\.0|nightly/);
+    assert.match(result.stderr, /Release cancelled/);
+    assert.equal(git(['tag', '--list', version], dir), '');
+    assert.equal(git(['tag', '--list'], origin), tagsBefore);
+  }
 });
 
 for (const stable of [null, 'v1.2.1']) {
-  test(`candidate CLI shows an empty list with stable base ${stable}`, () => {
+  test(`release CLI shows an empty list with stable base ${stable}`, () => {
     const dir = repository();
     if (stable) {
       git(['tag', 'v1.2.1-rc.1'], dir);
       git(['tag', stable], dir);
     }
     remote(dir);
-    const result = spawnSync(
-      process.execPath,
-      ['--strip-types', new URL('./release.ts', import.meta.url).pathname, 'candidate', 'minor'],
-      { cwd: dir, encoding: 'utf8', input: 'n\n' }
-    );
-    assert.notEqual(result.status, 0);
-    assert.ok(result.stderr.includes(
-      `Current release candidates since ${stable ?? 'the start of history'}:\n  (none)\nCreate tag `
-    ), result.stderr);
-    assert.match(result.stderr, /Release cancelled/);
+    for (const [args, version] of [
+      [[], stable ? 'v1.2.2' : 'v0.0.1'],
+      [['candidate', 'minor'], stable ? 'v1.3.0-rc.1' : 'v0.1.0-rc.1'],
+    ] as const) {
+      const result = spawnSync(
+        process.execPath,
+        ['--strip-types', new URL('./release.ts', import.meta.url).pathname, ...args],
+        { cwd: dir, encoding: 'utf8', input: 'n\n' }
+      );
+      assert.notEqual(result.status, 0);
+      assert.ok(result.stderr.includes(
+        `Current release candidates since ${stable ?? 'the start of history'}:\n  (none)\nCreate tag ${version} at `
+      ), result.stderr);
+      assert.match(result.stderr, /Release cancelled/);
+    }
   });
 }
 

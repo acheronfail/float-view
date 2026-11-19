@@ -134,7 +134,7 @@ emulate platform:
     esac
 
 # Tag a stable release, candidate [patch|minor|major], or preview notes with preview [ref].
-release bump="patch" ref="":
+release bump="" ref="":
     node --strip-types .github/scripts/release.ts {{ quote(bump) }} {{ if ref == "" { "" } else { quote(ref) } }}
 
 build:
