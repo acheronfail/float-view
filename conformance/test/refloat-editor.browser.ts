@@ -95,11 +95,34 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await lightsHeading.waitFor();
       await headlightsHeading.waitFor();
       await page.getByRole('button', { name: 'Section and search controls', exact: true }).tap();
-      await page.setViewportSize({ width: 390, height: 320 });
+      await page.getByRole('searchbox').waitFor({ state: 'hidden' });
       const scroller = () =>
         page
           .locator('div.overflow-y-auto')
           .filter({ has: page.getByRole('heading', { name: 'Lighting · Startup defaults', exact: true }) });
+      await page.setViewportSize({ width: 390, height: 300 });
+      const { pinnedLights, releasedLights, pinnedHeadlights } = await scroller().evaluate((el) => {
+        const [lights, headlights] = el.querySelectorAll('h4');
+        el.scrollTop = 0;
+        const top = el.getBoundingClientRect().top;
+        const lightsStart = lights!.getBoundingClientRect().top - top;
+        const headlightsStart = headlights!.getBoundingClientRect().top - top;
+        el.scrollTop = lightsStart + 12;
+        const pinnedLights = lights!.getBoundingClientRect().top - top;
+        el.scrollTop = headlightsStart + 12;
+        return {
+          pinnedLights,
+          releasedLights: lights!.getBoundingClientRect().bottom - top,
+          pinnedHeadlights: headlights!.getBoundingClientRect().top - top,
+        };
+      });
+      assert.ok(
+        Math.abs(pinnedLights) < 1,
+        `Lights stays at the top while its fields scroll (offset: ${pinnedLights})`
+      );
+      assert.ok(releasedLights <= 0, `Lights leaves the scrollport at the next subsection (offset: ${releasedLights})`);
+      assert.ok(Math.abs(pinnedHeadlights) < 1, `Headlights takes the sticky position (offset: ${pinnedHeadlights})`);
+      await page.setViewportSize({ width: 390, height: 320 });
       await scroller().evaluate((el) => {
         el.scrollTop = 60;
       });

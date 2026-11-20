@@ -31,7 +31,19 @@
   let helpField = $state<RefloatConfigurationFieldContract | null>(null);
   let helpTrigger = $state<HTMLButtonElement>();
   const selectedSection = $derived(resolveRefloatConfigurationSection(controller.sections, selectedSectionKey));
-  const visibleFields = $derived(controller.filteredSectionFields(selectedSection));
+  const subsections = $derived.by(() => {
+    const fields = controller.filteredSectionFields(selectedSection);
+    const groups: { key: string; heading: string | null; fields: RefloatConfigurationFieldContract[] }[] = [];
+    for (const [index, field] of fields.entries()) {
+      let group = groups.at(-1);
+      if (!group || (field.heading && field.heading !== fields[index - 1]?.heading)) {
+        group = { key: field.name, heading: field.heading, fields: [] };
+        groups.push(group);
+      }
+      group.fields.push(field);
+    }
+    return groups;
+  });
 
   $effect(() => {
     const sections = controller.sections;
@@ -179,7 +191,7 @@
 
   <div
     bind:this={scroller}
-    class="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain py-3 [overflow-anchor:none]"
+    class="min-h-0 flex-1 scroll-pt-8 space-y-3 overflow-y-auto overscroll-contain pb-3 [overflow-anchor:none] *:first:mt-3"
     onscroll={() => {
       if (scroller && !controller.loading) controller.setPosition({ scrollTop: Math.max(0, scroller.scrollTop) });
     }}
@@ -233,27 +245,31 @@
         <h3 id="refloat-selected-section" class="text-lg font-semibold">
           {selectedSection.group} · {selectedSection.subgroup}
         </h3>
-        {#if visibleFields.length}
-          <div class="grid gap-2 md:grid-cols-2">
-            {#each visibleFields as field, index (field.name)}
-              {#if field.heading && (index === 0 || field.heading !== visibleFields[index - 1]?.heading)}
-                <h4 class="mt-3 border-b border-outline pb-1 text-sm font-semibold text-muted first:mt-0 md:col-span-2">
-                  {field.heading}
+        {#if subsections.length}
+          {#each subsections as subsection (subsection.key)}
+            <div class="grid gap-2 md:grid-cols-2">
+              {#if subsection.heading}
+                <h4
+                  class="sticky top-0 z-10 border-b border-outline bg-canvas py-1 text-sm font-semibold text-muted md:col-span-2"
+                >
+                  {subsection.heading}
                 </h4>
               {/if}
-              <RefloatConfigurationField
-                {field}
-                value={controller.draft[field.name]}
-                error={controller.validationErrors[field.name]}
-                disabled={controller.loading || backendState.busy || !controller.loaded || !!controller.incompatible}
-                input={controller.inputs[field.name]}
-                onnumericinput={(input) => controller.setNumericInput(field.name, input)}
-                onchange={(value) => controller.setValue(field.name, value)}
-                ondefault={() => controller.useDefault(field.name)}
-                onhelp={showHelp}
-              />
-            {/each}
-          </div>
+              {#each subsection.fields as field (field.name)}
+                <RefloatConfigurationField
+                  {field}
+                  value={controller.draft[field.name]}
+                  error={controller.validationErrors[field.name]}
+                  disabled={controller.loading || backendState.busy || !controller.loaded || !!controller.incompatible}
+                  input={controller.inputs[field.name]}
+                  onnumericinput={(input) => controller.setNumericInput(field.name, input)}
+                  onchange={(value) => controller.setValue(field.name, value)}
+                  ondefault={() => controller.useDefault(field.name)}
+                  onhelp={showHelp}
+                />
+              {/each}
+            </div>
+          {/each}
         {:else}
           <p class="rounded-lg border border-outline p-3 text-sm text-muted">No fields match this search.</p>
         {/if}
