@@ -30,7 +30,7 @@
     type="button"
     class="min-h-11 touch-manipulation rounded border border-outline bg-elevated px-3 py-2 text-foreground disabled:opacity-50"
     disabled={busy}
-    onpointerdown={(e) => activateFromPointer(e, exportDiagnostics, { scrollable: true })}
+    onpointerdown={(e) => activateFromPointer(e, exportDiagnostics)}
     onclick={(e) => activateFromKeyboardOrAssistiveClick(e, exportDiagnostics)}
     >{busy ? 'Exporting…' : 'Export logs'}</button
   >

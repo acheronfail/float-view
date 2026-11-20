@@ -64,7 +64,7 @@
         {disabled}
         aria-label={`Use default for ${label}`}
         title="Use firmware default"
-        onpointerdown={(event) => activateFromPointer(event, ondefault, { scrollable: true })}
+        onpointerdown={(event) => activateFromPointer(event, ondefault)}
         onclick={(event) => activateFromKeyboardOrAssistiveClick(event, ondefault)}>Default</button
       >
       <button

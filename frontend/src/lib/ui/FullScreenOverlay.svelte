@@ -122,7 +122,7 @@
         type="button"
         class="min-h-11 shrink-0 touch-manipulation rounded-lg border border-outline px-4"
         disabled={closing || closeDisabled}
-        onpointerdown={(event) => activateFromPointer(event, close)}
+        onpointerdown={(event) => activateFromPointer(event, close, { preventPointerDownDefault: true })}
         onclick={(event) => activateFromKeyboardOrAssistiveClick(event, close)}
         >{closing ? 'Saving…' : closeLabel}</button
       >

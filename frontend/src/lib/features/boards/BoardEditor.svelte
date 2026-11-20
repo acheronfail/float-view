@@ -237,7 +237,7 @@
         type="button"
         aria-haspopup="dialog"
         class="mt-3 flex w-full touch-pan-y items-center gap-4 rounded-xl border border-outline bg-elevated px-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-        onpointerdown={(event) => activateFromPointer(event, openAppearance, { scrollable: true })}
+        onpointerdown={(event) => activateFromPointer(event, openAppearance)}
         onclick={(event) => activateFromKeyboardOrAssistiveClick(event, openAppearance)}
       >
         <span aria-hidden="true" class="shrink-0"><BoardIcon {appearance} class="block w-24" /></span>
@@ -274,7 +274,7 @@
             aria-describedby="auto-connect-help"
             disabled={!device.bluetoothIdentifier || autoConnectBusy || backendState.busy}
             class="flex w-full touch-pan-y items-center justify-between gap-3 rounded-md py-2 text-left disabled:opacity-50"
-            onpointerdown={(event) => activateFromPointer(event, toggleAutoConnect, { scrollable: true })}
+            onpointerdown={(event) => activateFromPointer(event, toggleAutoConnect)}
             onclick={(event) => activateFromKeyboardOrAssistiveClick(event, toggleAutoConnect)}
           >
             <span>Connect automatically</span>

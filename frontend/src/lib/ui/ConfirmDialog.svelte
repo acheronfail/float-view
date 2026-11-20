@@ -112,7 +112,7 @@
       type="button"
       class="absolute inset-0 h-full w-full cursor-default touch-none bg-black/60"
       aria-label={dismissLabel}
-      onpointerdown={(event) => activateFromPointer(event, dismiss)}
+      onpointerdown={(event) => activateFromPointer(event, dismiss, { preventPointerDownDefault: true })}
       onclick={(event) => activateFromKeyboardOrAssistiveClick(event, dismiss)}
     ></button>
     <div
@@ -148,7 +148,7 @@
           type="button"
           class="touch-manipulation rounded-lg border border-outline px-4 py-2 disabled:opacity-50"
           disabled={busy}
-          onpointerdown={(event) => activateFromPointer(event, cancel)}
+          onpointerdown={(event) => activateFromPointer(event, cancel, { preventPointerDownDefault: true })}
           onclick={(event) => activateFromKeyboardOrAssistiveClick(event, cancel)}>{cancelLabel}</button
         >
         {#if showConfirm}<button

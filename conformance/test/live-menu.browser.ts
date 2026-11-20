@@ -5,6 +5,7 @@ import { chromium, webkit } from 'playwright';
 import { startMockServer, stopMockServer, getMockBootstrap } from '../../frontend/backend-mock/index.ts';
 import { ConformanceClient } from '../src/client.ts';
 import type { RefloatControls } from '../../frontend/src/lib/backend/contract.ts';
+import { dragFromControl } from './support/drag-from-control.ts';
 
 const html = await readFile(new URL('../../frontend/build/index.html', import.meta.url), 'utf8');
 for (const [name, engine] of Object.entries({ chromium, webkit })) {
@@ -106,6 +107,8 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       });
       await page.goto(`${endpoint.origin}/#/live`);
       const menu = page.getByRole('button', { name: 'Board actions', exact: true });
+      await dragFromControl(menu);
+      assert.equal(await menu.getAttribute('aria-expanded'), 'false');
       await menu.tap();
       const actionOverlay = page.getByRole('dialog', { name: 'Board actions', exact: true });
       await actionOverlay.waitFor();

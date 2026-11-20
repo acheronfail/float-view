@@ -437,7 +437,7 @@
             If this problem persists, <a
               class="touch-manipulation text-accent underline"
               href="#/settings/help"
-              use:navigationLink={{ scrollable: true }}>export diagnostic logs in Settings</a
+              use:navigationLink>export diagnostic logs in Settings</a
             >.
           </p>
         {/if}

@@ -59,7 +59,7 @@ describe('cross-platform control activation', () => {
     activateFromKeyboardOrAssistiveClick({ detail: 1 } as MouseEvent, action);
     activateFromKeyboardOrAssistiveClick({ detail: 0 } as MouseEvent, action);
 
-    expect(preventDefault).toHaveBeenCalledOnce();
+    expect(preventDefault).not.toHaveBeenCalled();
     expect(action).toHaveBeenCalledTimes(2);
   });
 
@@ -86,41 +86,54 @@ describe('cross-platform control activation', () => {
     expect(action).not.toHaveBeenCalled();
   });
 
-  it.each(['drag', 'release', 'cancel', 'tap'])(
-    'scrollable choices handle %s without suppressing scrolling',
-    (gesture) => {
-      const action = vi.fn();
-      const preventDefault = vi.fn();
-      const target = new EventTarget();
-      const send = (type: string, y: number, pointerId = 9) => {
-        const next = new Event(type);
-        Object.assign(next, { pointerId, clientX: 20, clientY: y, isPrimary: true });
-        target.dispatchEvent(next);
-      };
-      activateFromPointer(
-        {
-          button: 0,
-          isPrimary: true,
-          pointerId: 9,
-          clientX: 20,
-          clientY: 20,
-          currentTarget: target,
-          preventDefault,
-        } as unknown as PointerEvent,
-        action,
-        { scrollable: true }
-      );
-      // An unrelated finger cannot cancel the primary tap.
-      send('pointermove', 100, 10);
-      if (gesture === 'drag') {
-        send('pointermove', 60);
-        send('pointermove', 20);
-      }
-      if (gesture === 'cancel') send('pointercancel', 20);
-      send('pointerup', gesture === 'release' ? 60 : 20);
-      activateFromKeyboardOrAssistiveClick({ detail: 1 } as MouseEvent, action);
-      expect(preventDefault).not.toHaveBeenCalled();
-      expect(action).toHaveBeenCalledTimes(gesture === 'tap' ? 1 : 0);
+  it('can suppress native pointer focus while still rejecting a drag', () => {
+    const action = vi.fn();
+    const target = new EventTarget();
+    const preventDefault = vi.fn();
+    const point = { pointerId: 9, clientX: 20, clientY: 20, isPrimary: true };
+    activateFromPointer(
+      { ...point, button: 0, currentTarget: target, preventDefault } as unknown as PointerEvent,
+      action,
+      { preventPointerDownDefault: true }
+    );
+
+    target.dispatchEvent(Object.assign(new Event('pointermove'), { ...point, clientY: 60 }));
+    target.dispatchEvent(Object.assign(new Event('pointerup'), point));
+    expect(preventDefault).toHaveBeenCalledOnce();
+    expect(action).not.toHaveBeenCalled();
+  });
+
+  it.each(['drag', 'release', 'cancel', 'tap'])('handles %s without suppressing scrolling by default', (gesture) => {
+    const action = vi.fn();
+    const preventDefault = vi.fn();
+    const target = new EventTarget();
+    const send = (type: string, y: number, pointerId = 9) => {
+      const next = new Event(type);
+      Object.assign(next, { pointerId, clientX: 20, clientY: y, isPrimary: true });
+      target.dispatchEvent(next);
+    };
+    activateFromPointer(
+      {
+        button: 0,
+        isPrimary: true,
+        pointerId: 9,
+        clientX: 20,
+        clientY: 20,
+        currentTarget: target,
+        preventDefault,
+      } as unknown as PointerEvent,
+      action
+    );
+    // An unrelated finger cannot cancel the primary tap.
+    send('pointermove', 100, 10);
+    if (gesture === 'drag') {
+      send('pointermove', 60);
+      send('pointermove', 20);
     }
-  );
+    if (gesture === 'cancel') send('pointercancel', 20);
+    send('pointerup', gesture === 'release' ? 60 : 20);
+    activateFromKeyboardOrAssistiveClick({ detail: 1 } as MouseEvent, action);
+    expect(preventDefault).not.toHaveBeenCalled();
+    expect(action).toHaveBeenCalledTimes(gesture === 'tap' ? 1 : 0);
+  });
 });

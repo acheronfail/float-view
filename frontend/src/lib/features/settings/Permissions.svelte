@@ -211,7 +211,7 @@
                 disabled={backendState.status !== 'connected' ||
                   backendState.permissionBusy ||
                   backendState.snapshot?.permissions.some((p) => p.pending)}
-                onpointerdown={(event) => activateFromPointer(event, () => recover(row), { scrollable: true })}
+                onpointerdown={(event) => activateFromPointer(event, () => recover(row))}
                 onclick={(event) => activateFromKeyboardOrAssistiveClick(event, () => recover(row))}
               >
                 {#if row.action === 'openSettings'}<Icon name="settings" class="size-4" />{/if}
@@ -231,7 +231,7 @@
       <button
         type="button"
         class="min-h-11 touch-manipulation rounded-lg bg-accent-fill px-4 py-2 text-sm font-medium text-on-accent disabled:opacity-50"
-        onpointerdown={(event) => activateFromPointer(event, () => backendState.connect(), { scrollable: true })}
+        onpointerdown={(event) => activateFromPointer(event, () => backendState.connect())}
         onclick={(event) => activateFromKeyboardOrAssistiveClick(event, () => backendState.connect())}>Reconnect</button
       >
     </div>

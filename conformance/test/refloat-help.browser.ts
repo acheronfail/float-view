@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { chromium, webkit } from 'playwright';
 import { startMockServer, stopMockServer, getMockBootstrap } from '../../frontend/backend-mock/index.ts';
 import { ConformanceClient } from '../src/client.ts';
+import { dragFromControl } from './support/drag-from-control.ts';
 
 const html = await readFile(new URL('../../frontend/build/index.html', import.meta.url), 'utf8');
 const description = [
@@ -55,8 +56,10 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
         { width: 600, height: 320 },
       ]) {
         await page.setViewportSize(viewport);
-        await help.tap();
         const dialog = page.getByRole('dialog', { name: 'Duty Tiltback', exact: true });
+        await dragFromControl(help);
+        assert.equal(await dialog.count(), 0);
+        await help.tap();
         const body = dialog.getByRole('region', { name: 'Duty Tiltback help' });
         const done = dialog.getByRole('button', { name: 'Done', exact: true });
         assert.equal(await body.textContent(), description);
@@ -99,10 +102,11 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
           document.querySelector('[role="dialog"] [role="region"]')!.classList.contains('scrollable')
         );
         await done.dispatchEvent('pointerdown', { button: 0, isPrimary: false, pointerId: 2 });
+        await dragFromControl(done);
         assert.equal(await dialog.count(), 1);
         await done.tap();
         await dialog.waitFor({ state: 'hidden' });
-        await help.focus();
+        assert.equal(await help.evaluate((el) => el === document.activeElement), true);
         await page.keyboard.press('Enter');
         await dialog.waitFor();
         assert.equal(await body.evaluate((el) => el.scrollTop), 0);

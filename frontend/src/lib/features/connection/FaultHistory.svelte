@@ -99,7 +99,7 @@
             disabled={clearUnavailable !== null || backendState.busy}
             aria-describedby={clearUnavailable ? 'fault-clear-unavailable' : undefined}
             aria-busy={clearing || undefined}
-            onpointerdown={(event) => activateFromPointer(event, clearLatch, { scrollable: true })}
+            onpointerdown={(event) => activateFromPointer(event, clearLatch)}
             onclick={(event) => activateFromKeyboardOrAssistiveClick(event, clearLatch)}
             >{clearing ? 'Clearing…' : 'Clear fatal error'}</button
           >

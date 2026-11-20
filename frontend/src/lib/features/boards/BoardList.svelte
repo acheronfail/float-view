@@ -20,7 +20,7 @@
         <li>
           <a
             href={`#/sessions/boards/${encodeURIComponent(device.savedDeviceId)}`}
-            use:navigationLink={{ scrollable: true }}
+            use:navigationLink
             class="motion-feedback block min-w-0 touch-manipulation rounded-lg border border-outline bg-elevated p-3 transition-colors hover:border-accent hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:border-accent active:bg-accent-soft motion-reduce:transition-none"
           >
             <div class="flex min-w-0 items-center gap-2">

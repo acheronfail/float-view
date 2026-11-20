@@ -52,7 +52,7 @@
             type="button"
             class="flex w-full touch-manipulation items-center gap-2 rounded-xl border border-danger bg-surface px-3 py-2 text-left text-danger shadow-lg"
             aria-label={`Open faults and errors: ${faultWarning.title}`}
-            onpointerdown={(event) => activateFromPointer(event, openFault, { scrollable: true })}
+            onpointerdown={(event) => activateFromPointer(event, openFault)}
             onclick={(event) => activateFromKeyboardOrAssistiveClick(event, openFault)}
           >
             <Icon name="triangle-alert" class="shrink-0 text-xl" />
@@ -80,7 +80,7 @@
             disabled={!enableRefloat || enableRefloat.disabled || backendState.busy}
             aria-label="Enable Refloat"
             aria-busy={enableRefloat?.pending || undefined}
-            onpointerdown={(event) => activateFromPointer(event, enable, { scrollable: true })}
+            onpointerdown={(event) => activateFromPointer(event, enable)}
             onclick={(event) => activateFromKeyboardOrAssistiveClick(event, enable)}
             >{enableRefloat?.pending ? 'Enabling…' : 'Enable'}</button
           >
@@ -98,7 +98,7 @@
               class="mt-2 min-h-11 touch-manipulation rounded-lg border border-warning px-3 py-2 text-sm font-semibold"
               onpointerdown={(event) => {
                 const trigger = event.currentTarget;
-                activateFromPointer(event, () => onconfigure?.(trigger), { scrollable: true });
+                activateFromPointer(event, () => onconfigure?.(trigger));
               }}
               onclick={(event) => {
                 const trigger = event.currentTarget;

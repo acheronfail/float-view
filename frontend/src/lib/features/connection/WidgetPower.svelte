@@ -107,7 +107,7 @@
         class="absolute inset-0 z-10 touch-manipulation rounded-sm"
         bind:this={bmsButton}
         aria-label="Open battery management system"
-        onpointerdown={(event) => activateFromPointer(event, openBmsFromPointer, { scrollable: true })}
+        onpointerdown={(event) => activateFromPointer(event, openBmsFromPointer)}
         onclick={(event) =>
           activateFromKeyboardOrAssistiveClick(event, () => {
             if (bmsButton) onbms?.(bmsButton);

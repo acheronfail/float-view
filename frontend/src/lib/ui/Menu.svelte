@@ -64,7 +64,7 @@
     {disabled}
     aria-label={label}
     aria-expanded={menuOpen}
-    onpointerdown={(event) => activateFromPointer(event, toggleMenu, { scrollable: variant === 'card' })}
+    onpointerdown={(event) => activateFromPointer(event, toggleMenu)}
     onclick={(event) => activateFromKeyboardOrAssistiveClick(event, toggleMenu)}
   >
     <Icon name="ellipsis-vertical" class="text-xl" />

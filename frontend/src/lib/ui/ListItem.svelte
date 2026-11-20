@@ -33,7 +33,7 @@
 </script>
 
 {#if href}
-  <a class={interactiveClass} {href} use:navigationLink={{ scrollable: true }}>
+  <a class={interactiveClass} {href} use:navigationLink>
     {#if leading}{@render leading()}{/if}
     <span class="block min-w-0 flex-1">
       <span class="block font-medium">{title}</span>

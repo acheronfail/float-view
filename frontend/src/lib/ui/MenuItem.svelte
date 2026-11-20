@@ -39,7 +39,7 @@
 
   function pointerDown(event: PointerEvent) {
     if (unavailable) return;
-    activateFromPointer(event, activate, { scrollable: true });
+    activateFromPointer(event, activate);
   }
 </script>
 

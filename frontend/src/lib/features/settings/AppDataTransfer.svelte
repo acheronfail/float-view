@@ -61,7 +61,7 @@
       type="button"
       class={buttonClass}
       {disabled}
-      onpointerdown={(e) => activateFromPointer(e, () => backendState.exportAppData(), { scrollable: true })}
+      onpointerdown={(e) => activateFromPointer(e, () => backendState.exportAppData())}
       onclick={(e) => activateFromKeyboardOrAssistiveClick(e, () => backendState.exportAppData())}>Create backup</button
     >
     <button
@@ -69,7 +69,7 @@
       type="button"
       class={buttonClass}
       {disabled}
-      onpointerdown={(e) => activateFromPointer(e, () => picker.click(), { scrollable: true })}
+      onpointerdown={(e) => activateFromPointer(e, () => picker.click())}
       onclick={(e) => activateFromKeyboardOrAssistiveClick(e, () => picker.click())}>Restore backup…</button
     >
     <input
@@ -109,13 +109,9 @@
     class={`${buttonClass} text-warning`}
     {disabled}
     onpointerdown={(e) =>
-      activateFromPointer(
-        e,
-        () => {
-          action = 'clear';
-        },
-        { scrollable: true }
-      )}
+      activateFromPointer(e, () => {
+        action = 'clear';
+      })}
     onclick={(e) =>
       activateFromKeyboardOrAssistiveClick(e, () => {
         action = 'clear';

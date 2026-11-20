@@ -509,7 +509,7 @@
             aria-haspopup="dialog"
             onpointerdown={(event) => {
               const trigger = event.currentTarget;
-              activateFromPointer(event, () => selectTune(tune, trigger), { scrollable: true });
+              activateFromPointer(event, () => selectTune(tune, trigger));
             }}
             onclick={(event) => {
               const trigger = event.currentTarget;

@@ -17,7 +17,7 @@
       class="flex min-h-11 w-full touch-manipulation items-center gap-3 px-3 py-3 text-left font-semibold"
       aria-expanded={expanded}
       aria-controls={id}
-      onpointerdown={(event) => activateFromPointer(event, toggle, { scrollable: true })}
+      onpointerdown={(event) => activateFromPointer(event, toggle)}
       onclick={(event) => activateFromKeyboardOrAssistiveClick(event, toggle)}
     >
       <span class="min-w-0 flex-1 break-words">{title}</span>

@@ -61,7 +61,7 @@
             disabled={full}
             aria-label={entry.name}
             aria-describedby={`picker-${entry.widget.id}`}
-            onpointerdown={(e) => activateFromPointer(e, () => onchoose(entry.widget), { scrollable: true })}
+            onpointerdown={(e) => activateFromPointer(e, () => onchoose(entry.widget))}
             onclick={(e) => activateFromKeyboardOrAssistiveClick(e, () => onchoose(entry.widget))}
           >
             <span class="min-w-0 flex-1"
@@ -85,13 +85,9 @@
           type="button"
           class="mt-2 min-h-11 touch-pan-y rounded-lg px-2 font-semibold text-accent"
           onpointerdown={(e) =>
-            activateFromPointer(
-              e,
-              () => {
-                browseAll = true;
-              },
-              { scrollable: true }
-            )}
+            activateFromPointer(e, () => {
+              browseAll = true;
+            })}
           onclick={(e) =>
             activateFromKeyboardOrAssistiveClick(e, () => {
               browseAll = true;

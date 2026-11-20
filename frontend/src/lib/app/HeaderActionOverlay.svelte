@@ -95,7 +95,7 @@
   aria-haspopup="dialog"
   aria-expanded={open}
   disabled={unavailable}
-  onpointerdown={(event) => activateFromPointer(event, show)}
+  onpointerdown={(event) => activateFromPointer(event, show, { preventPointerDownDefault: true })}
   onclick={(event) => activateFromKeyboardOrAssistiveClick(event, show)}
 >
   <Icon name="ellipsis-vertical" class="text-xl" />
@@ -157,8 +157,7 @@
                   class={`flex min-h-14 min-w-0 touch-pan-y items-center gap-2 rounded-lg border border-outline px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 ${action.selected ? 'bg-accent-soft text-on-accent-soft' : 'bg-surface hover:bg-elevated'} ${stacked ? 'max-sm:flex-col max-sm:justify-center max-sm:text-center' : ''}`}
                   class:text-danger={action.appearance === 'destructive' || action.appearance === 'danger'}
                   class:text-warning={action.appearance === 'warning'}
-                  onpointerdown={(event) =>
-                    activateFromPointer(event, () => activate(action, false), { scrollable: true })}
+                  onpointerdown={(event) => activateFromPointer(event, () => activate(action, false))}
                   onclick={(event) => activateFromKeyboardOrAssistiveClick(event, () => activate(action, true))}
                 >
                   {#if action.icon}<Icon name={action.icon} class="shrink-0 text-lg" />{/if}

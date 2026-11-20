@@ -32,13 +32,9 @@
             aria-pressed={backendState.settings.accentPreference === preset.value}
             class="flex size-11 shrink-0 touch-manipulation items-center justify-center rounded-full border-2 border-transparent p-1 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent aria-pressed:border-foreground"
             onpointerdown={(event) =>
-              activateFromPointer(
-                event,
-                () => {
-                  void backendState.updateSessionSettings({ accentPreference: preset.value });
-                },
-                { scrollable: true }
-              )}
+              activateFromPointer(event, () => {
+                void backendState.updateSessionSettings({ accentPreference: preset.value });
+              })}
             onclick={(event) =>
               activateFromKeyboardOrAssistiveClick(event, () => {
                 void backendState.updateSessionSettings({ accentPreference: preset.value });

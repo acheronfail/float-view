@@ -393,7 +393,7 @@
                   class="dashboard-remove absolute -top-5 -right-[19px] z-20 flex size-11 touch-manipulation items-start justify-end rounded-full pt-px focus-visible:outline-2 focus-visible:outline-danger disabled:opacity-50"
                   aria-label={`Remove ${widgetTitle(widget)}`}
                   disabled={saving}
-                  onpointerdown={(e) => activateFromPointer(e, () => remove(widget.id), { scrollable: true })}
+                  onpointerdown={(e) => activateFromPointer(e, () => remove(widget.id))}
                   onclick={(e) => activateFromKeyboardOrAssistiveClick(e, () => remove(widget.id))}
                   ><span
                     class="delete-badge flex size-7 items-center justify-center rounded-full border border-danger/50 text-danger shadow-sm"

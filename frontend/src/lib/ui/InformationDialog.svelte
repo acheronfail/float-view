@@ -83,7 +83,7 @@
       type="button"
       class="absolute inset-0 h-full w-full cursor-default touch-none bg-black/60"
       aria-label="Close help"
-      onpointerdown={(event) => activateFromPointer(event, close)}
+      onpointerdown={(event) => activateFromPointer(event, close, { preventPointerDownDefault: true })}
       onclick={(event) => activateFromKeyboardOrAssistiveClick(event, close)}
     ></button>
     <div
@@ -118,7 +118,7 @@
           bind:this={doneButton}
           type="button"
           class="touch-manipulation rounded-lg bg-accent-fill px-4 py-2 font-medium text-on-accent"
-          onpointerdown={(event) => activateFromPointer(event, close)}
+          onpointerdown={(event) => activateFromPointer(event, close, { preventPointerDownDefault: true })}
           onclick={(event) => activateFromKeyboardOrAssistiveClick(event, close)}>Done</button
         >
       </div>

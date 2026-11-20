@@ -37,13 +37,9 @@
         class={button}
         aria-pressed={part === item}
         onpointerdown={(e) =>
-          activateFromPointer(
-            e,
-            () => {
-              part = item;
-            },
-            { scrollable: true }
-          )}
+          activateFromPointer(e, () => {
+            part = item;
+          })}
         onclick={(e) =>
           activateFromKeyboardOrAssistiveClick(e, () => {
             part = item;
@@ -56,7 +52,7 @@
       type="button"
       class={button + ' h-13 bg-elevated text-2xl'}
       aria-label={`Previous ${partLabels[part].toLowerCase()} option`}
-      onpointerdown={(e) => activateFromPointer(e, () => cycle(-1), { scrollable: true })}
+      onpointerdown={(e) => activateFromPointer(e, () => cycle(-1))}
       onclick={(e) => activateFromKeyboardOrAssistiveClick(e, () => cycle(-1))}>‹</button
     >
     <span aria-live="polite" class="text-center font-medium tabular-nums">{value[part]} / {styleCounts[part]}</span>
@@ -64,7 +60,7 @@
       type="button"
       class={button + ' h-13 bg-elevated text-2xl'}
       aria-label={`Next ${partLabels[part].toLowerCase()} option`}
-      onpointerdown={(e) => activateFromPointer(e, () => cycle(1), { scrollable: true })}
+      onpointerdown={(e) => activateFromPointer(e, () => cycle(1))}
       onclick={(e) => activateFromKeyboardOrAssistiveClick(e, () => cycle(1))}>›</button
     >
   </div>
@@ -77,13 +73,9 @@
             class={button + ' flex items-center justify-center gap-2'}
             aria-pressed={selectedArea.key === item.key}
             onpointerdown={(e) =>
-              activateFromPointer(
-                e,
-                () => {
-                  area = item.key;
-                },
-                { scrollable: true }
-              )}
+              activateFromPointer(e, () => {
+                area = item.key;
+              })}
             onclick={(e) =>
               activateFromKeyboardOrAssistiveClick(e, () => {
                 area = item.key;
@@ -106,8 +98,7 @@
           title={name}
           aria-pressed={colour === hex}
           class="flex size-11 shrink-0 touch-manipulation items-center justify-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent aria-pressed:bg-elevated aria-pressed:ring-1 aria-pressed:ring-accent"
-          onpointerdown={(e) =>
-            activateFromPointer(e, () => onchange({ ...value, [selectedArea.key]: hex }), { scrollable: true })}
+          onpointerdown={(e) => activateFromPointer(e, () => onchange({ ...value, [selectedArea.key]: hex }))}
           onclick={(e) =>
             activateFromKeyboardOrAssistiveClick(e, () => onchange({ ...value, [selectedArea.key]: hex }))}
         >

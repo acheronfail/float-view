@@ -62,7 +62,7 @@
   class="marker-button flex h-full min-h-11 w-full touch-pan-y flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent disabled:cursor-default"
   class:feedback={pending || result !== 'idle'}
   class:confirmed={result === 'saved'}
-  onpointerdown={(event) => activateFromPointer(event, save, { scrollable: true })}
+  onpointerdown={(event) => activateFromPointer(event, save)}
   onclick={(event) => activateFromKeyboardOrAssistiveClick(event, save)}
   onkeydown={(event) => {
     if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault();

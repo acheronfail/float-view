@@ -39,7 +39,7 @@
     <a
       class="flex min-h-11 touch-manipulation items-center justify-center rounded-lg border border-outline bg-elevated px-3 py-2 text-center text-foreground"
       href="#/settings/licences"
-      use:navigationLink={{ scrollable: true }}>View licences and notices</a
+      use:navigationLink>View licences and notices</a
     >
   </div>
 </section>

@@ -147,7 +147,7 @@
             class:bg-accent-soft={selected === field}
             class:border-outline={selected !== field}
             class:bg-surface={selected !== field}
-            onpointerdown={(event) => activateFromPointer(event, () => onselect(field, false), { scrollable: true })}
+            onpointerdown={(event) => activateFromPointer(event, () => onselect(field, false))}
             onclick={(event) => activateFromKeyboardOrAssistiveClick(event, () => onselect(field, true))}
           >
             <span class="text-sm font-medium">{reading.name}</span>

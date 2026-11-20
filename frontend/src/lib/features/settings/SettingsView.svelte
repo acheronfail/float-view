@@ -19,7 +19,7 @@
           <li>
             <a
               href={`#/settings/${category.slug}`}
-              use:navigationLink={{ scrollable: true }}
+              use:navigationLink
               class="flex min-h-20 touch-manipulation items-center gap-3 px-4 py-3 hover:bg-elevated focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
             >
               <span

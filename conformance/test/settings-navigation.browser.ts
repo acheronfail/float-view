@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { chromium, webkit } from 'playwright';
 import { startMockServer, stopMockServer, getMockBootstrap } from '../../frontend/backend-mock/index.ts';
 import { ConformanceClient } from '../src/client.ts';
+import { dragFromControl } from './support/drag-from-control.ts';
 
 const html = await readFile(new URL('../../frontend/build/index.html', import.meta.url), 'utf8');
 for (const [name, engine] of Object.entries({ chromium, webkit })) {
@@ -40,6 +41,9 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await page.goto(`${endpoint.origin}/#/settings`);
       const categories = page.getByRole('navigation', { name: 'Settings categories' });
       await categories.waitFor();
+      const tabs = page.getByRole('navigation', { name: 'Primary' });
+      await dragFromControl(tabs.getByRole('link', { name: 'sessions', exact: true }));
+      assert.match(page.url(), /#\/settings$/);
       assert.equal(await categories.getByRole('link').count(), 7);
       assert.deepEqual(
         await categories

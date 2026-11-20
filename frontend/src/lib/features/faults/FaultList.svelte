@@ -29,8 +29,7 @@
         <button
           type="button"
           class="flex min-h-11 w-full touch-manipulation items-center gap-2 p-3 text-left"
-          onpointerdown={(event) =>
-            activateFromPointer(event, () => onselect?.(fault.elapsedMs!), { scrollable: true })}
+          onpointerdown={(event) => activateFromPointer(event, () => onselect?.(fault.elapsedMs!))}
           onclick={(event) => activateFromKeyboardOrAssistiveClick(event, () => onselect?.(fault.elapsedMs!))}
         >
           {@render content()}

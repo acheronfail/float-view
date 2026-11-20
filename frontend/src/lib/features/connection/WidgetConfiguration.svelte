@@ -197,8 +197,7 @@
               class:text-on-accent-soft={working.presentation === option.value}
               class:border-outline={working.presentation !== option.value}
               aria-pressed={working.presentation === option.value}
-              onpointerdown={(e) =>
-                activateFromPointer(e, () => choosePresentation(option.value), { scrollable: true })}
+              onpointerdown={(e) => activateFromPointer(e, () => choosePresentation(option.value))}
               onclick={(e) => activateFromKeyboardOrAssistiveClick(e, () => choosePresentation(option.value))}
               >{option.label}</button
             >
@@ -219,13 +218,9 @@
             aria-label={`${shape.columns} ${shape.columns === 1 ? 'column' : 'columns'} by ${shape.rows} ${shape.rows === 1 ? 'row' : 'rows'}`}
             aria-pressed={dimensions.columns === shape.columns && dimensions.rows === shape.rows}
             onpointerdown={(e) =>
-              activateFromPointer(
-                e,
-                () => {
-                  working.size = { ...shape };
-                },
-                { scrollable: true }
-              )}
+              activateFromPointer(e, () => {
+                working.size = { ...shape };
+              })}
             onclick={(e) =>
               activateFromKeyboardOrAssistiveClick(e, () => {
                 working.size = { ...shape };

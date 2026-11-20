@@ -34,7 +34,7 @@
           type="button"
           class="w-full touch-manipulation rounded-xl border border-outline bg-elevated p-4 text-left disabled:cursor-not-allowed disabled:opacity-50"
           disabled={!candidate.vescSupported || pendingCanId !== null || backendState.busy}
-          onpointerdown={(event) => activateFromPointer(event, () => select(candidate.canId), { scrollable: true })}
+          onpointerdown={(event) => activateFromPointer(event, () => select(candidate.canId))}
           onclick={(event) => activateFromKeyboardOrAssistiveClick(event, () => select(candidate.canId))}
         >
           <span class="flex items-center justify-between gap-3">

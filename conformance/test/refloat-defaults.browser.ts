@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import { chromium, webkit } from 'playwright';
 import { startMockServer, stopMockServer, getMockBootstrap } from '../../frontend/backend-mock/index.ts';
 import { ConformanceClient } from '../src/client.ts';
+import { dragFromControl } from './support/drag-from-control.ts';
 
 const html = await readFile(new URL('../../frontend/build/index.html', import.meta.url), 'utf8');
 for (const [name, engine] of Object.entries({ chromium, webkit })) {
@@ -27,6 +28,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       if (name === 'chromium') await context.grantPermissions(['local-network-access'], { origin: endpoint.origin });
       await context.route(`${endpoint.origin}/`, (route) => route.fulfill({ contentType: 'text/html', body: html }));
       let reads = 0;
+      let refreshes = 0;
       let writes = 0;
       let hold = true;
       let fail = false;
@@ -53,6 +55,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
         socket.onMessage((raw) => {
           const request = JSON.parse(String(raw));
           if (request.method === 'refloat.configuration.write' || request.method === 'refloat.tune.apply') writes++;
+          if (request.method === 'refloat.configuration.read' && request.params.refresh) refreshes++;
           if (request.method === 'refloat.configuration.read' && request.params.source === 'default') {
             reads++;
             assert.equal(request.params.refresh, false);
@@ -81,6 +84,20 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       const reset = editor.getByRole('button', { name: 'Use default for Duty Tiltback', exact: true });
       const help = editor.getByRole('button', { name: 'Show help for Duty Tiltback', exact: true });
       await input.fill('85');
+      const controls = editor.getByRole('button', { name: 'Section and search controls', exact: true });
+      await dragFromControl(controls);
+      assert.equal(await controls.getAttribute('aria-expanded'), 'false');
+      await controls.tap();
+      const beforeDrag = refreshes;
+      for (const name of ['Read current', 'Read defaults']) {
+        const read = editor.getByRole('button', { name, exact: true });
+        assert.equal(await read.isEnabled(), true);
+        await dragFromControl(read);
+        assert.equal(await read.isEnabled(), true, `${name} started a read during a drag`);
+      }
+      assert.equal(refreshes, beforeDrag);
+      assert.equal(await input.inputValue(), '85');
+      await controls.tap();
       const sections = editor.getByRole('combobox', { name: 'Section', exact: true });
       const balance = await sections.inputValue();
       const lighting = await sections.locator('option').filter({ hasText: 'Startup defaults' }).getAttribute('value');
@@ -93,14 +110,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await sections.selectOption(balance);
       await input.fill('');
       await page.setViewportSize({ width: 390, height: 400 });
-      await reset.hover();
-      const box = (await reset.boundingBox())!;
-      const x = box.x + box.width / 2;
-      const y = box.y + box.height / 2;
-      await page.mouse.down();
-      await page.mouse.move(x, y - 40);
-      await page.mouse.move(x, y);
-      await page.mouse.up();
+      const { x, y } = await dragFromControl(reset);
       assert.equal(await reset.isEnabled(), true, 'drag started loading a default');
       if (name === 'chromium') {
         const scrollTop = await reset.evaluate((el) => el.closest('.overflow-y-auto')!.scrollTop);
@@ -160,6 +170,10 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       const helpBox = (await help.boundingBox())!;
       assert.ok(defaultBox.x + defaultBox.width <= helpBox.x, 'Default must be immediately left of Help');
       await input.fill('85');
+      const write = editor.getByRole('button', { name: 'Write configuration', exact: true });
+      assert.equal(await write.isEnabled(), true);
+      await dragFromControl(write);
+      assert.equal(await page.getByRole('alertdialog', { name: 'Write persistent Refloat configuration?' }).count(), 0);
       await reset.focus();
       await page.keyboard.press('Enter');
       await waitValue('80');

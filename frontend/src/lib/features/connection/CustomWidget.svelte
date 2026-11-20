@@ -262,7 +262,7 @@
         aria-disabled={lighting.disabled || toggling || (!preview && backendState.busy)}
         aria-busy={lighting.pending || toggling}
         class={`min-h-11 w-full touch-pan-y rounded-lg ${compact ? 'p-0' : 'p-2'}`}
-        onpointerdown={(e) => activateFromPointer(e, toggle, { scrollable: true })}
+        onpointerdown={(e) => activateFromPointer(e, toggle)}
         onclick={(e) => activateFromKeyboardOrAssistiveClick(e, toggle)}
       >
         <LightingDisplay field={widget.control} {lighting} {toggling} expanded={!compact} />

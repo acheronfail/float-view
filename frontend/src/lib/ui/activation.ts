@@ -12,13 +12,14 @@ export function isKeyboardOrAssistiveClick(event: Pick<MouseEvent, 'detail'>): b
   return event.detail === 0;
 }
 
+/** A drag always cancels activation. Fixed dialog controls can suppress compatibility mouse events to keep focus. */
 export function activateFromPointer(
   event: PointerEvent,
   action: Activation,
-  { scrollable = false }: { scrollable?: boolean } = {}
+  { preventPointerDownDefault = false }: { preventPointerDownDefault?: boolean } = {}
 ): void {
   if (!isPrimaryPointerActivation(event) || isDisabled(event.currentTarget)) return;
-  if (!scrollable) event.preventDefault();
+  if (preventPointerDownDefault) event.preventDefault();
   const target = event.currentTarget;
   if (!(target instanceof EventTarget)) {
     void action();
@@ -51,7 +52,6 @@ export function activateFromPointer(
     void action();
   };
   const moved = (next: Event) =>
-    scrollable &&
     'clientX' in next &&
     'clientY' in next &&
     Math.hypot(Number(next.clientX) - event.clientX, Number(next.clientY) - event.clientY) > 10;
@@ -61,7 +61,7 @@ export function activateFromPointer(
   target.addEventListener('pointerup', finish);
   target.addEventListener('pointercancel', cancel);
   target.addEventListener('lostpointercapture', cancel);
-  if (scrollable) target.addEventListener('pointermove', move);
+  target.addEventListener('pointermove', move);
   if ('setPointerCapture' in target && typeof target.setPointerCapture === 'function') {
     target.setPointerCapture(pointerId);
   }

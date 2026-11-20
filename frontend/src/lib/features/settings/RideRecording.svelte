@@ -21,7 +21,7 @@
       <p class="text-xs text-muted">Save your route alongside ride readings.</p>
       <a
         href="#/settings/connection"
-        use:navigationLink={{ scrollable: true }}
+        use:navigationLink
         aria-label="Location permissions"
         class="flex min-h-14 items-center justify-between gap-3 border-b border-outline py-3 text-sm hover:bg-elevated"
       >
