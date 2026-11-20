@@ -92,6 +92,35 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
         .tap();
       await sections.selectOption(balance);
       await input.fill('');
+      await page.setViewportSize({ width: 390, height: 400 });
+      await reset.hover();
+      const box = (await reset.boundingBox())!;
+      const x = box.x + box.width / 2;
+      const y = box.y + box.height / 2;
+      await page.mouse.down();
+      await page.mouse.move(x, y - 40);
+      await page.mouse.move(x, y);
+      await page.mouse.up();
+      assert.equal(await reset.isEnabled(), true, 'drag started loading a default');
+      if (name === 'chromium') {
+        const scrollTop = await reset.evaluate((el) => el.closest('.overflow-y-auto')!.scrollTop);
+        const cdp = await context.newCDPSession(page);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+        for (let step = 1; step <= 8; step++) {
+          await cdp.send('Input.dispatchTouchEvent', {
+            type: 'touchMove',
+            touchPoints: [{ x, y: y - step * 12 }],
+          });
+        }
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        await cdp.detach();
+        await page.waitForFunction(
+          ({ start, id }) => document.getElementById(id)!.closest('.overflow-y-auto')!.scrollTop > start,
+          { start: scrollTop, id: 'refloat-tiltback_duty' }
+        );
+      }
+      assert.equal(await input.inputValue(), '');
+      await page.setViewportSize({ width: 390, height: 640 });
       for (const pointer of [
         { button: 2, isPrimary: true },
         { button: 0, isPrimary: false },
