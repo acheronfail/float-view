@@ -51,7 +51,7 @@ The backend SHALL report a bounded location authorization state and SHALL provid
 
 ### Requirement: Native ride-scoped background capture
 
-Native services SHALL start location capture only when an enabled, authorized board session enters `riding` and SHALL own capture after frontend destruction or mobile backgrounding whenever the platform grants the required background capability. Capture SHALL stop when the ride leaves `riding`, recording is disabled, or authorization is lost.
+Native services SHALL own authorized capture across frontend destruction and supported mobile backgrounding. Route recording SHALL start only when an enabled board session enters `riding` and stop when riding ends, recording is disabled or authorization is lost. Explicit calibration SHALL independently permit bounded temporary capture while connected and authorized; calibration-only coordinates SHALL NOT be persisted.
 
 #### Scenario: Riding starts
 
@@ -72,6 +72,11 @@ Native services SHALL start location capture only when an enabled, authorized bo
 
 - **WHEN** an active ride has foreground-only authorization and the application is backgrounded
 - **THEN** capture is unavailable in the background, the backend publishes the bounded capability state, and board logging continues
+
+#### Scenario: Calibration without route recording
+
+- **WHEN** the rider explicitly starts speed calibration with route recording disabled
+- **THEN** temporary location observations support calibration without saving coordinates or changing recording settings
 
 ### Requirement: Time-aligned location persistence
 
@@ -132,12 +137,12 @@ Location rows SHALL participate in the same provisional-session retention, inter
 
 ### Requirement: Battery-conscious provider policy
 
-The backend SHALL use native low-power/balanced provider configuration, an accuracy ceiling, and a minimum movement threshold where supported. It SHALL avoid duplicate observations, batch durable writes within bounds, and stop the provider promptly outside an enabled authorized active session. The first version SHALL not expose a user-configurable polling interval.
+The backend SHALL use native low-power/balanced provider configuration, an accuracy ceiling, and a minimum movement threshold where supported. It SHALL avoid duplicate observations, batch durable writes within bounds, and stop the provider promptly outside an enabled authorized active session or explicit bounded speed calibration. Calibration SHALL permit a temporary higher-accuracy provider request. The first version SHALL not expose a user-configurable polling interval.
 
 #### Scenario: Idle or post-ride connection
 
 - **WHEN** a board is connected but the authoritative ride state is not `riding`
-- **THEN** the location provider is stopped and no location updates are persisted
+- **THEN** the location provider is stopped unless explicit calibration is active, and no location updates are persisted
 
 #### Scenario: Update accounting
 

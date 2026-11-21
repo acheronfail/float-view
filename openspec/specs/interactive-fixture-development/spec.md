@@ -558,7 +558,7 @@ The interactive fixture SHALL compose each selected audited Refloat release with
 
 ### Requirement: Strict custom-configuration rejection
 
-The fixture SHALL answer configuration mutations only for normal writable audited firmware, index `0`, complete valid signatures and values, and configured safe scenario state. It SHALL reject unknown indexes, malformed or partial values, prohibited modes, unsafe state, arbitrary app-data tuning, firmware/motor configuration, and motor-control commands without weakening the existing fail-fast allowlist. While simulated package mode is flywheel it SHALL reject every mutation except eligible flywheel disable, withhold command-93 current values, invalidate loaded current state, and require a fresh current read after returning to normal mode; schema and default reads may remain available.
+Custom-configuration mutations SHALL require audited writable firmware, index `0`, complete valid signatures/values and safe normal mode. The fixture SHALL reject unknown indexes, malformed/partial values, unsafe state, arbitrary app-data tuning, firmware/motor-control writes and motor configuration beyond audited diameter-only patches. Flywheel SHALL permit only eligible disable, withhold/invalidate current values and require a fresh command-93 read on return; schema/default reads remain available.
 
 #### Scenario: Test firmware write
 
@@ -593,3 +593,17 @@ The interactive and canonical fixture coordinator SHALL use the same source-fait
 
 - **WHEN** the same peer sends a nonzero-mask LED or headlight mutation while flywheel mode remains active
 - **THEN** the coordinator supplies no successful response and preserves all simulated state
+
+### Requirement: Diameter-only motor fixture writes
+
+The fixture SHALL accept motor configuration writes only for an audited layout, with idle normal-mode authority and unchanged bytes outside wheel diameter. Unknown layouts, malformed extents, invalid diameters and unrelated changes SHALL fail closed. Accepted changes SHALL affect only disposable simulated state.
+
+#### Scenario: Narrow motor write
+
+- **WHEN** an idle peer writes a valid diameter-only patch and reads motor configuration again
+- **THEN** the fixture returns that diameter and preserves every unrelated serialized field
+
+#### Scenario: Prohibited mutation
+
+- **WHEN** a peer changes another motor field or writes while riding or in flywheel
+- **THEN** the fixture rejects the request and preserves its configuration

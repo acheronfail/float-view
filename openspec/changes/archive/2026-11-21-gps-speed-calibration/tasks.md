@@ -19,7 +19,7 @@
 ## 4. Integration and physical evidence
 
 - [x] 4.1 Run affected Rust, frontend, native and conformance checks plus formatting/spec validation; record actual results and resolve failures caused by the change.
-- [ ] 4.2 Verify phone GNSS quality/lifecycle and controlled controller write/readback/power-cycle persistence/restoration on relevant hardware; keep raw evidence local and report missing checkpoints.
+- [x] 4.2 Verify phone GNSS quality/lifecycle and controlled controller write/readback/power-cycle persistence/restoration on relevant hardware; keep raw evidence local and report missing checkpoints.
 
 ## Workflow follow-up
 
@@ -33,9 +33,9 @@
 - Native: Android unit checks passed, including the nullable speed-observation JNI boundary. Apple backend checks passed (31 tests), including speed/accuracy/age mapping and shared-server integration. The broader Apple suite separately fails the unchanged `MacThemeTests.loadingArtwork` tint assertion; the same test fails in isolation. No calibration code changes that artwork path.
 - OpenSpec validation passed without issues. No persisted format, commit or online mutation was introduced.
 
-## Outstanding physical checkpoint
+## Physical checkpoint closeout
 
-Task 4.2 is outstanding: validate actual phone speed accuracy/cadence, foreground/background/locked lifecycle and route-recording independence on relevant Apple/Android devices. On a controlled idle test controller, preserve the original complete configuration, apply the calibration result, verify unrelated values and power-cycle persistence, then restore and verify the original setting. Keep device/firmware inventories, routes and raw results under ignored `.local/physical-testing/gps-speed-calibration/`. A later user-reported foreground completion and Apply outcome is recorded below; controlled persistence/restoration and lifecycle checks remain outstanding. Leave this change open until the required checkpoint is satisfied.
+Task 4.2 is complete based on the user's 2026-11-21 confirmation that the remaining Apple/Android field checks and controlled controller configuration preservation, application, power-cycle persistence and restoration checks were performed and worked. Earlier foreground runs and local reports remain recorded below and under ignored `.local/physical-testing/gps-speed-calibration/`. This final confirmation is user-reported; no new raw device logs or configuration snapshots were supplied with it.
 
 ## 5. Riding feedback
 
