@@ -23,7 +23,12 @@ Master pushes and manual master runs SHALL resolve commit-identified rolling nig
 
 ### Requirement: Publication remains bounded and recoverable
 
-GitHub distribution SHALL publish only after all three sideload packages succeed, serialize publication, retain only the current Nightly asset set and preserve stable history. A stable or candidate rerun SHALL resume a draft or leave an already published release intact. Missing release metadata SHALL be distinguished from API or authentication failure. Store submission SHALL be independently retryable and SHALL NOT gate GitHub publication.
+GitHub distribution SHALL publish only after all selected sideload packages succeed, serialize publication, retain only the current Nightly asset set and preserve stable history. A stable or candidate rerun SHALL resume a draft or leave an already published release intact. Missing release metadata SHALL be distinguished from API or authentication failure. Store submission SHALL be independently retryable and SHALL NOT gate GitHub publication.
+
+#### Scenario: Selected platform fails
+
+- **WHEN** one platform is skipped and a selected platform fails
+- **THEN** publication does not proceed
 
 #### Scenario: Interrupted nightly publication
 

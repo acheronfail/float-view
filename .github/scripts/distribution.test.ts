@@ -77,7 +77,7 @@ save();
 if (result !== null) console.log(JSON.stringify(result));
 `;
 
-function fixture() {
+function fixture(message = 'app: Show live telemetry') {
   const cwd = mkdtempSync(join(tmpdir(), 'float-distribution-'));
   directories.push(cwd);
   git(['init', '-b', 'master', cwd]);
@@ -85,7 +85,7 @@ function fixture() {
   git(['config', 'user.name', 'Test'], cwd);
   git(['-c', 'core.hooksPath=/dev/null', 'commit', '--allow-empty', '-m', 'base'], cwd);
   git(['tag', 'v0.1.49'], cwd);
-  git(['-c', 'core.hooksPath=/dev/null', 'commit', '--allow-empty', '-m', 'app: Show live telemetry'], cwd);
+  git(['-c', 'core.hooksPath=/dev/null', 'commit', '--allow-empty', '-m', message], cwd);
   const sha = git(['rev-parse', 'HEAD'], cwd);
   git(['update-ref', 'refs/remotes/origin/master', sha], cwd);
   const metadata = resolveVersion(sha, null, cwd, 'v1.0.0');
@@ -595,4 +595,71 @@ test('Android delivery stays behind tagged signing and leaves Apple selection in
   assert.equal(f.run('prepare', { ...ref, GITHUB_EVENT_NAME: 'workflow_dispatch', FLOAT_VIEW_BUILD_ANDROID_STORE: 'true' }).status, 0);
   assert.match(f.output(), /androidStoreDelivery=none/);
   assert.notEqual(f.run('prepare', { ...ref, ...manual, FLOAT_VIEW_ANDROID_DELIVERY: 'invalid' }).status, 0);
+});
+
+test('a tagged Android-only build skips Apple jobs and publishes only the APK', () => {
+  const f = fixture('android: Fix Play availability\n\n[skip ios] [skip macos]');
+  const tag = 'v1.0.0';
+  git(['tag', tag], f.cwd);
+  const ref = { GITHUB_REF: `refs/tags/${tag}`, FLOAT_VIEW_VERSION: tag };
+  const push = f.run('prepare', { ...ref, GITHUB_EVENT_NAME: 'push' });
+  assert.equal(push.status, 0, push.stderr);
+  assert.match(push.stdout, /"iosEnabled":false,"androidEnabled":true,"macosEnabled":false/);
+  assert.match(push.stdout, /"storeBuild":"false","storeDelivery":"none"/);
+  assert.match(push.stdout, /"macStoreBuild":"false","macStoreDelivery":"none"/);
+  assert.match(push.stdout, /"androidStoreBuild":"true","androidStoreDelivery":"upload"/);
+  assert.match(push.stdout, /"skip":"false"/);
+
+  const manual = f.run('prepare', {
+    ...ref, GITHUB_EVENT_NAME: 'workflow_dispatch', FLOAT_VIEW_IOS_DELIVERY: 'upload',
+    FLOAT_VIEW_MAC_DELIVERY: 'upload', FLOAT_VIEW_BUILD_ANDROID_STORE: 'true',
+  });
+  assert.equal(manual.status, 0, manual.stderr);
+  assert.match(manual.stdout, /"storeBuild":"false","storeDelivery":"none"/);
+  assert.match(manual.stdout, /"macStoreBuild":"false","macStoreDelivery":"none"/);
+  assert.match(manual.stdout, /"androidStoreBuild":"true","androidStoreDelivery":"none"/);
+
+  const before = f.state();
+  assert.match(f.run('publish', ref).stderr, /Missing release asset FloatView-v1\.0\.0\.apk/);
+  assert.deepEqual(f.state(), before);
+  const apk = `FloatView-${tag}.apk`;
+  writeFileSync(join(f.cwd, apk), 'Android package');
+  const publication = f.run('publish', ref);
+  assert.equal(publication.status, 0, publication.stderr);
+  const release = f.state().releases[0]!;
+  assert.equal(release.make_latest, 'false');
+  assert.equal(release.prerelease, false);
+  assert.deepEqual(release.assets.map(asset => asset.name), [apk]);
+});
+
+test('a partial nightly is complete with only its selected assets', () => {
+  const f = fixture('repo: Skip Android on this build\n\n[skip android]');
+  const apk = `FloatView-${f.metadata.version}.apk`;
+  rmSync(join(f.cwd, apk));
+  const publication = f.run('publish');
+  assert.equal(publication.status, 0, publication.stderr);
+  assert.deepEqual(f.state().releases[0]!.assets.map(asset => asset.name),
+    assetNames(f.metadata.version, ['ios', 'macos']));
+  const rerun = f.run('prepare');
+  assert.equal(rerun.status, 0, rerun.stderr);
+  assert.match(rerun.stdout, /"iosEnabled":true,"androidEnabled":false,"macosEnabled":true/);
+  assert.match(rerun.stdout, /"skip":"true"/);
+});
+
+test('all markers prevent publication and markers on ancestors do not carry forward', () => {
+  const f = fixture('repo: Skip all platforms [skip ios] [skip android] [skip macos]');
+  git(['tag', 'v1.0.0'], f.cwd);
+  const tagged = f.run('prepare', { GITHUB_REF: 'refs/tags/v1.0.0', GITHUB_EVENT_NAME: 'push' });
+  assert.equal(tagged.status, 0, tagged.stderr);
+  assert.match(tagged.stdout, /"iosEnabled":false,"androidEnabled":false,"macosEnabled":false/);
+  assert.match(tagged.stdout, /"androidStoreBuild":"false","androidStoreDelivery":"none"/);
+  assert.match(tagged.stdout, /"skip":"true"/);
+  assert.match(f.run('publish').stderr, /No platforms selected for publication/);
+  assert.deepEqual(f.state().releases, []);
+
+  git(['-c', 'core.hooksPath=/dev/null', 'commit', '--allow-empty', '-m', 'app: Resume platform builds'], f.cwd);
+  const unmarked = f.run('prepare', { GITHUB_SHA: git(['rev-parse', 'HEAD'], f.cwd) });
+  assert.equal(unmarked.status, 0, unmarked.stderr);
+  assert.match(unmarked.stdout, /"iosEnabled":true,"androidEnabled":true,"macosEnabled":true/);
+  assert.match(unmarked.stdout, /"skip":"false"/);
 });

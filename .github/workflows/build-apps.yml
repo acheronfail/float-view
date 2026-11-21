@@ -48,6 +48,9 @@ jobs:
       app-version: ${{ steps.version.outputs.appVersion }}
       record-artifact: ${{ steps.version.outputs.buildRecordArtifact }}
       skip: ${{ steps.version.outputs.skip }}
+      ios-enabled: ${{ steps.version.outputs.iosEnabled }}
+      android-enabled: ${{ steps.version.outputs.androidEnabled }}
+      macos-enabled: ${{ steps.version.outputs.macosEnabled }}
       mac-store-build: ${{ steps.version.outputs.macStoreBuild }}
       mac-store-delivery: ${{ steps.version.outputs.macStoreDelivery }}
       android-store-build: ${{ steps.version.outputs.androidStoreBuild }}
@@ -99,7 +102,7 @@ jobs:
 
   ipa:
     needs: prepare
-    if: needs.prepare.outputs.skip == 'false'
+    if: needs.prepare.outputs.skip == 'false' && needs.prepare.outputs.ios-enabled == 'true'
     runs-on: xcode-27
     timeout-minutes: 45
     env:
@@ -427,7 +430,7 @@ jobs:
 
   apk:
     needs: prepare
-    if: needs.prepare.outputs.skip == 'false'
+    if: needs.prepare.outputs.skip == 'false' && needs.prepare.outputs.android-enabled == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -717,7 +720,7 @@ jobs:
 
   macos:
     needs: prepare
-    if: needs.prepare.outputs.skip == 'false'
+    if: needs.prepare.outputs.skip == 'false' && needs.prepare.outputs.macos-enabled == 'true'
     runs-on: macos-15
     timeout-minutes: 65
     env:
@@ -799,6 +802,11 @@ jobs:
 
   release:
     needs: [prepare, ipa, apk, macos]
+    if: >-
+      !cancelled() && needs.prepare.result == 'success' && needs.prepare.outputs.skip == 'false'
+      && (needs.prepare.outputs.ios-enabled == 'false' || needs.ipa.result == 'success')
+      && (needs.prepare.outputs.android-enabled == 'false' || needs.apk.result == 'success')
+      && (needs.prepare.outputs.macos-enabled == 'false' || needs.macos.result == 'success')
     # Serialize only publication. A store approval/upload must not hold nightlies.
     concurrency:
       group: app-distribution
@@ -822,11 +830,15 @@ jobs:
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: "24"
-      - name: Download app artifacts
-        run: |
-          gh run download "$GITHUB_RUN_ID" --name "FloatView-ipa-$FLOAT_VIEW_VERSION" --dir .
-          gh run download "$GITHUB_RUN_ID" --name "FloatView-apk-$FLOAT_VIEW_VERSION" --dir .
-          gh run download "$GITHUB_RUN_ID" --name "FloatView-macos-$FLOAT_VIEW_VERSION" --dir .
+      - name: Download iOS artifact
+        if: needs.prepare.outputs.ios-enabled == 'true'
+        run: gh run download "$GITHUB_RUN_ID" --name "FloatView-ipa-$FLOAT_VIEW_VERSION" --dir .
+      - name: Download Android artifact
+        if: needs.prepare.outputs.android-enabled == 'true'
+        run: gh run download "$GITHUB_RUN_ID" --name "FloatView-apk-$FLOAT_VIEW_VERSION" --dir .
+      - name: Download macOS artifact
+        if: needs.prepare.outputs.macos-enabled == 'true'
+        run: gh run download "$GITHUB_RUN_ID" --name "FloatView-macos-$FLOAT_VIEW_VERSION" --dir .
 
       - name: Publish stable release or rolling Nightly
         run: node --strip-types .github/scripts/publish.ts

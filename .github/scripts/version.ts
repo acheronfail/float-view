@@ -39,9 +39,22 @@ export function bumpVersion(value: string, bump: Bump): string {
   return next;
 }
 
-export function assetNames(version: string): string[] {
+const platforms = ['ios', 'android', 'macos'] as const;
+type Platform = typeof platforms[number];
+
+export function selectedPlatforms(commit: string, cwd = process.cwd()): readonly Platform[] {
+  const message = git(['show', '-s', '--format=%B', commit], cwd);
+  return platforms.filter(platform => !message.includes(`[skip ${platform}]`));
+}
+
+export function assetNames(version: string, selected: readonly Platform[] = platforms): string[] {
   parseVersion(version);
-  return [`FloatView-${version}.ipa`, `FloatView-${version}.apk`, `FloatView-${version}-macos-universal.zip`];
+  const names = {
+    ios: `FloatView-${version}.ipa`,
+    android: `FloatView-${version}.apk`,
+    macos: `FloatView-${version}-macos-universal.zip`,
+  };
+  return selected.map(platform => names[platform]);
 }
 
 export function buildNumber(value: string | undefined): string {

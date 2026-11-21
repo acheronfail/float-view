@@ -10,7 +10,7 @@ import {
   type Release,
 } from './github.ts';
 import { releaseNotes, releaseNotesBase } from './notes.ts';
-import { assetNames, git, parseVersion, resolveVersion } from './version.ts';
+import { assetNames, git, parseVersion, resolveVersion, selectedPlatforms } from './version.ts';
 import { ciBuildIdentity } from './build-record.ts';
 
 const commit = process.env.GITHUB_SHA!;
@@ -30,7 +30,8 @@ if (metadata) {
 // Use the prepared nightly base: a newly pushed stable tag must not invalidate an in-flight build.
 const stable = channel === 'stable';
 const nightly = channel === 'nightly';
-const files = assetNames(version);
+const files = assetNames(version, selectedPlatforms(commit));
+if (files.length === 0) throw new Error('No platforms selected for publication');
 for (const file of files) if (!existsSync(file)) throw new Error(`Missing release asset ${file}`);
 let release = nightly ? getNightlyRelease() : getRelease(tag);
 const publishedBuild = release?.body?.match(/<!-- float-view-build-number:([1-9][0-9]*) -->/)?.[1];
@@ -73,7 +74,7 @@ if (nightly && publishedBuild && Number(publishedBuild) > Number(identity.buildN
     body,
     draft: false,
     prerelease: !stable,
-    make_latest: stable ? 'true' : 'false',
+    make_latest: stable && files.length === assetNames(version).length ? 'true' : 'false',
   });
   // Only after successful publication remove superseded nightly or interrupted draft assets.
   const current = getRelease(tag);

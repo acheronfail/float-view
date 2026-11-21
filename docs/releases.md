@@ -31,12 +31,28 @@ Pass `patch`, `minor` or `major` explicitly to choose the bump from the latest
 stable ancestor: `just release candidate minor` after v1.0.0 creates
 `v1.1.0-rc.1`, then `v1.1.0-rc.2` on the next invocation.
 Candidate tags select Release packages and protected iOS signing/delivery. They
-publish separate GitHub prereleases with all three sideload downloads, without
+publish separate GitHub prereleases with the selected sideload downloads, without
 replacing Latest or the rolling Nightly. Apple marketing versions omit `-rc.N`;
 the shared native build number and source record identify the exact CI run/tag.
 Use another candidate for source fixes; never move an existing candidate tag.
 No candidate command invites testers or submits App Review. Stable v1.0.0 waits
 for candidate acceptance, including TestFlight-delivered checks.
+
+## Skip individual platforms
+
+Put `[skip ios]`, `[skip android]` or `[skip macos]` in the subject or body of the
+commit you build or tag. Use the exact lowercase spelling. Markers apply to that
+commit on master, on stable and candidate tags, and on manual runs. A marker skips
+that platform's sideload package, store signing and store upload.
+
+For an Android-only release, put `[skip ios] [skip macos]` in the release commit
+message and cut the tag as usual. CI publishes the APK on the new GitHub Release
+and retains the signed AAB when Play signing is enabled. A partial stable release
+keeps the previous complete stable release marked Latest. If all three platforms
+are skipped, CI publishes no release. To restore a platform in a later release,
+tag a new commit whose message omits its marker.
+
+## Build and publication behavior
 
 Master pushes and manual master builds produce Nightly
 prereleases targeting `v1.0.0-nightly.<count>.g<hash>` before the first stable
