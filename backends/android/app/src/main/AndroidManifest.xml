@@ -20,6 +20,10 @@
     <uses-feature
         android:name="android.hardware.bluetooth_le"
         android:required="true" />
+    <!-- Keep the activity's portrait preference without filtering devices in Google Play. -->
+    <uses-feature
+        android:name="android.hardware.screen.portrait"
+        android:required="false" />
 
     <queries>
         <intent>
