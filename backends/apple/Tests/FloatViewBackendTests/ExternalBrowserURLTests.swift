@@ -16,8 +16,8 @@ struct ExternalBrowserURLTests {
     #expect(decision(value, userLink: true, mainFrame: false) == .cancel)
   }
 
-  @Test(arguments: ["https://github.com/acheronfail/float-view-mobile/blob/master/PRIVACY.md",
-                    "https://github.com/acheronfail/float-view-mobile", "http://example.test/help"])
+  @Test(arguments: ["https://github.com/acheronfail/float-view/blob/master/PRIVACY.md",
+                    "https://github.com/acheronfail/float-view", "http://example.test/help"])
   func externalUserLinksOpenBrowserForEitherTarget(_ value: String) throws {
     let url = try #require(URL(string: value))
     #expect(decision(value, userLink: true) == .openBrowser(url))

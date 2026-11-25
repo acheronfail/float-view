@@ -1187,13 +1187,13 @@
     "workflowRestored": true,
     "freshNightlyPublicationVerified": true,
     "postCleanupWorkflow": {
-      "url": "https://github.com/acheronfail/float-view-mobile/actions/runs/39009005958",
+      "url": "https://github.com/acheronfail/float-view/actions/runs/39009005958",
       "conclusion": "success",
       "source": "fae18a56b0ad7a92b24e93111bbd94cd08d5b482",
       "nightlyVersion": "v1.0.0-nightly.653.gfae18a56b0ad",
       "unchangedSourceSkipped": true,
       "storeJobsSkipped": true
     },
-    "freshNightlyPublicationRun": "https://github.com/acheronfail/float-view-mobile/actions/runs/39009233662"
+    "freshNightlyPublicationRun": "https://github.com/acheronfail/float-view/actions/runs/39009233662"
   }
 }

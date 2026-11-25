@@ -1,6 +1,6 @@
 # Express stream recovery and Android negotiated capacity
 
-Source: [fae11293](https://github.com/acheronfail/float-view-mobile/commit/fae11293ee812b3a2b0ecedfad28589a40d15d33).
+Source: [fae11293](https://github.com/acheronfail/float-view/commit/fae11293ee812b3a2b0ecedfad28589a40d15d33).
 
 Result: A separately installed Android test build negotiated a 244-byte payload
 capacity with Express. Live telemetry advanced and Refloat control status became

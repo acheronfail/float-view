@@ -1,6 +1,6 @@
 # Android Refloat controls and shutdown: historical result
 
-Historical record revision: [fae1e4d0](https://github.com/acheronfail/float-view-mobile/commit/fae1e4d0beb5dcda6c5810244a31ea09b1ba0233). This identifies the recorded checkpoint, not an independently verified binary hash.
+Historical record revision: [fae1e4d0](https://github.com/acheronfail/float-view/commit/fae1e4d0beb5dcda6c5810244a31ea09b1ba0233). This identifies the recorded checkpoint, not an independently verified binary hash.
 
 Result: Direct/CAN fixture controls and shutdown/no-op passed. Real supported-controller shutdown returned Home without automatic reconnect; manual power-on restored discovery. No motor-motion command was observed.
 

@@ -5,8 +5,8 @@
   const revision = __FLOAT_VIEW_BUILD_INFO__.revision;
   const source =
     revision && /^[0-9a-f]{7,40}$/.test(revision)
-      ? `https://github.com/acheronfail/float-view-mobile/tree/${revision}`
-      : 'https://github.com/acheronfail/float-view-mobile';
+      ? `https://github.com/acheronfail/float-view/tree/${revision}`
+      : 'https://github.com/acheronfail/float-view';
 </script>
 
 <section aria-label="Open source and licences">
@@ -17,14 +17,14 @@
     <p>
       <a
         class="touch-manipulation text-accent underline"
-        href="https://github.com/acheronfail/float-view-mobile/blob/master/PRIVACY.md"
+        href="https://github.com/acheronfail/float-view/blob/master/PRIVACY.md"
         target="_blank"
         rel="noreferrer">Privacy policy</a
       >
       ·
       <a
         class="touch-manipulation text-accent underline"
-        href="https://github.com/acheronfail/float-view-mobile/issues"
+        href="https://github.com/acheronfail/float-view/issues"
         target="_blank"
         rel="noreferrer">Support</a
       >

@@ -24,7 +24,7 @@ final class MacAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
   }
 
   @objc func openHelp(_: Any?) {
-    NSWorkspace.shared.open(URL(string: "https://github.com/acheronfail/float-view-mobile#readme")!)
+    NSWorkspace.shared.open(URL(string: "https://github.com/acheronfail/float-view#readme")!)
   }
 
   @objc func showMainWindow(_: Any?) {

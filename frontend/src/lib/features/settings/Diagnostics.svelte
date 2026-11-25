@@ -37,7 +37,7 @@
   <p class="text-sm text-muted">
     Check <a
       class="touch-manipulation text-accent underline"
-      href="https://github.com/acheronfail/float-view-mobile/issues"
+      href="https://github.com/acheronfail/float-view/issues"
       target="_blank"
       rel="noreferrer">GitHub Issues</a
     > to see if someone has already reported the problem. If not, add a new report, explain what happened and attach the

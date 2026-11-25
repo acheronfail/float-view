@@ -7,7 +7,7 @@ export function preview(ref = 'HEAD', cwd = process.cwd()) {
   const commit = git(['rev-parse', '--verify', '--end-of-options', `${ref}^{commit}`], cwd);
   const version = bumpVersion(latestStable(commit, cwd) ?? 'v0.0.0', 'patch');
   const previousTag = releaseNotesBase(version, commit, cwd);
-  const notes = releaseNotes(version, commit, previousTag, process.env.GH_REPO ?? 'acheronfail/float-view-mobile', cwd);
+  const notes = releaseNotes(version, commit, previousTag, process.env.GH_REPO ?? 'acheronfail/float-view', cwd);
   return { commit, previousTag, version, notes };
 }
 

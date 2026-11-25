@@ -72,8 +72,8 @@ lockfiles, assets and toolchain pins. Build 77 passed this check; its brief
 result is in the [verification summary](../openspec/changes/prepare-public-distribution/verification.md).
 Keep download/digest comparison logs local.
 
-[Exact source tree](https://github.com/acheronfail/float-view-mobile/tree/fae17d3206174adfd1c432bb64d7df370e9a005f)
-and [source archive](https://github.com/acheronfail/float-view-mobile/archive/fae17d3206174adfd1c432bb64d7df370e9a005f.tar.gz)
+[Exact source tree](https://github.com/acheronfail/float-view/tree/fae17d3206174adfd1c432bb64d7df370e9a005f)
+and [source archive](https://github.com/acheronfail/float-view/archive/fae17d3206174adfd1c432bb64d7df370e9a005f.tar.gz)
 are publicly accessible without an account. The archive omits research vendor
 gitlinks; those submodules are not Release build inputs. Locked external Cargo
 and npm packages are obtained separately by the documented dependency install
@@ -95,7 +95,7 @@ the identified runtime-notice gap is fixed in source. Software checks verify the
 updated offline page and packaging gate. Unsigned Release packaging checks also
 passed with corrected full texts. These local checks do not certify a clean signed
 candidate; retain detailed logs locally.
-A clean local signed preflight at [source fae1814](https://github.com/acheronfail/float-view-mobile/tree/fae1814f9696b56071755d33784f0e233cc34bac) passed the corrected package checks and anonymous exact-source comparison.
+A clean local signed preflight at [source fae1814](https://github.com/acheronfail/float-view/tree/fae1814f9696b56071755d33784f0e233cc34bac) passed the corrected package checks and anonymous exact-source comparison.
 Its local test number is not an upload allocation. The actual numbered-candidate
 CI export must still pass the same gates before upload; build 77 is not grandfathered in.
 Android's additional upstream copyright/NOTICE collection and final AAB review,

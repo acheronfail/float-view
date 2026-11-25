@@ -34,5 +34,5 @@ Mobile location acquisition remained deferred. Where the iOS XCTest passed but i
 Detailed execution history and device records are retained locally under
 `.local/physical-testing/`. This summary applies only to the archived change.
 
-Recorded change revision: [fae14a95](https://github.com/acheronfail/float-view-mobile/commit/fae14a95dd6699f495ee7ae18ba4068fcb4e2a6a)
+Recorded change revision: [fae14a95](https://github.com/acheronfail/float-view/commit/fae14a95dd6699f495ee7ae18ba4068fcb4e2a6a)
 (historical record, not a verified binary hash).

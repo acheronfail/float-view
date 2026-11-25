@@ -5,7 +5,7 @@ Buying the app through an app store supports ongoing development and helps cover
 developer memberships and distribution fees. You can also install through the
 alternative routes below or [build it yourself](CONTRIBUTING.md).
 
-[Privacy policy](PRIVACY.md) · [Support](https://github.com/acheronfail/float-view-mobile/issues)
+[Privacy policy](PRIVACY.md) · [Support](https://github.com/acheronfail/float-view/issues)
 
 - 📡 Connect to your VESC board over Bluetooth.
 - 📊 Watch live telemetry.
@@ -48,14 +48,14 @@ alternative routes below or [build it yourself](CONTRIBUTING.md).
 ## How to install
 
 Choose your platform below. Alternative builds are available on the
-[releases page](https://github.com/acheronfail/float-view-mobile/releases).
+[releases page](https://github.com/acheronfail/float-view/releases).
 
 ### iOS
 
 <a href="https://apps.apple.com/app/id6823768488"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download Float View on the App Store" height="48"></a>
 
 Alternatively, download the `.ipa` from the
-[releases page](https://github.com/acheronfail/float-view-mobile/releases) and
+[releases page](https://github.com/acheronfail/float-view/releases) and
 follow the [ipa-loader](https://github.com/acheronfail/ipa-loader/) instructions
 to install it.
 
@@ -64,7 +64,7 @@ to install it.
 <a href="https://play.google.com/store/apps/details?id=fail.acheron.floatview"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get Float View on Google Play" height="48"></a>
 
 Alternatively, download the `.apk` from the
-[releases page](https://github.com/acheronfail/float-view-mobile/releases),
+[releases page](https://github.com/acheronfail/float-view/releases),
 open it on your phone, and tap **Install**.
 Allow installation from this source if Android asks.
 
@@ -75,7 +75,7 @@ Requires macOS 14 or later. Supports Apple Silicon and Intel.
 <a href="https://apps.apple.com/app/id6823913513"><img src="https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-mac-app-store.svg" alt="Download Float View Desktop on the Mac App Store" height="48"></a>
 
 Alternatively, download the macOS `.zip` from the
-[releases page](https://github.com/acheronfail/float-view-mobile/releases), extract
+[releases page](https://github.com/acheronfail/float-view/releases), extract
 it, and move `Float View Desktop.app` to Applications.
 
 ## Contributing

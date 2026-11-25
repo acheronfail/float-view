@@ -148,14 +148,14 @@ signing can retain its managed profiles.
 Set the PKCS12 password interactively, then upload the selected files:
 
 ```sh
-gh secret set APPLE_DISTRIBUTION_P12_PASSWORD --env apple-store-signing --repo acheronfail/float-view-mobile
+gh secret set APPLE_DISTRIBUTION_P12_PASSWORD --env apple-store-signing --repo acheronfail/float-view
 base64 < .local/ios-store/ci-signing/distribution.p12 | \
-  gh secret set APPLE_DISTRIBUTION_P12_BASE64 --env apple-store-signing --repo acheronfail/float-view-mobile
+  gh secret set APPLE_DISTRIBUTION_P12_BASE64 --env apple-store-signing --repo acheronfail/float-view
 base64 < .local/ios-store/ci-signing/app.mobileprovision | \
-  gh secret set IOS_APP_PROFILE_BASE64 --env apple-store-signing --repo acheronfail/float-view-mobile
+  gh secret set IOS_APP_PROFILE_BASE64 --env apple-store-signing --repo acheronfail/float-view
 base64 < .local/ios-store/ci-signing/live-activity.mobileprovision | \
-  gh secret set IOS_EXTENSION_PROFILE_BASE64 --env apple-store-signing --repo acheronfail/float-view-mobile
-gh variable set IOS_STORE_SIGNING_READY --body true --env apple-store-signing --repo acheronfail/float-view-mobile
+  gh secret set IOS_EXTENSION_PROFILE_BASE64 --env apple-store-signing --repo acheronfail/float-view
+gh variable set IOS_STORE_SIGNING_READY --body true --env apple-store-signing --repo acheronfail/float-view
 ```
 
 Enable readiness only after protections, secrets and profiles are configured.
@@ -163,7 +163,7 @@ Renew matching certificates/profiles together and keep a secure private backup.
 For a build-only retry, use the actual release tag:
 
 ```sh
-gh workflow run build-apps.yml --ref vX.Y.Z -f ios-store=true --repo acheronfail/float-view-mobile
+gh workflow run build-apps.yml --ref vX.Y.Z -f ios-store=true --repo acheronfail/float-view
 ```
 
 ### Protected Apple delivery
@@ -179,7 +179,7 @@ Before enabling `IOS_STORE_UPLOAD_READY`, accept package, privacy and supported-
 checks. Use a read-only delivery check for the exact tag/app/build:
 
 ```sh
-gh workflow run build-apps.yml --ref vX.Y.Z -f ios-store=true -f ios-delivery=check --repo acheronfail/float-view-mobile
+gh workflow run build-apps.yml --ref vX.Y.Z -f ios-store=true -f ios-delivery=check --repo acheronfail/float-view
 ```
 
 `check` verifies the package and Apple records without uploading. Enabled release

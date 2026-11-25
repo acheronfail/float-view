@@ -10,7 +10,7 @@ class WebNavigationPolicyTest {
             assertEquals(WebNavigation.BACKEND, webNavigation(url, origin))
     }
     @Test fun `public privacy source and support links open externally`() {
-        for (url in listOf("https://github.com/acheronfail/float-view-mobile/blob/master/PRIVACY.md", "https://github.com/acheronfail/float-view-mobile/issues", "https://www.openstreetmap.org/copyright"))
+        for (url in listOf("https://github.com/acheronfail/float-view/blob/master/PRIVACY.md", "https://github.com/acheronfail/float-view/issues", "https://www.openstreetmap.org/copyright"))
             assertEquals(WebNavigation.EXTERNAL, webNavigation(url, origin))
     }
     @Test fun `backend API query wrong ports and non-web schemes cannot become documents`() {

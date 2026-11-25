@@ -89,7 +89,7 @@ installations. Export recordings before any intentional uninstall.
 
 ## Verified scope
 
-The [RC6 APK](https://github.com/acheronfail/float-view-mobile/releases/tag/v1.0.0-rc.6)
+The [RC6 APK](https://github.com/acheronfail/float-view/releases/tag/v1.0.0-rc.6)
 passes APK signature verification and matches the retained official app-signing
 certificate. Both retained app-key and separate upload-key signing checks pass.
 The owner subsequently reported successful Play enrollment and supplied the
@@ -145,7 +145,7 @@ Internal testing does not satisfy that requirement. Complete listing, Data
 safety and actual permission/foreground-service declarations before closed-test
 review. See [Google's account testing requirements](https://support.google.com/googleplay/android-developer/answer/14151465).
 
-[Candidate v1.1.0-rc.3, build 120](https://github.com/acheronfail/float-view-mobile/actions/runs/39218240672),
+[Candidate v1.1.0-rc.3, build 120](https://github.com/acheronfail/float-view/actions/runs/39218240672),
 source `fae159af`, passed protected Android signing and GitHub candidate
 publication. Independent downloaded-AAB checks passed: strict JAR signature,
 registered upload certificate, artifact hash/source/build identity, bundletool
@@ -255,7 +255,7 @@ Download `FloatView-android-upload-<build>-attempt-<attempt>` for the receipt.
 `delivered` confirms the matching bundle and completed internal track in a fresh
 Google edit; storefront/device propagation can still take time. Software tests
 cover signatures, credentials, routing, conflicts and interrupted attempts.
-[Candidate v1.1.0-rc.5, build 127](https://github.com/acheronfail/float-view-mobile/actions/runs/39261200590),
+[Candidate v1.1.0-rc.5, build 127](https://github.com/acheronfail/float-view/actions/runs/39261200590),
 source `fae1f22a`, passed protected Android signing and automated internal-track
 delivery. An independent Google API inspection matched the bundle SHA-256 with
 the CI receipt and confirmed the completed internal release. Detailed receipts

@@ -6,7 +6,7 @@ incident, or recent context when no incident exists. There is no incident picker
 preview or separate save step. Capture limitations are included in the ZIP.
 
 Nothing is uploaded automatically. First check the project's
-[existing GitHub issues](https://github.com/acheronfail/float-view-mobile/issues).
+[existing GitHub issues](https://github.com/acheronfail/float-view/issues).
 For a reproducible bug that has not been reported, manually write an issue with
 steps, expected and actual behavior, and known hardware/firmware details. Unknown
 motor or battery details are fine. Attach the saved diagnostic ZIP in the issue's

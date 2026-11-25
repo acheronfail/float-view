@@ -1,6 +1,6 @@
 # Apple Rust stream background: historical result
 
-Historical record revision: [fae1adbe](https://github.com/acheronfail/float-view-mobile/commit/fae1adbe2b820cb500309353d788e9b12901a23d). This identifies the recorded checkpoint, not an independently verified binary hash.
+Historical record revision: [fae1adbe](https://github.com/acheronfail/float-view/commit/fae1adbe2b820cb500309353d788e9b12901a23d). This identifies the recorded checkpoint, not an independently verified binary hash.
 
 Result: The iOS fixture background scenario passed using production CoreBluetooth and Rust stream framing, including fragmented notifications, retained session continuity and new persisted background location samples.
 

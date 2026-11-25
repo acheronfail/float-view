@@ -190,7 +190,7 @@ physical Mac Bluetooth checks against simulated board firmware, not validation
 on a rider board or of a store-delivered app. Detailed build hashes, fixture
 inventory, timing and reports remain under ignored `.local/macos-store/`.
 
-[Stable v1.0.0, build 108](https://github.com/acheronfail/float-view-mobile/actions/runs/39028413704),
+[Stable v1.0.0, build 108](https://github.com/acheronfail/float-view/actions/runs/39028413704),
 source `fae18a46`, passed all CI jobs, stable GitHub publication and both protected
 Apple uploads. Mac and iOS processing are independently confirmed `VALID`.
 Independent Mac PKG inspection verified Apple signatures/profile/entitlements,
@@ -230,7 +230,7 @@ For a new candidate containing the Mac audit and uploader changes, first request
 an explicitly read-only check on its immutable tag:
 
 ```sh
-gh workflow run build-apps.yml --ref vX.Y.Z-rc.N -f mac-delivery=check --repo acheronfail/float-view-mobile
+gh workflow run build-apps.yml --ref vX.Y.Z-rc.N -f mac-delivery=check --repo acheronfail/float-view
 ```
 
 This automatically selects a fresh Mac signed build and number. The check verifies

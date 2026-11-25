@@ -36,5 +36,5 @@ Mobile location acquisition remained deferred; background BLE/session continuity
 Detailed execution history and device records are retained locally under
 `.local/physical-testing/`. This summary applies only to the archived change.
 
-Recorded change revision: [fae18b2d](https://github.com/acheronfail/float-view-mobile/commit/fae18b2da048343e572b9ed23fa930cc055b9ea7)
+Recorded change revision: [fae18b2d](https://github.com/acheronfail/float-view/commit/fae18b2da048343e572b9ed23fa930cc055b9ea7)
 (historical record, not a verified binary hash).

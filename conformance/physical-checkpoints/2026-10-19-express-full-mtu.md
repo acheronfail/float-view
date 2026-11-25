@@ -1,6 +1,6 @@
 # Express configuration and full Android ATT MTU
 
-Source: [fae17a0a](https://github.com/acheronfail/float-view-mobile/commit/fae17a0a8d4e281b9bf5fd116c00845bbeb81adf).
+Source: [fae17a0a](https://github.com/acheronfail/float-view/commit/fae17a0a8d4e281b9bf5fd116c00845bbeb81adf).
 
 Result: The isolated Android test build negotiated ATT MTU 517 with Express and
 completed two cold Refloat 1.3.0 schema downloads, followed by successful current

@@ -850,7 +850,7 @@ option) any later version (SPDX: AGPL-3.0-or-later). See LICENSE for the full
 terms, including the warranty disclaimer. Preserve existing third-party notices.
 
 Source and build instructions:
-https://github.com/acheronfail/float-view-mobile
+https://github.com/acheronfail/float-view
 See CONTRIBUTING.md for building from source. Published builds identify their
 source revision in Settings. Use that revision, rather than the latest branch,
 when obtaining the corresponding source for a particular build.

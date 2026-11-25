@@ -56,7 +56,7 @@ class ExternalLinksInstrumentedTest {
             for ((index, target) in listOf("_self", "_blank").withIndex()) {
                 val latch = CountDownLatch(1)
                 var position: JSONObject? = null
-                val url = "https://github.com/acheronfail/float-view-mobile/blob/master/PRIVACY.md?test=$index"
+                val url = "https://github.com/acheronfail/float-view/blob/master/PRIVACY.md?test=$index"
                 instrumentation.runOnMainSync {
                     current.evaluateJavascript("""(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());Array.from(document.body.children).forEach(e=>e.style.display='none');document.getElementById('native-link-test')?.remove();const a=document.createElement('a');a.id='native-link-test';a.href='$url';a.target='$target';a.textContent='Privacy policy';a.style='position:fixed;left:20px;top:60px;width:180px;height:60px;z-index:2147483647;background:white;color:black';document.body.appendChild(a);const r=a.getBoundingClientRect();return JSON.stringify({x:r.left+r.width/2,y:r.top+r.height/2,width:innerWidth,hit:document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.id});})()""") { result ->
                         position = JSONObject(JSONArray("[$result]").getString(0)); latch.countDown()

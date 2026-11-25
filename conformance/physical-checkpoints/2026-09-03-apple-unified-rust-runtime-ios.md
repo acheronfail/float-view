@@ -1,6 +1,6 @@
 # Apple unified Rust runtime: historical result
 
-Historical record revision: [fae1a2f9](https://github.com/acheronfail/float-view-mobile/commit/fae1a2f9211ff4bc3bb6b89abb4660758d92f8b6). This identifies the recorded checkpoint, not an independently verified binary hash.
+Historical record revision: [fae1a2f9](https://github.com/acheronfail/float-view/commit/fae1a2f9211ff4bc3bb6b89abb4660758d92f8b6). This identifies the recorded checkpoint, not an independently verified binary hash.
 
 Result: All 17 iOS fixture scenarios passed after selecting the unified runtime.
 

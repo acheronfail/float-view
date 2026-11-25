@@ -1,6 +1,6 @@
 # Android announcements: historical result
 
-Historical record revision: [fae1c23a](https://github.com/acheronfail/float-view-mobile/commit/fae1c23add0407b6b9df634483e90d4f65ae4648). This identifies the recorded checkpoint, not an independently verified binary hash.
+Historical record revision: [fae1c23a](https://github.com/acheronfail/float-view/commit/fae1c23add0407b6b9df634483e90d4f65ae4648). This identifies the recorded checkpoint, not an independently verified binary hash.
 
 Result: Core speaker/offline speech, gain/music restoration, winning-source cadence, locked-screen BLE/recording, reconnect and voice-settings navigation checks passed. The native English selector was corrected to accept en and eng locales.
 

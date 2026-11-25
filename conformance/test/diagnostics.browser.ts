@@ -50,7 +50,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       );
       assert.equal(await page.getByLabel('Diagnostic report preview').count(), 0);
       const link = section.getByRole('link', { name: 'GitHub Issues', exact: true });
-      assert.equal(await link.getAttribute('href'), 'https://github.com/acheronfail/float-view-mobile/issues');
+      assert.equal(await link.getAttribute('href'), 'https://github.com/acheronfail/float-view/issues');
       assert.equal(requests.length, 0);
       assert.match(await section.innerText(), /add a new report/);
       assert.match(await section.innerText(), /Anyone can see reports and attached files/);

@@ -39,5 +39,5 @@ Android acquired no new background location sample; that location coverage remai
 Detailed execution history and device records are retained locally under
 `.local/physical-testing/`. This summary applies only to the archived change.
 
-Recorded change revision: [fae140e9](https://github.com/acheronfail/float-view-mobile/commit/fae140e9cf7995123dfc19c4aaf58895734bd2d3)
+Recorded change revision: [fae140e9](https://github.com/acheronfail/float-view/commit/fae140e9cf7995123dfc19c4aaf58895734bd2d3)
 (historical record, not a verified binary hash).

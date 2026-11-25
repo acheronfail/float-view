@@ -32,11 +32,11 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       assert.match(await section.innerText(), /Luis Prado/);
       assert.equal(
         await section.getByRole('link', { name: 'Privacy policy', exact: true }).getAttribute('href'),
-        'https://github.com/acheronfail/float-view-mobile/blob/master/PRIVACY.md'
+        'https://github.com/acheronfail/float-view/blob/master/PRIVACY.md'
       );
       assert.equal(
         await section.getByRole('link', { name: 'Support', exact: true }).getAttribute('href'),
-        'https://github.com/acheronfail/float-view-mobile/issues'
+        'https://github.com/acheronfail/float-view/issues'
       );
       const button = section.getByRole('link', { name: 'View licences and notices' });
       await button.scrollIntoViewIfNeeded();

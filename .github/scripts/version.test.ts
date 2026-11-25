@@ -225,7 +225,7 @@ test('release preview uses publication notes on dirty, unpushed branches without
       result.version,
       result.commit,
       result.previousTag,
-      process.env.GH_REPO ?? 'acheronfail/float-view-mobile',
+      process.env.GH_REPO ?? 'acheronfail/float-view',
       dir
     )
   );

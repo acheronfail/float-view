@@ -1,7 +1,7 @@
 # Stable Refloat INFO suffix compatibility
 
 Source: working-tree compatibility fix based on
-[fae14eda](https://github.com/acheronfail/float-view-mobile/commit/fae14eda), in
+[fae14eda](https://github.com/acheronfail/float-view/commit/fae14eda), in
 [`decode_info`](../../backends/core/refloat-compatibility/src/lib.rs) and the
 [connection coordinator](../../backends/core/connection-application-coordinator/src/lib.rs).
 

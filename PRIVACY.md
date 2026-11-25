@@ -95,7 +95,7 @@ provider or recipient under their own terms. Exported copies are not removed
 when you delete the original recording in Float View.
 
 Support is available through
-[GitHub Issues](https://github.com/acheronfail/float-view-mobile/issues).
+[GitHub Issues](https://github.com/acheronfail/float-view/issues).
 Issues and attachments in this repository are public. Do not post private route
 files, addresses, credentials or other sensitive information. GitHub processes
 account and request data under its own privacy policy. Opening source, support

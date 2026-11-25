@@ -1,9 +1,9 @@
 # Express duplicated replies and CAN address collision
 
 App sources: original Play RC4 build 122
-([fae15b2a](https://github.com/acheronfail/float-view-mobile/commit/fae15b2a2df2b8d559612dd4160c5df4cde44835))
+([fae15b2a](https://github.com/acheronfail/float-view/commit/fae15b2a2df2b8d559612dd4160c5df4cde44835))
 and the isolated corrected Android build
-([fae17a0a](https://github.com/acheronfail/float-view-mobile/commit/fae17a0a8d4e281b9bf5fd116c00845bbeb81adf)).
+([fae17a0a](https://github.com/acheronfail/float-view/commit/fae17a0a8d4e281b9bf5fd116c00845bbeb81adf)).
 
 Result: Express and a CAN receiver shared a CAN identifier. A single firmware
 query to the receiver enabled duplicate replies to subsequent motor-controller

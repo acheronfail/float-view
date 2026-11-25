@@ -20,8 +20,8 @@ successful packaging is not Apple processing or physical beta acceptance.
 
 The public policy is [PRIVACY.md](../PRIVACY.md), linked from README and shared
 Settings. Public console URL:
-`https://github.com/acheronfail/float-view-mobile/blob/master/PRIVACY.md`.
-Support URL: `https://github.com/acheronfail/float-view-mobile/issues`.
+`https://github.com/acheronfail/float-view/blob/master/PRIVACY.md`.
+Support URL: `https://github.com/acheronfail/float-view/issues`.
 Check both URLs anonymously before submission.
 
 Do not answer “Data Not Collected” solely because there is no developer server.
@@ -209,7 +209,7 @@ is required. This beta requires compatible hardware for live features; recorded
 sessions and the open-source licence information can be reviewed separately.
 
 Float View is open source. Source code, build instructions and public support
-are available at https://github.com/acheronfail/float-view-mobile.
+are available at https://github.com/acheronfail/float-view.
 
 ### What to Test
 
@@ -242,7 +242,7 @@ History can be reviewed without hardware by importing an existing .floatview
 archive: Sessions → Session actions → Import session, then choose the file.
 The repository's public synthetic baseline recording is available for this
 purpose; its location is fictional and it contains no user's ride data:
-https://github.com/acheronfail/float-view-mobile/raw/master/backends/fixtures/public-baseline/100/recording.floatview
+https://github.com/acheronfail/float-view/raw/master/backends/fixtures/public-baseline/100/recording.floatview
 
 Before external beta review, the owner must add the tested hardware connection
 steps and a reviewer-accessible physical-device/hardware interaction video.
@@ -261,8 +261,8 @@ keep detailed device results, video files and private links out of Git.
 
 ### URLs and declarations
 
-- Privacy policy: https://github.com/acheronfail/float-view-mobile/blob/master/PRIVACY.md
-- Support: https://github.com/acheronfail/float-view-mobile/issues
+- Privacy policy: https://github.com/acheronfail/float-view/blob/master/PRIVACY.md
+- Support: https://github.com/acheronfail/float-view/issues
 - No app account, advertising, analytics SDK, tracking domains or ATT prompt.
 - App Privacy draft follows the audit above: map-provider precise location and
   request metadata, linked, no tracking, for App Functionality and the provider's
@@ -313,7 +313,7 @@ View account is required.
 
 Float View is open source under AGPL-3.0-or-later. Purchasing the app supports
 ongoing development and distribution costs. Source code and project information:
-https://github.com/acheronfail/float-view-mobile
+https://github.com/acheronfail/float-view
 
 ### Screenshot and console checklist
 

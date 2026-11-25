@@ -25,8 +25,8 @@ These are software/emulator results, not physical BLE or cloud-restore acceptanc
 | Backup | Standard Auto Backup and device transfer include the complete owned settings/ride store, preserving its marker, SQLite databases and WAL files. Cloud backup requires encryption capability; legacy rules allow encrypted backup or device transfer. Diagnostics, caches, temporary exports, coordination locks, WebView state and permission-history hints are excluded. Cloud quota is 25 MB and can prevent backup of a large store. Actual provider restore/device transfer remains unverified. |
 | Payment | Store purchase is handled by Google Play; no in-app billing SDK or developer payment-data endpoint. |
 
-Public privacy URL: <https://github.com/acheronfail/float-view-mobile/blob/master/PRIVACY.md>.
-Support: <https://github.com/acheronfail/float-view-mobile/issues>.
+Public privacy URL: <https://github.com/acheronfail/float-view/blob/master/PRIVACY.md>.
+Support: <https://github.com/acheronfail/float-view/issues>.
 Inspect both public URLs and in-app access on the delivered build. Android now
 routes public HTTP(S) links to the external browser, including user-activated
 new-window links. Only the exact local backend document and fragment routes
@@ -157,7 +157,7 @@ libraries, frontend assets or installed app.
 
 On October 30, 2026, the latest CI-delivered Play internal bundle was
 `v1.2.1-rc.1`, build 157, source `fae11273`
-([successful delivery run](https://github.com/acheronfail/float-view-mobile/actions/runs/40485809424)).
+([successful delivery run](https://github.com/acheronfail/float-view/actions/runs/40485809424)).
 Its single `base/dex/classes.dex` entry totals **4,482,692 uncompressed bytes**
 (4.48 MB / 4.27 MiB); ZIP-compressed size is 1,517,850 bytes. The downloaded
 AAB's SHA-256 matches the delivered upload receipt. This is below 10 MB under

@@ -1,6 +1,6 @@
 # Startup presentation acceptance summary
 
-Implementation: [fae10ebb](https://github.com/acheronfail/float-view-mobile/commit/fae10ebbddf1201f68acdd0659d1744d8269b180).
+Implementation: [fae10ebb](https://github.com/acheronfail/float-view/commit/fae10ebbddf1201f68acdd0659d1744d8269b180).
 
 Scoped iOS/Android cold-launch and foreground appearance/lifecycle checks passed,
 including system/app theme combinations and Android WebView reconstruction.

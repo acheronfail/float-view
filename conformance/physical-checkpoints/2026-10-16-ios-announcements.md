@@ -1,6 +1,6 @@
 # iOS announcements: historical result
 
-Historical record revision: [fae1c23a](https://github.com/acheronfail/float-view-mobile/commit/fae1c23add0407b6b9df634483e90d4f65ae4648). This identifies the recorded checkpoint, not an independently verified binary hash.
+Historical record revision: [fae1c23a](https://github.com/acheronfail/float-view/commit/fae1c23add0407b6b9df634483e90d4f65ae4648). This identifies the recorded checkpoint, not an independently verified binary hash.
 
 Result: For Debug source fae1e0f, speaker/offline and imperial speech, winning-source cadence, gain/music restoration, locked-screen BLE/recording and disabling passed. Settings restoration and fixture cleanup were independently verified.
 

@@ -46,5 +46,5 @@ Mobile timed location acquisition remained deferred; these checks do not establi
 Detailed execution history and device records are retained locally under
 `.local/physical-testing/`. This summary applies only to the archived change.
 
-Recorded change revision: [fae1a175](https://github.com/acheronfail/float-view-mobile/commit/fae1a1752633323233745e1e043ad0f45aa7a9f6)
+Recorded change revision: [fae1a175](https://github.com/acheronfail/float-view/commit/fae1a1752633323233745e1e043ad0f45aa7a9f6)
 (historical record, not a verified binary hash).

@@ -43,5 +43,5 @@ iOS location acquisition remained deferred. No physical Android handset was avai
 Detailed execution history and device records are retained locally under
 `.local/physical-testing/`. This summary applies only to the archived change.
 
-Recorded change revision: [fae1acbc](https://github.com/acheronfail/float-view-mobile/commit/fae1acbce600675c87a93a438480cdb639a071bf)
+Recorded change revision: [fae1acbc](https://github.com/acheronfail/float-view/commit/fae1acbce600675c87a93a438480cdb639a071bf)
 (historical record, not a verified binary hash).
