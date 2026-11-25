@@ -12,7 +12,7 @@
 	url = https://github.com/vedderb/vesc_bms_fw
 [submodule "vendor/float-view"]
 	path = vendor/float-view
-	url = https://github.com/acheronfail/float-view
+	url = https://github.com/acheronfail/float-web
 [submodule "vendor/vesc_express"]
 	path = vendor/vesc_express
 	url = https://github.com/vedderb/vesc_express

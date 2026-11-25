@@ -83,7 +83,7 @@ setup:
     [ -e "vendor/vesc_tool" ] || git clone https://github.com/vedderb/vesc_tool "vendor/vesc_tool"
     [ -e "vendor/vesc_bms_fw" ] || git clone https://github.com/vedderb/vesc_bms_fw "vendor/vesc_bms_fw"
     [ -e "vendor/vesc_express" ] || git clone https://github.com/vedderb/vesc_express "vendor/vesc_express"
-    [ -e "vendor/float-view" ] || git clone https://github.com/acheronfail/float-view "vendor/float-view"
+    [ -e "vendor/float-view" ] || git clone https://github.com/acheronfail/float-web "vendor/float-view"
 
 lint:
     just core-lint
