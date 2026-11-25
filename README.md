@@ -61,7 +61,11 @@ to install it.
 
 ### Android
 
-Download the `.apk`, open it on your phone, and tap **Install**.
+<a href="https://play.google.com/store/apps/details?id=fail.acheron.floatview"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get Float View on Google Play" height="48"></a>
+
+Alternatively, download the `.apk` from the
+[releases page](https://github.com/acheronfail/float-view-mobile/releases),
+open it on your phone, and tap **Install**.
 Allow installation from this source if Android asks.
 
 ### macOS
