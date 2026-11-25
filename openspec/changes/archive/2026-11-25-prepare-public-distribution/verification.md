@@ -34,31 +34,43 @@ Local software, unsigned packaging and simulator checks are retained in the loca
 readiness record. They do not certify a signed release candidate. Publish their
 brief result against the committed build after the relevant checks pass.
 
-## Open release gates
+## Closeout status — November 25, 2026
 
-- Repeat package/source gates for each new candidate. Build 88 passes the hosted
-  export and independent package/source checks.
-- Complete remaining console metadata and review materials. The owner confirmed
-  completion of the iOS App Privacy questionnaire; private TestFlight contact
-  fields are configured. Hardware details and video are verified in both
-  production and TestFlight review notes. Final listing/assets, account declarations and external beta
-  review remain open; detailed review materials stay local and in private
-  console fields.
-- Owner-reported TestFlight device acceptance passed for build 86; the scoped
-  candidate-version display check also passed through TestFlight in build 88.
-  Upload readiness
-  remains enabled behind protected environment review; external beta review is
-  still pending.
-- Complete remaining Android/Mac-specific tasks. The approved historical v0
-  release/tag cleanup and subsequent fresh nightly publication are verified.
-  Stable v1.0.0 publication and Apple processing are recorded below.
+The owner confirmed Google Play publication after the qualifying closed test and
+production-access application. Apple approval/publication and README links are
+also complete: [iOS App Store](https://apps.apple.com/app/id6823768488),
+[Mac App Store](https://apps.apple.com/app/id6823913513), and
+[Google Play](https://play.google.com/store/apps/details?id=fail.acheron.floatview).
+These are publication outcomes, not new independent physical-test results.
 
-The implementation checklist is 13/38 complete. Local checks do not close
-cross-platform tasks or external submission gates.
+Earlier open-submission notes are superseded by these outcomes. Detailed prior
+checklist/verification snapshots are preserved in ignored local closeout records.
+The historical build-linked results below retain their original scope and limits.
+
+The owner explicitly confirmed all remaining checks on November 25, 2026,
+including Android backup restore/device transfer, official APK-to-Play updates,
+native startup failure/data preservation, final package/source/privacy audits,
+and required software/device acceptance. This closes the previous gaps; it does
+not claim that the agent independently repeated those tests or establish new
+build/device identifiers. Historical results below retain their original scope.
+
+Five delta capabilities already match canonical specifications. Closeout sync adds
+public-data-compatibility and merges app-distribution while preserving intervening
+platform skip-marker and partial-release requirements. No code or runtime behavior
+changes as part of archival.
+
+Closeout validation: the change and both updated/new canonical capabilities pass
+without issues. All seven affected canonical specs validate without errors;
+unchanged canonical files retain existing long-requirement editorial warnings.
+Every delta requirement matches its canonical counterpart, unrelated distribution
+requirements are preserved, and all 39 tasks are checked. Archive completed at
+`openspec/changes/archive/2026-11-25-prepare-public-distribution/`. The archive CLI
+reported only the existing advisory to split proposals with more than ten deltas.
+No application builds or physical tests were repeated for this closeout.
 
 ## Historical development release cleanup
 
-Applied the exact [cleanup manifest](../../../docs/pre-v1-release-cleanup.json)
+Applied the exact [cleanup manifest](../../../../docs/pre-v1-release-cleanup.json)
 with Build apps disabled and no active runs: 49 releases/70 assets, 50 remote
 tags and 51 local tags removed. All six v1.0.0 candidate releases/tags, the
 rolling Nightly/assets, other refs and HEAD commit history were preserved.
@@ -86,7 +98,7 @@ used an ad-hoc, isolated sandbox-check identity from the working source; exact
 executable hashes, dirty source status, device/fixture inventory and raw reports
 remain local. They do not establish store signing, store delivery, rider-board
 interoperability, location or speech acceptance. See
-[Mac distribution preparation](../../../docs/macos-distribution.md).
+[Mac distribution preparation](../../../../docs/macos-distribution.md).
 
 The independent desktop-window change is committed as
 [fae10b1](https://github.com/acheronfail/float-view/commit/fae10b1f0e448f97b7f0733971a9cf2b7143a462).
@@ -123,7 +135,7 @@ Detailed logs, hashes and extracted-package evidence remain local.
 
 ## Mac privacy and protected delivery implementation
 
-The [Mac source/map audit](../../../docs/macos-distribution-audit.md) records the
+The [Mac source/map audit](../../../../docs/macos-distribution-audit.md) records the
 shared data behavior and Mac-specific required-reason/API differences. Native
 WebKit checks verify the app user agent, HTTP cache reuse and actual registration
 of both navigation-policy callbacks; the audit fixed an SDK callback-signature
