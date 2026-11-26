@@ -1,7 +1,6 @@
 <script lang="ts">
   import { backendState } from '$lib/backend/state.svelte';
   import { settingsCategory } from './categories';
-  import Appearance from './Appearance.svelte';
   import RideRecording from './RideRecording.svelte';
   import Announcements from './Announcements.svelte';
   import ConnectionSettings from './ConnectionSettings.svelte';
@@ -18,8 +17,7 @@
     <p class="text-muted">Loading settings…</p>
   {:else}
     {#key category}
-      {#if category === 'appearance'}<Appearance />
-      {:else if category === 'recording'}<RideRecording />
+      {#if category === 'recording'}<RideRecording />
       {:else if category === 'announcements'}<Announcements />
       {:else if category === 'connection'}<ConnectionSettings />
       {:else if category === 'data'}<DataSettings />

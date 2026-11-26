@@ -47,7 +47,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
           });
           server.onMessage((raw) => socket.send(raw));
         });
-        await page.goto(`${endpoint.origin}/#/settings/appearance`);
+        await page.goto(`${endpoint.origin}/#/settings`);
         const theme = page.getByRole('group', { name: 'Theme', exact: true });
         const dark = theme.getByRole('button', { name: 'Dark', exact: true });
         await dark.waitFor();

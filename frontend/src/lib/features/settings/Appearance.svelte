@@ -6,9 +6,9 @@
   import type { ThemePreference, UnitPreference } from '$lib/backend/contract';
 </script>
 
-{#if backendState.settings}
-  <div>
-    <div class="mt-5 space-y-2 text-sm text-muted">
+<section aria-label="Appearance & units" class="space-y-4">
+  {#if backendState.settings}
+    <div class="space-y-2 text-sm text-muted">
       <p>Theme</p>
       <SegmentedControl
         label="Theme"
@@ -21,7 +21,7 @@
         onchange={(themePreference: ThemePreference) => backendState.updateSessionSettings({ themePreference })}
       />
     </div>
-    <div class="mt-5 space-y-2 text-sm text-muted">
+    <div class="space-y-2 text-sm text-muted">
       <p>Accent color</p>
       <div role="group" aria-label="Accent color" class="flex flex-wrap justify-center gap-2 py-1">
         {#each accentPresets as preset (preset.value)}
@@ -64,7 +64,7 @@
         {/each}
       </div>
     </div>
-    <div class="mt-5 space-y-2 text-sm text-muted">
+    <div class="space-y-2 text-sm text-muted">
       <p>Units</p>
       <SegmentedControl
         label="Units"
@@ -76,5 +76,8 @@
         onchange={(unitPreference: UnitPreference) => backendState.updateSessionSettings({ unitPreference })}
       />
     </div>
-  </div>
-{/if}
+  {:else}
+    <p class="text-muted">Loading settings…</p>
+  {/if}
+  {#if backendState.error}<p role="alert" class="text-warning">{backendState.error}</p>{/if}
+</section>

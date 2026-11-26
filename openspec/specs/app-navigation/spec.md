@@ -183,7 +183,7 @@ Settings SHALL contain application-wide preferences and app support tools groupe
 #### Scenario: Open global settings
 
 - **WHEN** the user selects Settings
-- **THEN** the frontend renders seven labelled destinations: Appearance & units, Ride announcements, Ride recording, Connection & permissions, Data & backups, Help & diagnostics and About
+- **THEN** the frontend renders the theme, accent colour and units controls above six labelled destinations: Ride announcements, Ride recording, Connection & permissions, Data & backups, Help & diagnostics and About
 
 #### Scenario: Native-owned option update
 
@@ -192,7 +192,7 @@ Settings SHALL contain application-wide preferences and app support tools groupe
 
 ### Requirement: Focused settings pages
 
-Settings home SHALL show navigation rows with short descriptions instead of preference controls or ride totals. Each destination SHALL have a titled page and a return to Settings, retaining in-memory landing-page position and keyboard focus. Licences SHALL return to About. Recreated frontends SHALL use the existing Settings checkpoint without extending the wire contract.
+Settings home SHALL show the theme, accent colour and units controls inline and navigation rows with short descriptions for the remaining categories. Ride totals SHALL remain in Sessions. Each category destination SHALL have a titled page and a return to Settings, retaining in-memory landing-page position and keyboard focus. Licences SHALL return to About. Recreated frontends SHALL use the existing Settings checkpoint without extending the wire contract.
 
 #### Scenario: Open and return
 

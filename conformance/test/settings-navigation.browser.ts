@@ -41,24 +41,32 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await page.goto(`${endpoint.origin}/#/settings`);
       const categories = page.getByRole('navigation', { name: 'Settings categories' });
       await categories.waitFor();
+      const appearance = page.getByRole('region', { name: 'Appearance & units', exact: true });
+      for (const label of ['Theme', 'Accent color', 'Units']) {
+        await appearance.getByRole('group', { name: label, exact: true }).waitFor();
+      }
+      assert.equal(await appearance.getByRole('heading').count(), 0);
       const version = await page.locator('header p').innerText();
       assert.match(version, /^(?:v\d+\.\d+\.\d+(?:-\S+)?|Development build)$/);
       const tabs = page.getByRole('navigation', { name: 'Primary' });
       await dragFromControl(tabs.getByRole('link', { name: 'sessions', exact: true }));
       assert.match(page.url(), /#\/settings$/);
-      assert.equal(await categories.getByRole('link').count(), 7);
       assert.deepEqual(
-        await categories
-          .getByRole('link')
-          .evaluateAll((links) => links.slice(0, 3).map((link) => link.getAttribute('href'))),
-        ['#/settings/appearance', '#/settings/announcements', '#/settings/recording']
+        await categories.getByRole('link').evaluateAll((links) => links.map((link) => link.getAttribute('href'))),
+        [
+          '#/settings/announcements',
+          '#/settings/recording',
+          '#/settings/connection',
+          '#/settings/data',
+          '#/settings/help',
+          '#/settings/about',
+        ]
       );
       assert.equal(await page.getByRole('spinbutton').count(), 0);
       assert.equal(await page.getByRole('switch').count(), 0);
       assert.doesNotMatch(await page.locator('header').innerText(), /tracked across|Loading/);
       await screenshot('settings-home');
       for (const title of [
-        'Appearance & units',
         'Ride recording',
         'Ride announcements',
         'Connection & permissions',
@@ -214,22 +222,12 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
           patch: { themePreference },
         });
         await page.waitForFunction((theme) => document.documentElement.dataset.theme === theme, themePreference);
-        for (const category of [
-          '',
-          '/recording',
-          '/announcements',
-          '/appearance',
-          '/connection',
-          '/data',
-          '/help',
-          '/about',
-        ]) {
+        for (const category of ['', '/recording', '/announcements', '/connection', '/data', '/help', '/about']) {
           await page.goto(`${endpoint.origin}/#/settings${category}`);
           const titles: Record<string, string> = {
             '': 'Settings',
             '/recording': 'Ride recording',
             '/announcements': 'Ride announcements',
-            '/appearance': 'Appearance & units',
             '/connection': 'Connection & permissions',
             '/data': 'Data & backups',
             '/help': 'Help & diagnostics',
@@ -282,10 +280,12 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       assert.equal(await aboutHeading.evaluate((heading) => getComputedStyle(heading).position), 'sticky');
       assert.equal(await page.getByText(version, { exact: true }).count(), 0);
       await screenshot('settings-about');
-      await page.goto(`${endpoint.origin}/#/settings/missing`);
-      await page.getByText('This settings page is unavailable.', { exact: false }).waitFor();
-      await page.getByRole('link', { name: 'Settings', exact: true }).tap();
-      await categories.waitFor();
+      for (const removedOrUnknown of ['appearance', 'missing']) {
+        await page.goto(`${endpoint.origin}/#/settings/${removedOrUnknown}`);
+        await page.getByText('This settings page is unavailable.', { exact: false }).waitFor();
+        await page.getByRole('link', { name: 'Settings', exact: true }).tap();
+        await appearance.waitFor();
+      }
       assert.deepEqual(errors, []);
     } finally {
       await browser.close();

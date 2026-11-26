@@ -1,12 +1,6 @@
 import type { IconName } from '$lib/ui/icon';
 export const settingsCategories = [
   {
-    slug: 'appearance',
-    title: 'Appearance & units',
-    description: 'Theme, accent colour, metric or imperial',
-    icon: 'palette',
-  },
-  {
     slug: 'announcements',
     title: 'Ride announcements',
     description: 'Speed, load, footpad and battery alerts',

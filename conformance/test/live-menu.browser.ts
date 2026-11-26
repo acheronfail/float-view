@@ -558,7 +558,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
           patch: { themePreference: theme },
         });
         await page.waitForFunction((value) => document.documentElement.dataset.theme === value, theme);
-        await page.goto(`${endpoint.origin}/#/settings/appearance`);
+        await page.goto(`${endpoint.origin}/#/settings`);
         await page.getByRole('group', { name: 'Theme', exact: true }).waitFor();
         await page.goto(`${endpoint.origin}/#/live`);
         await leds.waitFor();

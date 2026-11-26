@@ -2,6 +2,7 @@
   import { backendState } from '$lib/backend/state.svelte';
   import Icon from '$lib/ui/Icon.svelte';
   import { navigationLink } from '$lib/ui/navigation-link';
+  import Appearance from './Appearance.svelte';
   import { settingsCategories } from './categories';
   const permissionAttention = $derived(
     backendState.snapshot?.permissions.some(
@@ -11,9 +12,10 @@
   );
 </script>
 
-<section aria-label="Settings" class="py-4">
+<section aria-label="Settings" class="space-y-6 py-4">
+  <Appearance />
   <nav aria-label="Settings categories" class="space-y-4">
-    {#each [settingsCategories.slice(0, 4), settingsCategories.slice(4)] as group, groupIndex (groupIndex)}
+    {#each [settingsCategories.slice(0, 3), settingsCategories.slice(3)] as group, groupIndex (groupIndex)}
       <ul class="divide-y divide-outline overflow-hidden rounded-2xl border border-outline bg-surface">
         {#each group as category (category.slug)}
           <li>
