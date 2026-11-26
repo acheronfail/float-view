@@ -31,7 +31,7 @@ export const settingsCategories = [
     description: 'Troubleshooting and diagnostic reports',
     icon: 'circle-help',
   },
-  { slug: 'about', title: 'About', description: 'Version, source code and licences', icon: 'info' },
+  { slug: 'about', title: 'About', description: 'Source code and licences', icon: 'info' },
 ] as const satisfies readonly { slug: string; title: string; description: string; icon: IconName }[];
 export function settingsCategory(slug: string | undefined) {
   return settingsCategories.find((category) => category.slug === slug);

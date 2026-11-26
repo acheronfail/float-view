@@ -23,7 +23,8 @@ export const bottomTabs = [
     routeId: '/settings',
     icon: 'settings',
     title: 'Settings',
-    subtitle: 'Float on...',
+    subtitle: __FLOAT_VIEW_BUILD_INFO__.version ?? 'Development build',
+    subtitleClass: 'text-sm wrap-anywhere text-muted',
   },
 ] as const satisfies readonly {
   label: string;
@@ -32,6 +33,7 @@ export const bottomTabs = [
   icon: IconName;
   title: string;
   subtitle: string;
+  subtitleClass?: string;
 }[];
 
 export type BottomTab = (typeof bottomTabs)[number];

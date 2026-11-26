@@ -41,6 +41,8 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await page.goto(`${endpoint.origin}/#/settings`);
       const categories = page.getByRole('navigation', { name: 'Settings categories' });
       await categories.waitFor();
+      const version = await page.locator('header p').innerText();
+      assert.match(version, /^(?:v\d+\.\d+\.\d+(?:-\S+)?|Development build)$/);
       const tabs = page.getByRole('navigation', { name: 'Primary' });
       await dragFromControl(tabs.getByRole('link', { name: 'sessions', exact: true }));
       assert.match(page.url(), /#\/settings$/);
@@ -70,7 +72,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
         await categories.waitFor();
       }
       await page.setViewportSize({ width: 320, height: 568 });
-      const about = categories.getByRole('link').filter({ hasText: 'Version, source code and licences' });
+      const about = categories.getByRole('link', { name: 'About Source code and licences' });
       await about.focus();
       await page.keyboard.press('Tab');
       await about.focus();
@@ -275,9 +277,10 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await screenshot('settings-announcements-voice-ios');
       await page.goto(`${endpoint.origin}/#/settings/about`);
       await page.getByRole('heading', { name: 'About', exact: true }).waitFor();
-      const aboutHeading = page.getByRole('heading', { name: 'Float View', exact: true, level: 3 });
+      const aboutHeading = page.getByRole('heading', { name: 'Open source and licences', exact: true, level: 3 });
       await aboutHeading.waitFor();
       assert.equal(await aboutHeading.evaluate((heading) => getComputedStyle(heading).position), 'sticky');
+      assert.equal(await page.getByText(version, { exact: true }).count(), 0);
       await screenshot('settings-about');
       await page.goto(`${endpoint.origin}/#/settings/missing`);
       await page.getByText('This settings page is unavailable.', { exact: false }).waitFor();

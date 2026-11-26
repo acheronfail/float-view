@@ -41,12 +41,12 @@ Master pushes and manual master runs SHALL resolve commit-identified rolling nig
 
 ### Requirement: Native build identity is independent
 
-All platform builds SHALL receive the same display version, numeric marketing version and independent positive native build number. Numeric build identifiers SHALL continue across major/minor changes. Settings and package filenames SHALL include the full display version; Apple marketing versions SHALL omit prerelease suffixes.
+All platform builds SHALL receive the same display version, numeric marketing version and independent positive native build number. Numeric build identifiers SHALL continue across major/minor changes. The Settings home subtitle and package filenames SHALL include the full display version. The About page SHALL omit the display version. Apple marketing versions SHALL omit prerelease suffixes.
 
 #### Scenario: Minor bump with continuing build number
 
 - **WHEN** build 60 packages `v0.2.0` after build 59 of `v0.1.50`
-- **THEN** every native package uses build 60 and marketing version `0.2.0`, while Settings shows `v0.2.0`
+- **THEN** every native package uses build 60 and marketing version `0.2.0`, while the Settings home subtitle shows `v0.2.0`
 
 ### Requirement: Publication remains bounded and recoverable
 
