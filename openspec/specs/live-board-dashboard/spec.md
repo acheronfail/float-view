@@ -502,7 +502,19 @@ Activating the BMS menu action SHALL open the shared responsive sheet/popover an
 #### Scenario: Attached BMS values
 
 - **WHEN** the BMS sheet opens with an attached complete snapshot
-- **THEN** every contract field has an intentional stable label and placement and bounded cell and temperature rows are rendered in source order
+- **THEN** readings have stable labels and bounded cell voltage rows follow the reported cell order
+
+#### Scenario: Version 1 BMS temperatures
+
+- **WHEN** BMS data version 1 reports the five fixed temperature readings
+- **THEN** the temperature section groups the coldest and hottest cell probe readings and the individual probes under Battery cells, with individual probes in reported order
+- **AND** the chip, MOSFET, ambient, and humidity sensor temperatures appear under BMS and environment, with chip and hottest-cell readings shown once each
+- **AND** unavailable temperatures retain a visible placeholder
+
+#### Scenario: Other BMS temperature layouts
+
+- **WHEN** the data version is absent or unrecognized, or version 1 reports fewer than five temperature entries
+- **THEN** the temperature section numbers the sensor readings in source order and shows the separate IC, highest cell, and humidity sensor readings
 
 #### Scenario: Stale retained values
 

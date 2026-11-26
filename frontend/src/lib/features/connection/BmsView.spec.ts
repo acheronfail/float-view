@@ -39,6 +39,38 @@ const attached: BmsState = {
 };
 
 describe('BMS view', () => {
+  it('names version 1 temperatures and shows each reading once', () => {
+    const { body } = render(BmsView, {
+      props: {
+        units: 'metric',
+        bms: {
+          ...attached,
+          latestSnapshot: {
+            ...snapshot,
+            dataVersion: 1,
+            temperaturesC: [41, 26.4, 27.3, 30.5, -300, 26.8, 27.3, 26.8, 26.4],
+            icTemperatureC: 41,
+            highestCellTemperatureC: 27.3,
+            humiditySensorTemperatureC: 33.3,
+          },
+        },
+      },
+    });
+    const readings = [...body.matchAll(/aria-label="([^"]+) temperature"[^>]*aria-valuetext="([^"]+)"/g)];
+    expect(readings.map(([, label, value]) => [label, value])).toEqual([
+      ['Coldest cell probe', '26.4 °C'],
+      ['Hottest cell probe', '27.3 °C'],
+      ['Cell probe 1', '26.8 °C'],
+      ['Cell probe 2', '27.3 °C'],
+      ['Cell probe 3', '26.8 °C'],
+      ['Cell probe 4', '26.4 °C'],
+      ['BMS chip', '41.0 °C'],
+      ['BMS MOSFETs', '30.5 °C'],
+      ['Ambient', 'Unavailable'],
+      ['Humidity sensor', '33.3 °C'],
+    ]);
+  });
+
   it.each(['metric', 'imperial'] as const)('marks missing temperature sensors unavailable in %s units', (units) => {
     const { body } = render(BmsView, {
       props: {

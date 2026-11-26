@@ -62,7 +62,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
                 mode === 'fresh' || mode === 'stale'
                   ? {
                       observedAt: new Date(Date.now() - (mode === 'stale' ? 10_000 : 0)).toISOString(),
-                      temperaturesC: [43, 24.9, 26.1, 31.1, -300, 26.1, 24.9, 26.1, 25.8],
+                      temperaturesC: [43, 24.9, cellTemperature, 31.1, -300, cellTemperature, 24.9, 26.1, 25.8],
                       highestCellTemperatureC: cellTemperature,
                       highestCircuitryTemperatureC: 43,
                       cellVoltagesV: [3.8, 3.81],
@@ -186,7 +186,11 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await shortcut.tap();
       await dialog.waitFor();
       assert.equal(await dialog.count(), 1);
-      const missingSensor = dialog.getByRole('progressbar', { name: 'Sensor 5 temperature', exact: true });
+      const batteryReadings = dialog.getByRole('list', { name: 'Battery cells', exact: true });
+      const bmsReadings = dialog.getByRole('list', { name: 'BMS and environment', exact: true });
+      assert.equal(await batteryReadings.getByRole('progressbar').count(), 6);
+      assert.equal(await bmsReadings.getByRole('progressbar').count(), 4);
+      const missingSensor = bmsReadings.getByRole('progressbar', { name: 'Ambient temperature', exact: true });
       assert.equal(await missingSensor.getAttribute('aria-valuetext'), 'Unavailable');
       assert.equal(await missingSensor.getAttribute('aria-valuenow'), null);
       const missingCard = missingSensor.locator('xpath=ancestor::li');
@@ -194,10 +198,16 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       assert.equal(await missingCard.evaluate((el) => getComputedStyle(el).opacity), '0.5');
       assert.equal(await missingSensor.locator(':scope > div').evaluate((el) => el.getBoundingClientRect().width), 0);
       assert.equal(
-        await dialog
-          .getByRole('progressbar', { name: 'Sensor 1 temperature', exact: true })
+        await bmsReadings
+          .getByRole('progressbar', { name: 'BMS chip temperature', exact: true })
           .getAttribute('aria-valuenow'),
         '43'
+      );
+      assert.equal(
+        await batteryReadings
+          .getByRole('progressbar', { name: 'Hottest cell probe temperature', exact: true })
+          .getAttribute('aria-valuenow'),
+        '45'
       );
       await page.keyboard.press('Escape');
       await dialog.waitFor({ state: 'hidden' });

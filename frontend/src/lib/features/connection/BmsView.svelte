@@ -9,20 +9,50 @@
   let { bms, units }: { bms: BmsState; units: UnitPreference } = $props();
   let now = $state(Date.now());
   const snapshot = $derived(bms.latestSnapshot);
-  const temperatures = $derived(
-    snapshot
-      ? [
-          ...snapshot.temperaturesC.map((value, index) => ({ name: `Sensor ${index + 1}`, value })),
-          { name: 'IC', value: snapshot.icTemperatureC },
-          { name: 'Highest cell', value: snapshot.highestCellTemperatureC },
-          { name: 'Humidity sensor', value: snapshot.humiditySensorTemperatureC },
-        ].map((reading) => ({
-          ...reading,
-          // Missing BMS sensors report -300 °C; check before display-unit conversion.
-          value: reading.value === -300 || !Number.isFinite(reading.value) ? null : reading.value,
-        }))
-      : []
-  );
+  const temperatureGroups = $derived.by(() => {
+    if (!snapshot) return [];
+
+    const { temperaturesC, dataVersion, icTemperatureC, highestCellTemperatureC, humiditySensorTemperatureC } =
+      snapshot;
+    const humiditySensor = { name: 'Humidity sensor', value: humiditySensorTemperatureC };
+
+    // VBMS32 version 1 reports five fixed readings followed by the configured cell probes.
+    // https://github.com/vedderb/vesc_pkg/blob/main/vbms32/vbms32.lisp#L624-L639
+    if (dataVersion === 1 && temperaturesC.length >= 5) {
+      const [ic, coldestCell, hottestCell, mosfets, ambient, ...cellProbes] = temperaturesC;
+      return [
+        {
+          title: 'Battery cells',
+          readings: [
+            { name: 'Coldest cell probe', value: coldestCell },
+            { name: 'Hottest cell probe', value: hottestCell },
+            ...cellProbes.map((value, index) => ({ name: `Cell probe ${index + 1}`, value })),
+          ],
+        },
+        {
+          title: 'BMS and environment',
+          readings: [
+            { name: 'BMS chip', value: ic },
+            { name: 'BMS MOSFETs', value: mosfets },
+            { name: 'Ambient', value: ambient },
+            humiditySensor,
+          ],
+        },
+      ];
+    }
+
+    return [
+      {
+        title: null,
+        readings: [
+          ...temperaturesC.map((value, index) => ({ name: `Sensor ${index + 1}`, value })),
+          { name: 'IC', value: icTemperatureC },
+          { name: 'Highest cell', value: highestCellTemperatureC },
+          humiditySensor,
+        ],
+      },
+    ];
+  });
   const candidates = $derived(
     [...bms.candidates].sort((left, right) => {
       if (left.connection.kind === 'direct') return right.connection.kind === 'direct' ? 0 : -1;
@@ -126,28 +156,36 @@
     <section aria-labelledby="bms-temperature-title">
       <h3 id="bms-temperature-title" class="font-semibold">Temperatures</h3>
       <p class="mb-2 text-xs text-muted">Scale: {formatTemperatureC(0, units)}–{formatTemperatureC(100, units)}</p>
-      <ul class="grid grid-cols-2 gap-1 sm:grid-cols-3">
-        {#each temperatures as reading (reading.name)}
-          <li class="min-w-0 rounded border border-outline p-2" class:opacity-50={reading.value == null}>
-            <div class="mb-2 flex flex-wrap justify-between gap-x-2 gap-y-1 text-xs">
-              <span class="text-muted">{reading.name}:</span>
-              <span class="font-mono tabular-nums" class:text-muted={reading.value == null}
-                >{reading.value == null ? 'Unavailable' : formatTemperatureC(reading.value, units)}</span
-              >
-            </div>
-            <GaugeBar
-              value={reading.value == null ? null : Math.max(0, Math.min(100, reading.value))}
-              maximum={100}
-              ariaLabel={`${reading.name} temperature`}
-              ariaValueText={reading.value == null ? 'Unavailable' : formatTemperatureC(reading.value, units)}
-              showTicks={false}
-              heightClass="h-2"
-              fillClass="bg-linear-to-r from-green-600 to-[var(--temperature-color)]"
-              fillStyle={`--temperature-color: ${colorForTemperature(reading.value)}`}
-            />
-          </li>
+      <div class="space-y-3">
+        {#each temperatureGroups as { title, readings } (title)}
+          <div>
+            {#if title}<h4 class="mb-1 text-xs font-semibold">{title}</h4>{/if}
+            <ul class="grid grid-cols-2 gap-1 sm:grid-cols-3" aria-label={title ?? undefined}>
+              {#each readings as { name, value } (name)}
+                <!-- Missing BMS sensors report -300 °C. Check before converting units. -->
+                {@const unavailable = value === -300 || !Number.isFinite(value)}
+                {@const displayValue = unavailable ? 'Unavailable' : formatTemperatureC(value, units)}
+                <li class="min-w-0 rounded border border-outline p-2" class:opacity-50={unavailable}>
+                  <div class="mb-2 flex flex-wrap justify-between gap-x-2 gap-y-1 text-xs">
+                    <span class="text-muted">{name}:</span>
+                    <span class="font-mono tabular-nums" class:text-muted={unavailable}>{displayValue}</span>
+                  </div>
+                  <GaugeBar
+                    value={unavailable ? null : Math.max(0, Math.min(100, value))}
+                    maximum={100}
+                    ariaLabel={`${name} temperature`}
+                    ariaValueText={displayValue}
+                    showTicks={false}
+                    heightClass="h-2"
+                    fillClass="bg-linear-to-r from-green-600 to-[var(--temperature-color)]"
+                    fillStyle={`--temperature-color: ${colorForTemperature(unavailable ? null : value)}`}
+                  />
+                </li>
+              {/each}
+            </ul>
+          </div>
         {/each}
-      </ul>
+      </div>
     </section>
 
     <section aria-labelledby="bms-detail-title">
