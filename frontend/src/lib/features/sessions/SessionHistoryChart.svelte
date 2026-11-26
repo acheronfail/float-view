@@ -727,9 +727,11 @@
   }
 
   function tooltipStyle(pointX: number): string {
-    const percent = (Math.max(0, Math.min(CHART_WIDTH, pointX)) / CHART_WIDTH) * 100;
-    // Match the anchor fraction on both boxes so even wide tooltips stay inside the plot.
-    return `left: ${percent}%; transform: translateX(-${percent}%)`;
+    const ratio = Math.max(0, Math.min(1, pointX / CHART_WIDTH));
+    // Keep the crosshair and its dots clear, even when the tooltip needs to wrap.
+    const side = ratio <= 0.5 ? 'left' : 'right';
+    const inset = `calc(${Math.min(ratio, 1 - ratio) * 100}% + 0.75rem)`;
+    return `${side}: ${inset}; max-width: calc(100% - ${inset})`;
   }
 
   function elapsedLabel(elapsedMs: number): string {
@@ -898,9 +900,8 @@
             {@const yTickLabels = chartModel?.yTickLabels ?? []}
             {@const zero = chartModel?.zero ?? null}
             {@const tooltipEntries = inspectionVisible && domain ? chartTooltipEntries(chartGroup, domain) : []}
-            {@const tooltipAnchor = inspectionBreak
-              ? { x: inspectionBreak.ratio * CHART_WIDTH }
-              : (tooltipEntries[0]?.point ?? null)}
+            {@const tooltipX =
+              tooltipEntries[0]?.point.x ?? (inspectionBreak ? inspectionBreak.ratio * CHART_WIDTH : null)}
             {@const extrema = chartExtrema(chartGroup, result?.columns, hiddenFields, visibleViewport, chartIntervals)}
             <div class="nonselectable-surface">
               <SectionTitle title={chartGroup.title} detail={chartGroup.unit ?? 'value'} />
@@ -1157,32 +1158,29 @@
                         aria-hidden="true"
                       ></div>
                     {/if}
-                    {#if inspectionVisible && tooltipAnchor}
+                    {#if inspectionVisible && tooltipX !== null}
                       <div
-                        class="pointer-events-none absolute top-1 z-30 w-max max-w-full rounded border border-outline bg-surface px-2 py-1 font-mono text-[10px] leading-tight shadow"
-                        style={tooltipStyle(tooltipAnchor.x)}
+                        class="pointer-events-none absolute top-1 z-30 w-max rounded border border-outline bg-surface px-2 py-1 font-mono text-[10px] leading-tight wrap-anywhere shadow"
+                        style={tooltipStyle(tooltipX)}
                         role="status"
                       >
                         <p>{formatChartElapsedTime(inspectionMs)} into ride</p>
                         {#if inspectionBreak}<p>
                             {recordingBreakLabel(inspectionBreak.start, inspectionBreak.end)}
                           </p>{/if}
-                        <div class="grid grid-cols-[minmax(0,1fr)_max-content] gap-x-3 gap-y-0.5">
+                        <div class="space-y-0.5">
                           {#each tooltipEntries as entry (entry.field.name)}
-                            <span class="contents">
-                              <span
-                                class="min-w-0 text-left [overflow-wrap:anywhere]"
-                                style={`color: ${entry.field.color}`}
-                              >
+                            <div class="flex flex-wrap gap-x-2">
+                              <span class="min-w-0 text-left" style={`color: ${entry.field.color}`}>
                                 {entry.field.displayName}:
                               </span>
-                              <span class="text-right whitespace-nowrap" style={`color: ${entry.field.color}`}>
+                              <span class="ml-auto min-w-0 text-right" style={`color: ${entry.field.color}`}>
                                 {formatTooltipValue(entry.field.name, entry.point.value)}
                                 {#if sessionFieldUnit(entry.field.name) && entry.field.format !== 'percent'}
                                   {sessionFieldUnit(entry.field.name)}
                                 {/if}
                               </span>
-                            </span>
+                            </div>
                           {/each}
                         </div>
                       </div>

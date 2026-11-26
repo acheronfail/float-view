@@ -375,7 +375,7 @@ All loaded charts SHALL share one inclusive elapsed viewport bounded by the publ
 
 ### Requirement: Synchronous crosshair tooltip presentation
 
-Crosshair position SHALL map to elapsed time, and each loaded chart group SHALL derive its tooltip values synchronously from the loaded series at that position. One shared crosshair SHALL synchronize elapsed position across the charts without issuing an exact-value lookup request. Tooltips SHALL show the field label, formatted value, and unit, remain within the visible viewport, and not intercept plot pointers. Pointer leave SHALL dismiss the inspection, and newer series geometry SHALL keep the crosshair and tooltip position coherent.
+Crosshair position SHALL map to elapsed time, and each loaded chart group SHALL derive its tooltip values synchronously from the loaded series at that position. One shared crosshair SHALL synchronize elapsed position across the charts without issuing an exact-value lookup request. Tooltips SHALL show the field label, formatted value, and unit, remain within the visible viewport, keep the inspected field markers visible, and not intercept plot pointers. Pointer leave SHALL dismiss the inspection, and newer series geometry SHALL keep the crosshair and tooltip position coherent.
 
 #### Scenario: Shared chart inspection
 

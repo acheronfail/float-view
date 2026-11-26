@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { chromium, webkit } from 'playwright';
+import { chromium, webkit, type Locator } from 'playwright';
 import { startMockServer, stopMockServer, getMockBootstrap } from '../../frontend/backend-mock/index.ts';
 
 const html = await readFile(new URL('../../frontend/build/index.html', import.meta.url), 'utf8');
@@ -126,7 +126,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await stopMockServer();
     }
   });
-  test(`${name}: tooltips fit mobile charts and cover markers`, { timeout: 60_000 }, async () => {
+  test(`${name}: tooltips fit mobile charts and leave inspection dots visible`, { timeout: 60_000 }, async () => {
     const port = await startMockServer(11002, { safetyDisclaimerAccepted: true });
     const endpoint = getMockBootstrap(port);
     const browser = await engine.launch();
@@ -159,17 +159,17 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
             },
           ][]) {
             Object.assign(column, {
-              elapsedMs: [0, 60000],
-              sequence: [1, 2],
+              elapsedMs: [0, 29_400, 30_000, 30_600, 60_000],
+              sequence: [1, 2, 3, 4, 5],
               values:
                 field === 'dutyCycle'
-                  ? [-0.4, -0.4]
+                  ? [-0.4, -0.4, -0.4, -0.4, -0.4]
                   : field === 'motorLoad'
-                    ? [0.6, 0.6]
+                    ? [0.6, 0.8, 1, 0.91, 0.6]
                     : field === 'batteryLoad'
-                      ? [0.75, 0.75]
-                      : [123.45, 234.56],
-              generations: [0, 0],
+                      ? [0.75, 0.75, 0.75, 0.75, 0.75]
+                      : [123.45, 198.76, 211.23, 222.34, 234.56],
+              generations: [0, 0, 0, 0, 0],
             });
           }
         }
@@ -190,46 +190,66 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await page.goto(`${endpoint.origin}/#/sessions/session-1`);
       const chart = page.getByRole('img', { name: 'Current over elapsed time', exact: true });
       await chart.waitFor();
+      const load = page.getByRole('img', { name: 'Load over elapsed time', exact: true });
       await page.getByRole('button', { name: 'Show/hide the map', exact: true }).click();
+      await page.mouse.move(0, 0);
       const plot = chart.locator('..');
+      async function inspectAt(chart: Locator, ratio: number) {
+        const box = (await chart.boundingBox())!;
+        await chart.dispatchEvent('pointerleave');
+        await chart.dispatchEvent('pointermove', {
+          pointerType: 'mouse',
+          buttons: 0,
+          clientX: box.x + box.width * ratio,
+          clientY: box.y + 90,
+        });
+        const plot = chart.locator('..');
+        const tooltip = plot.getByRole('status');
+        await tooltip.waitFor();
+        await page.evaluate(
+          () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+        );
+        const { bounds, plotBounds, dots } = await tooltip.evaluate((node) => ({
+          bounds: node.getBoundingClientRect().toJSON() as DOMRect,
+          plotBounds: node.parentElement!.querySelector('svg')!.getBoundingClientRect().toJSON() as DOMRect,
+          dots: [...node.parentElement!.querySelectorAll('[data-history-point]')].map(
+            (dot) => dot.getBoundingClientRect().toJSON() as DOMRect
+          ),
+        }));
+        const location = `${await chart.getAttribute('aria-label')} at ${ratio}, ${page.viewportSize()!.width}px viewport`;
+        assert.ok(bounds.left >= plotBounds.left - 1 && bounds.right <= plotBounds.right + 1, location);
+        assert.ok(
+          bounds.top >= plotBounds.top && bounds.bottom <= plotBounds.bottom,
+          `${location}: tooltip ${JSON.stringify(bounds)}, plot ${JSON.stringify(plotBounds)}`
+        );
+        assert.equal(await tooltip.evaluate((node) => getComputedStyle(node).pointerEvents), 'none');
+        assert.ok(dots.length > 0, 'inspection highlights the chart lines');
+        for (const dot of dots) {
+          assert.ok(Math.abs(dot.width - dot.height) < 0.1, `highlight stays circular: ${location}`);
+          assert.equal(dot.width, 7, 'highlight size is independent of plot scaling');
+          assert.ok(
+            bounds.right <= dot.left - 6 || bounds.left >= dot.right + 6,
+            `tooltip leaves space around every inspection dot: ${location}`
+          );
+        }
+        assert.equal(await tooltip.evaluate((node) => node.scrollWidth <= node.clientWidth), true);
+        for (const value of await tooltip.locator('.text-right').all()) {
+          const valueBounds = (await value.boundingBox())!;
+          assert.ok(valueBounds.x >= bounds.x && valueBounds.x + valueBounds.width <= bounds.x + bounds.width);
+          assert.match(await value.innerText(), /\d/);
+        }
+        return tooltip;
+      }
+
       for (const width of [320, 390, 844]) {
         await page.setViewportSize({ width, height: 844 });
         // ResizeObserver reloads the chart series on the next animation frame.
         await page.waitForTimeout(250);
         await chart.scrollIntoViewIfNeeded();
-        for (const ratio of [0.01, 0.49, 0.51, 0.99]) {
-          const box = (await chart.boundingBox())!;
-          await chart.dispatchEvent('pointermove', {
-            pointerType: 'mouse',
-            buttons: 0,
-            clientX: box.x + box.width * ratio,
-            clientY: box.y + 90,
-          });
-          const tooltip = plot.getByRole('status');
-          await tooltip.waitFor();
-          await page.evaluate(
-            () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
-          );
-          const bounds = (await tooltip.boundingBox())!;
-          assert.ok(
-            bounds.x >= box.x - 1 && bounds.x + bounds.width <= box.x + box.width + 1,
-            `tooltip fits ${width}px at ${ratio}`
-          );
+        for (const ratio of [0.01, 0.4, 0.49, 0.51, 0.99]) {
+          const tooltip = await inspectAt(chart, ratio);
           assert.match(await tooltip.innerText(), /Motor current/);
-          const points = plot.locator('[data-history-point]');
-          assert.ok((await points.count()) > 0, 'inspection highlights the chart lines');
-          for (const point of await points.all()) {
-            const dot = (await point.boundingBox())!;
-            assert.ok(Math.abs(dot.width - dot.height) < 0.1, `highlight stays circular at ${width}px`);
-            assert.equal(dot.width, 7, 'highlight size is independent of plot scaling');
-          }
-          assert.equal(await tooltip.evaluate((node) => node.scrollWidth <= node.clientWidth), true);
-          for (const value of await tooltip.locator('.text-right').all()) {
-            const valueBounds = (await value.boundingBox())!;
-            assert.ok(valueBounds.x >= bounds.x && valueBounds.x + valueBounds.width <= bounds.x + bounds.width);
-            assert.match(await value.innerText(), /\d/);
-          }
-          if (ratio === 0.49) {
+          if (ratio === 0.4) {
             assert.equal(
               await tooltip.evaluate((node) => {
                 const markerBox = node.parentElement!.querySelector('button')!.getBoundingClientRect();
@@ -240,25 +260,17 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
                 return node.contains(hit);
               }),
               true,
-              'tooltip paints over the marker'
+              'tooltip paints over the ride marker when their bounds intersect'
             );
           }
         }
+        await load.scrollIntoViewIfNeeded();
+        await load.locator('path[stroke]').nth(2).waitFor({ state: 'attached' });
+        const loadTooltip = await inspectAt(load, 0.5);
+        assert.match(await loadTooltip.innerText(), /40%/);
+        assert.match(await loadTooltip.innerText(), /Motor load:\s+100%/);
+        assert.match(await loadTooltip.innerText(), /75%/);
       }
-      const load = page.getByRole('img', { name: 'Load over elapsed time', exact: true });
-      await load.scrollIntoViewIfNeeded();
-      await page.waitForFunction(
-        () =>
-          document.querySelector('svg[aria-label="Load over elapsed time"]')?.querySelectorAll('path[stroke]')
-            .length === 3
-      );
-      const loadBox = (await load.boundingBox())!;
-      await page.mouse.move(loadBox.x + loadBox.width * 0.3, loadBox.y + 50);
-      const loadTooltip = load.locator('..').getByRole('status');
-      await loadTooltip.waitFor();
-      assert.match(await loadTooltip.innerText(), /40%/);
-      assert.match(await loadTooltip.innerText(), /60%/);
-      assert.match(await loadTooltip.innerText(), /75%/);
       await chart.scrollIntoViewIfNeeded();
       // Real touch input exercises browser scrolling and pointer cancellation;
       // dispatchEvent alone cannot establish which recognizer owns the gesture.
