@@ -18,6 +18,7 @@ export const settingsCategories = [
     description: 'Reconnecting, Bluetooth and location access',
     icon: 'bluetooth',
   },
+  { slug: 'integrations', title: 'Integrations', description: 'Connect to Ride Hermes', icon: 'plug' },
   { slug: 'data', title: 'Data & backups', description: 'Export, import and CSV options', icon: 'archive' },
   {
     slug: 'help',

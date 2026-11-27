@@ -474,6 +474,21 @@ export class BackendState {
     });
   }
 
+  async hermesAccount(action: 'hermes.signIn' | 'hermes.disconnect') {
+    if (!this.client?.isOpen) throw new Error('Backend is not connected');
+    return this.client.request(action, {});
+  }
+
+  async hermesRide(sessionId: string) {
+    if (!this.client?.isOpen) throw new Error('Backend is not connected');
+    return this.client.request('hermes.ride', { sessionId });
+  }
+
+  async uploadHermesRide(sessionId: string, revision: number, generation: number, retry: boolean) {
+    if (!this.client?.isOpen) throw new Error('Backend is not connected');
+    return this.client.request('hermes.upload', { sessionId, revision, generation, retry }, 30_000);
+  }
+
   async openVoiceSettings() {
     if (!this.client?.isOpen) throw new Error('Backend is not connected');
     return this.client.request('announcements.openVoiceSettings', {}, 6_000);

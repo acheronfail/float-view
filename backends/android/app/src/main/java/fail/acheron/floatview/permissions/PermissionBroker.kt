@@ -22,6 +22,7 @@ class PermissionBroker(private val application: FloatViewApplication) : Bluetoot
     private var activity = WeakReference<Activity>(null)
     private val presentation = PermissionPresentation()
 
+    @Synchronized fun foregroundActivity(): Activity? = activity.get()
     @Synchronized fun attach(value: Activity) { activity = WeakReference(value) }
     @Synchronized fun detach(value: Activity) { if (activity.get() === value) activity.clear() }
     @Synchronized override fun wasResolved(permission: String) = preferences.getBoolean(permission, false)

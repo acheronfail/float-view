@@ -1160,7 +1160,23 @@ export const emptySpeedCalibration: SpeedCalibrationState = {
   applyBlockReason: 'notReady',
 };
 
+export interface HermesState {
+  status: 'unavailable' | 'loading' | 'signedOut' | 'signingIn' | 'linked';
+  account: string | null;
+  generation: number;
+  message: string | null;
+}
+
+export interface HermesRideStatus {
+  status: 'ready' | 'sending' | 'confirmed' | 'failed' | 'uncertain';
+  rideId: string | null;
+  revision: number;
+  generation: number;
+  reason: string | null;
+}
+
 export interface AppState {
+  hermes: HermesState;
   speedCalibration: SpeedCalibrationState;
   pausedRide: PausedRide | null;
   announcementAudio: AnnouncementAudio;
@@ -1392,6 +1408,13 @@ export interface BackendMethods {
     result: SavedDevice;
   };
   'savedDevice.delete': { params: { savedDeviceId: string }; result: Accepted };
+  'hermes.signIn': { params: Record<string, never>; result: { accepted: true } };
+  'hermes.disconnect': { params: Record<string, never>; result: { accepted: true } };
+  'hermes.ride': { params: { sessionId: string }; result: HermesRideStatus };
+  'hermes.upload': {
+    params: { sessionId: string; revision: number; generation: number; retry: boolean };
+    result: { accepted: true } | { accepted: false; reason: string };
+  };
   'announcements.openVoiceSettings': { params: Record<string, never>; result: { accepted: true } };
   /** Manual preview: requires a free speech slot, independent of the automatic repeat interval. */
   'announcements.test': {

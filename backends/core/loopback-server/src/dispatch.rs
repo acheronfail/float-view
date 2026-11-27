@@ -344,6 +344,57 @@ impl Backend {
                 p.only(&[])?;
                 return self.snapshot();
             }
+            "hermes.signIn" | "hermes.disconnect" => {
+                p.only(&[])?;
+                let mut service = self.service.lock().map_err(|_| Failure::Internal)?;
+                if method == "hermes.signIn" {
+                    service.hermes_sign_in()?;
+                } else {
+                    service.hermes_disconnect()?;
+                }
+                drop(service);
+                self.sync_service()?;
+                return Ok(json!({"accepted":true}));
+            }
+            "hermes.ride" => {
+                p.only(&["sessionId"])?;
+                return self
+                    .service
+                    .lock()
+                    .map_err(|_| Failure::Internal)?
+                    .hermes_ride(&p.text("sessionId")?);
+            }
+            "hermes.upload" => {
+                p.only(&["sessionId", "revision", "generation", "retry"])?;
+                let id = p.text("sessionId")?;
+                let revision = p.number("revision")?;
+                let generation = p.number("generation")?;
+                let retry = p.boolean("retry")?;
+                let _permit = self
+                    .history
+                    .try_acquire()
+                    .map_err(|_| Failure::Unavailable)?;
+                let (session, lease) = self
+                    .service
+                    .lock()
+                    .map_err(|_| Failure::Internal)?
+                    .hermes_source(&id, revision, generation)?;
+                let prepared = tokio::task::spawn_blocking(move || {
+                    float_view_backend_service::hermes::prepare_ride(session, lease)
+                })
+                .await
+                .map_err(|_| Failure::Internal)??;
+                let body = match prepared {
+                    Ok(body) => body,
+                    Err(reason) => return Ok(json!({"accepted":false,"reason":reason})),
+                };
+                self.service
+                    .lock()
+                    .map_err(|_| Failure::Internal)?
+                    .hermes_upload(&id, revision, generation, retry, body)?;
+                self.sync_service()?;
+                return Ok(json!({"accepted":true}));
+            }
             "refloat.configuration.draft.get" => {
                 p.only(&["deviceId"])?;
                 let service = self.service.lock().map_err(|_| Failure::Internal)?;

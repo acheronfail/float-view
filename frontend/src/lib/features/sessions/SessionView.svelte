@@ -16,6 +16,7 @@
   import { backendState } from '$lib/backend/state.svelte';
   import { formatDistanceM } from '$lib/features/measurements/format';
   import ConfirmDialog from '$lib/ui/ConfirmDialog.svelte';
+  import HermesUpload from './HermesUpload.svelte';
   import PruneDialog from './PruneDialog.svelte';
   import { hasCoarserPruneResolution } from './prune';
   import { sessionExportLabel } from './session-export';
@@ -90,6 +91,7 @@
     void refresher?.refresh();
   }
   let deleteConfirmationOpen = $state(false);
+  let hermesOpen = $state(false);
   let pruneOpen = $state(false);
   let deleting = $state(false);
   let endRideConfirmationOpen = $state(false);
@@ -295,6 +297,19 @@
                 disabled: !canExport,
                 onactivate: (closeMenu: () => void) => exportSession(closeMenu, 'csv'),
               },
+              ...(backendState.snapshot?.hermes?.status === 'linked'
+                ? [
+                    {
+                      ...sessionActions,
+                      label: 'Upload to Ride Hermes',
+                      disabled: !canExport,
+                      onactivate: (closeMenu: () => void) => {
+                        closeMenu();
+                        hermesOpen = true;
+                      },
+                    } satisfies AppHeaderAction,
+                  ]
+                : []),
               {
                 ...sessionActions,
                 label: 'Prune',
@@ -548,6 +563,19 @@
       >{/if}
   {/if}
 </section>
+
+{#if hermesOpen}
+  {#key sessionId}
+    <HermesUpload
+      {sessionId}
+      onclose={async () => {
+        hermesOpen = false;
+        await tick();
+        appHeader.focusMenu();
+      }}
+    />
+  {/key}
+{/if}
 
 <PruneDialog
   open={pruneOpen}

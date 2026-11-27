@@ -250,13 +250,18 @@ impl BackendService {
         ) {
             self.policy.exchange.admit()?;
         }
+        let first_fact = self.policy.exchange.sequence == 0;
         self.policy.exchange.sequence = envelope.sequence;
         self.policy.exchange.now = envelope.monotonic_ms;
         self.policy.exchange.epoch = envelope.epoch_ms;
+        if first_fact && !stopping_connection {
+            self.initialize_hermes()?;
+        }
         if !stopping_connection {
             self.expire_paused_ride()?;
             self.sync_ride_timer()?;
         }
+        self.expire_hermes()?;
         let now = envelope.monotonic_ms;
         let epoch = envelope.epoch_ms;
         self.diagnostics.generation = self.policy.active.as_ref().map_or(0, |a| a.generation);
@@ -395,6 +400,9 @@ impl BackendService {
         let first_discovery = matches!(envelope.fact, Fact::Discovered { .. })
             && self.policy.visible_devices.is_empty();
         match envelope.fact {
+            Fact::HermesCompleted { id, code, data } => {
+                self.complete_hermes(id, code, data.map(|v| v.0))?
+            }
             Fact::Permissions { observation } => {
                 if !observation.valid() {
                     return Err(Failure::InvalidRequest);

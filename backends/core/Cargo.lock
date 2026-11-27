@@ -310,6 +310,7 @@ version = "0.1.0"
 dependencies = [
  "float-view-application-runtime",
  "float-view-product-store",
+ "float-view-session-sqlite",
  "getrandom",
  "rusqlite",
  "serde",

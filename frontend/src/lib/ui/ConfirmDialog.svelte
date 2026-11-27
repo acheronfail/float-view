@@ -26,6 +26,7 @@
     oncancel,
     ondismiss = oncancel,
     dismissLabel = cancelLabel,
+    leading,
     children,
     contentLabel,
     returnFocus,
@@ -47,6 +48,7 @@
     /** Optional dismissal action when the secondary button has another purpose. */
     ondismiss?: Activation;
     dismissLabel?: string;
+    leading?: Snippet;
     children?: Snippet;
     /** Makes long confirmation content a labelled keyboard-scrollable region. */
     contentLabel?: string;
@@ -125,7 +127,14 @@
       aria-describedby={description ? `${titleId}-description` : undefined}
       class="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-sm flex-col rounded-2xl border border-outline bg-surface p-5 shadow-2xl"
     >
-      <h2 id={titleId} class="shrink-0 text-xl font-semibold break-words">{title}</h2>
+      {#if leading}
+        <div class="flex shrink-0 items-center gap-3">
+          {@render leading()}
+          <h2 id={titleId} class="min-w-0 text-xl leading-tight font-semibold break-words">{title}</h2>
+        </div>
+      {:else}
+        <h2 id={titleId} class="shrink-0 text-xl font-semibold break-words">{title}</h2>
+      {/if}
       <!-- Scrollable confirmation content needs keyboard access. -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div

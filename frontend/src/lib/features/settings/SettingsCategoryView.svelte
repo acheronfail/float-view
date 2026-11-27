@@ -4,6 +4,7 @@
   import RideRecording from './RideRecording.svelte';
   import Announcements from './Announcements.svelte';
   import ConnectionSettings from './ConnectionSettings.svelte';
+  import Integrations from './Integrations.svelte';
   import DataSettings from './DataSettings.svelte';
   import Diagnostics from './Diagnostics.svelte';
   import AboutSettings from './AboutSettings.svelte';
@@ -20,6 +21,7 @@
       {#if category === 'recording'}<RideRecording />
       {:else if category === 'announcements'}<Announcements />
       {:else if category === 'connection'}<ConnectionSettings />
+      {:else if category === 'integrations'}<Integrations />
       {:else if category === 'data'}<DataSettings />
       {:else if category === 'help'}<Diagnostics />
       {:else if category === 'about'}<AboutSettings />{/if}

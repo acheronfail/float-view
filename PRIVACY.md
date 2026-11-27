@@ -1,6 +1,6 @@
 # Float View privacy policy
 
-Updated 19 October 2026.
+Updated 27 November 2026.
 
 Float View is an open-source app maintained by acheronfail. It connects to your
 VESC devices, displays telemetry and optionally records rides and routes. There
@@ -56,6 +56,16 @@ its updates in that view; requests already started may still finish. Disabling
 location recording does not prevent maps of existing or imported routes from
 loading. Telemetry and route recording do not require tile downloads. Map imagery
 is best-effort and is not provided as an offline download service.
+
+## Ride Hermes
+
+The optional Ride Hermes integration sends your sign-in details directly to Ride
+Hermes when you sign in. Float View keeps the resulting token in protected device
+storage. When you confirm an upload, Float View sends the selected ride’s GPS
+route, timestamps, distance, board speed, altitude and GPS accuracy to Ride Hermes.
+Ride Hermes controls the uploaded copy, including its visibility and use in trail
+and leaderboard processing. Disconnecting removes the local sign-in. Manage
+rides already uploaded through Ride Hermes.
 
 ## Speech and platform services
 

@@ -50,9 +50,23 @@ pub enum LinkState {
     Disconnected,
     Failed,
 }
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(transparent)]
+pub struct PrivateText(pub String);
+impl std::fmt::Debug for PrivateText {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("[redacted]")
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(tag = "fact", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Fact {
+    HermesCompleted {
+        id: u64,
+        code: u16,
+        data: Option<PrivateText>,
+    },
     SpeechReady {
         state: crate::announcements::AudioState,
     },
@@ -157,9 +171,24 @@ pub struct Envelope {
     pub epoch_ms: i64,
     pub fact: Fact,
 }
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum HermesAction {
+    Read,
+    Prompt,
+    Store,
+    Clear,
+    Request,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(tag = "effect", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Effect {
+    Hermes {
+        id: u64,
+        action: HermesAction,
+        data: Option<PrivateText>,
+    },
     Speak {
         speech: crate::announcements::Speech,
     },
@@ -271,6 +300,12 @@ impl Default for Exchange {
     }
 }
 impl Exchange {
+    pub(super) fn cancel_hermes(&mut self, operation: u64) -> bool {
+        let size = self.queue.len();
+        self.queue
+            .retain(|e| !matches!(e, Effect::Hermes { id, .. } if *id == operation));
+        size != self.queue.len()
+    }
     pub fn cancel_speech(&mut self, id: u64) {
         self.queue
             .retain(|e| !matches!(e,Effect::Speak{speech} if speech.id==id));

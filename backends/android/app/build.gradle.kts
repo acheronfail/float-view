@@ -1,3 +1,5 @@
+import java.security.MessageDigest
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,6 +20,16 @@ val rustRuntimeInputs = files(
     },
     rustRuntimeHelper,
 )
+val hermesRegistrationFingerprint = providers.provider {
+    val values = listOf(
+        "FLOAT_VIEW_HERMES_ORGANIZATION",
+        "FLOAT_VIEW_HERMES_AUTH_API_KEY",
+        "FLOAT_VIEW_HERMES_RIDES_API_KEY",
+    ).map { providers.environmentVariable(it).orElse("").get() }
+    MessageDigest.getInstance("SHA-256")
+        .digest(values.joinToString("\u0000").toByteArray(Charsets.UTF_8))
+        .joinToString("") { "%02x".format(it) }
+}
 val rustRuntimeAndroidRoot = rustCoreDirectory.resolve("target/android/applicationRuntimeJniLibs")
 val rustRuntimeHostRoot = rustCoreDirectory.resolve("target/android/application-runtime-host/debug")
 val rustHostLibraryExtension =
@@ -38,6 +50,7 @@ fun registerAndroidRustRuntimeBuild(profile: String) = tasks.register<Exec>(
         rustRuntimeAndroidRoot.resolve(profile).absolutePath,
     )
     inputs.files(rustRuntimeInputs)
+    inputs.property("hermesRegistrationFingerprint", hermesRegistrationFingerprint)
     outputs.dir(rustRuntimeAndroidRoot.resolve(profile))
 }
 
@@ -54,6 +67,7 @@ val rustRuntimeHost = tasks.register<Exec>("buildAndroidRustRuntimeHost") {
         rustRuntimeHostRoot.absolutePath,
     )
     inputs.files(rustRuntimeInputs)
+    inputs.property("hermesRegistrationFingerprint", hermesRegistrationFingerprint)
     outputs.file(rustRuntimeHostLibrary)
 }
 

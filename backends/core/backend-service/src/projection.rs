@@ -289,6 +289,7 @@ impl BackendService {
                     resume_until: date(deadline),
                 })
             }),
+            hermes: self.hermes_state(),
             announcement_audio: self.policy.announcements.audio.clone(),
             battery_presets: store::battery_presets::PRESETS.clone(),
             battery_preset_catalog_version: store::battery_presets::CATALOG_VERSION.into(),

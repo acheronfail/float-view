@@ -311,6 +311,7 @@ export function detailedSeriesValues(overrides: Record<string, number>): Record<
 }
 
 export class MockBackend {
+  private hermesReceipts = new Map<string, string>();
   private exportProgress: SessionExportProgress | null = null;
   beginBoardExportProgress(operationId: string, savedDeviceId: string): boolean {
     const sessions = savedDeviceId === 'app' ? this.appSessionIds() : this.boardExportSessions(savedDeviceId);
@@ -437,6 +438,7 @@ export class MockBackend {
   private readonly tunes = new Map<string, RefloatTune>();
   private state: AppState = {
     speedCalibration: { ...emptySpeedCalibration, currentDiameterMm: 280 },
+    hermes: { status: 'signedOut', account: null, generation: 0, message: null },
     announcementAudio: { status: 'ready', reason: null, loweringControl: 'adjustable', voiceSettingsAvailable: false },
     revision: 0,
     bluetooth: {
@@ -1151,6 +1153,70 @@ export class MockBackend {
           },
           true
         );
+      }
+      case 'hermes.signIn':
+      case 'hermes.disconnect': {
+        if (Object.keys(params).length) return failure(id, 'invalid_request', 'Unexpected parameters');
+        const connect = request.method === 'hermes.signIn';
+        if (connect === (this.state.hermes.status === 'linked')) {
+          return failure(id, connect ? 'conflict' : 'invalid_state', 'Ride Hermes account changed');
+        }
+        this.change({
+          ...this.state,
+          hermes: {
+            status: connect ? 'linked' : 'signedOut',
+            account: connect ? 'Demo rider' : null,
+            generation: this.state.hermes.generation + 1,
+            message: null,
+          },
+        });
+        return success(id, { accepted: true });
+      }
+      case 'hermes.ride':
+      case 'hermes.upload': {
+        const upload = request.method === 'hermes.upload';
+        const keys = upload ? ['sessionId', 'revision', 'generation', 'retry'] : ['sessionId'];
+        if (
+          !string(params.sessionId) ||
+          Object.keys(params).length !== keys.length ||
+          Object.keys(params).some((key) => !keys.includes(key)) ||
+          (upload &&
+            (integer(params.revision) === null ||
+              integer(params.generation) === null ||
+              typeof params.retry !== 'boolean'))
+        )
+          return failure(id, 'invalid_request', 'Invalid Ride Hermes request');
+        if (this.state.hermes.status !== 'linked')
+          return failure(id, upload ? 'conflict' : 'invalid_state', 'Sign in to Ride Hermes first');
+        const found = this.findSession(params);
+        if (!found) return failure(id, 'not_found', 'Session was not found');
+        const metadata = sessionMetadata(found);
+        const rideId = this.hermesReceipts.get(found.sessionId) ?? null;
+        const reason =
+          found.state === 'active' || !found.endedAt
+            ? 'Finish this ride before uploading.'
+            : !metadata.location.available
+              ? 'This ride needs at least three recorded GPS points.'
+              : (found.distanceM ?? 0) < 100
+                ? 'This ride needs at least 100 metres of recorded distance.'
+                : null;
+        if (!upload)
+          return success(id, {
+            status: rideId ? 'confirmed' : 'ready',
+            rideId,
+            reason,
+            generation: this.state.hermes.generation,
+            revision: metadata.snapshot.historyRevision,
+          });
+        if (
+          rideId ||
+          params.generation !== this.state.hermes.generation ||
+          params.revision !== metadata.snapshot.historyRevision
+        )
+          return failure(id, 'conflict', 'Ride Hermes submission changed');
+        if (reason) return success(id, { accepted: false, reason });
+        this.hermesReceipts.set(found.sessionId, `demo-${found.sessionId}`);
+        return success(id, { accepted: true });
       }
       case 'announcements.openVoiceSettings': {
         if (Object.keys(params).length) return failure(id, 'invalid_request', 'Unexpected parameters');

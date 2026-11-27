@@ -34,6 +34,15 @@ The controller is at `http://127.0.0.1:11004`; see
 [fixture development](../conformance/fixture-dev/README.md).
 Fixture tooling needs PlatformIO Core, without a separate ESP-IDF installation.
 
+### Ride Hermes builds
+
+Native builds without a partner registration show Ride Hermes as unavailable.
+For an approved partner build, set `FLOAT_VIEW_HERMES_ORGANIZATION`,
+`FLOAT_VIEW_HERMES_AUTH_API_KEY`, and `FLOAT_VIEW_HERMES_RIDES_API_KEY` before
+rebuilding the native Rust bridge. Each defaults to
+`pending-hermes-registration`. These values ship in the app, so use only
+credentials Hermes approves for distribution in a public client.
+
 ## OpenSpec
 
 Use OpenSpec according to [AGENTS.md](../AGENTS.md#when-to-use-openspec). Run every

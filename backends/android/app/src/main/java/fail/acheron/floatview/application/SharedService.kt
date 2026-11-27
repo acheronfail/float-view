@@ -21,6 +21,7 @@ class SharedService(
     private val foregroundRequiredChanged: (Boolean) -> Unit,
     private val locationChanged: () -> Unit,
 ) : AutoCloseable {
+    private val hermes = HermesAdapter(context, permissions::foregroundActivity)
     private val speechDelegate = lazy {
         fail.acheron.floatview.speech.SpeechAdapter(context) { status, id, reason -> enqueue {
             if (status == "outcome") fact(json("fact" to "speech_finished", "id" to id, "outcome" to reason))
@@ -272,6 +273,14 @@ class SharedService(
             "speak" -> speech.speak(value.getJSONObject("speech"))
             "cancel_speech" -> speech.cancel(id)
             "refresh_speech" -> speech.refresh()
+            "hermes" -> {
+                val operationLifetime = lifetime
+                val data = if (value.isNull("data")) null else value.getString("data")
+                hermes.handle(value.getString("action"), data) { code, result -> enqueue {
+                    if (lifetime == operationLifetime)
+                        fact(json("fact" to "hermes_completed", "id" to id, "code" to code, "data" to result))
+                } }
+            }
             "open_voice_settings" -> {
                 val operationLifetime = lifetime
                 speech.openVoiceSettings(value.getLong("expires_at_ms")) { success -> enqueue {
@@ -297,6 +306,7 @@ class SharedService(
     override fun close() {
         if (closed) return
         executor.submit {
+            hermes.close()
             if (speechDelegate.isInitialized()) speech.close()
             location.stopUpdates(); bluetooth.stopDiscovery(); activeDevice?.let { bluetooth.disconnect(it, BluetoothConnection(lifetime, callbackGeneration)) }
             check(RustApplicationRuntime.serviceDestroy(handle) == 0)

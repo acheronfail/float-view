@@ -204,6 +204,7 @@ record!(PausedRide {
     resume_until: String
 });
 record!(Snapshot {
+    hermes: serde_json::Value,
     speed_calibration: crate::calibration::State,
     paused_ride: Option<PausedRide>,
     announcement_audio: crate::announcements::AudioState,

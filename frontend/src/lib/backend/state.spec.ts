@@ -22,6 +22,7 @@ const bluetooth = (scanPermission: BluetoothPermissionState): BluetoothState => 
 });
 
 const initial: AppState = {
+  hermes: { status: 'unavailable', account: null, generation: 0, message: null },
   speedCalibration: { ...emptySpeedCalibration, currentDiameterMm: 280 },
   permissions: permissionInventory('ios'),
   revision: 1,

@@ -313,6 +313,12 @@ export async function runConformance(target: Target) {
     );
     await exerciseDiagnostics(client);
     assertState(initial);
+    if (initial.hermes.status === 'unavailable') {
+      await expectError(client.request('hermes.signIn', {}), 'unavailable');
+    }
+    if (initial.hermes.status !== 'linked') {
+      await expectError(client.request('hermes.ride', { sessionId: 'hermes-unlinked' }), 'invalid_state');
+    }
     await expectError(
       client.request('settings.update', {
         expectedRevision: initial.settings.revision,
@@ -1829,6 +1835,8 @@ export function assertState(state: AppState) {
     assert.notEqual(calibration.recommendedDiameterMm, null);
   }
 
+  assert.deepEqual(Object.keys(state.hermes).sort(), ['account', 'generation', 'message', 'status']);
+  assert.ok(['unavailable', 'loading', 'signedOut', 'signingIn', 'linked'].includes(state.hermes.status));
   assert.ok(['initializing', 'ready', 'unavailable'].includes(state.announcementAudio.status));
   assert.ok(['adjustable', 'automatic'].includes(state.announcementAudio.loweringControl));
   assert.equal(typeof state.announcementAudio.voiceSettingsAvailable, 'boolean');
@@ -2287,6 +2295,10 @@ export const mandatoryMethods: BackendMethod[] = [
   'settings.update',
   'announcements.test',
   'announcements.openVoiceSettings',
+  'hermes.signIn',
+  'hermes.disconnect',
+  'hermes.ride',
+  'hermes.upload',
   'boardProfile.get',
   'boardProfile.update',
   'session.list',

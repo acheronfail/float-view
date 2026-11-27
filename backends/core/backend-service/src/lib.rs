@@ -13,6 +13,7 @@ pub mod calibration;
 pub mod diagnostics;
 mod dispatch;
 pub mod facts;
+pub mod hermes;
 pub mod live_activity;
 pub mod os;
 pub mod permissions;
@@ -34,6 +35,7 @@ pub use files::{
 /// One store and one runtime. Listener handles must borrow this owner, never
 /// construct another runtime. OS exchange and command admission live here.
 pub struct BackendService {
+    hermes: hermes::Hermes,
     calibration: calibration::Calibration,
     diagnostics: diagnostics::Diagnostics,
     runtime: ApplicationRuntime,
@@ -53,6 +55,7 @@ impl BackendService {
         // recreation borrows this owner and must not clear these checkpoints.
         store.clear_refloat_editor_drafts()?;
         let mut service = Self {
+            hermes: hermes::Hermes::new(root.with_extension("hermes.sqlite")),
             calibration: calibration::Calibration::default(),
             diagnostics: diagnostics::Diagnostics::open(&match root
                 .file_name()

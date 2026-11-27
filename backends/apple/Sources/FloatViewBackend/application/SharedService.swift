@@ -39,6 +39,7 @@ public final class SharedService: @unchecked Sendable {
   private var presenter: (@Sendable (NativeFilePresentation) -> Bool)?
   private var themeHandler: (@Sendable (ThemePreference) -> Void)?
   private var liveActivityHandler: (@Sendable (LiveActivityState?) -> Void)?
+  private let hermes = HermesAdapter()
   private let speech = SpeechAdapter()
   private var stopped = false
   private var bluetoothPermissionCompletion: (UInt64, UInt64)?
@@ -355,6 +356,15 @@ public final class SharedService: @unchecked Sendable {
         operation: number("operation"),
         response: value["mode"] as? String == "with_response"
       )
+    case "hermes":
+      guard let action = value["action"] as? String else { return }
+      let operationLifetime = lifetime
+      hermes.handle(action, data: value["data"] as? String) { [weak self] code, data in
+        self?.enqueue { service in
+          guard operationLifetime == service.lifetime else { return }
+          service.fact(["fact": "hermes_completed", "id": id, "code": code, "data": data as Any? ?? NSNull()])
+        }
+      }
     case "open_voice_settings":
       fact(["fact": "voice_settings_opened", "id": id, "success": false])
     case "refresh_speech": speech.refresh()
