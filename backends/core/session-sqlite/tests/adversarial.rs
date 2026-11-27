@@ -228,6 +228,7 @@ fn location(
         latitude,
         longitude,
         accuracy_m,
+        altitude_m: None,
     }
 }
 

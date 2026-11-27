@@ -350,6 +350,8 @@ export interface LiveLocation {
   latitude: number;
   longitude: number;
   accuracyM: number | null;
+  /** Height in metres above the WGS84 ellipsoid. */
+  altitudeM: number | null;
   observedAt: string;
 }
 
@@ -845,6 +847,8 @@ export interface SessionLocationPoint {
   latitude: number;
   longitude: number;
   accuracyM: number | null;
+  /** Height in metres above the WGS84 ellipsoid. */
+  altitudeM: number | null;
   observedAt: string;
 }
 
@@ -979,6 +983,7 @@ export const liveWidgetFields = [
   'maxSpeedKph',
   'distanceM',
   'odometerM',
+  'altitudeM',
   'elapsedMs',
   'erpm',
   'controllerTempC',

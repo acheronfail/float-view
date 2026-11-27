@@ -191,7 +191,7 @@ fn unknown_future_or_malformed_markers_preserve_every_file() {
         b"16",
         b"27",
         b"99",
-        b"102",
+        b"999999",
         b"garbage",
         b"100\nx",
         &[255],
@@ -1130,12 +1130,12 @@ fn live_widget_slots_are_validated_and_persisted() {
     let updated = store
         .update_settings(
             0,
-            r#"{"liveWidgetSlots":["maxSpeedKph","headlights","leds","powerW","powerW"]}"#,
+            r#"{"liveWidgetSlots":["maxSpeedKph","headlights","leds","altitudeM","powerW"]}"#,
         )
         .unwrap();
     assert_eq!(
         updated.live_widget_slots,
-        ["maxSpeedKph", "headlights", "leds", "powerW", "powerW"]
+        ["maxSpeedKph", "headlights", "leds", "altitudeM", "powerW"]
     );
     assert!(matches!(
         store.update_settings(
@@ -1551,12 +1551,14 @@ fn committed_baseline_upgrade_retries_marker_publication_without_data_loss() {
         .unwrap();
     drop(store);
     // The catalog transaction committed, then the process stopped before marker rename.
-    fs::write(root.0.join(".schema-version"), "100").unwrap();
-    assert_eq!(root.open().settings().unwrap(), settings);
-    assert_eq!(
-        fs::read_to_string(root.0.join(".schema-version")).unwrap(),
-        float_view_product_store::STORAGE_VERSION
-    );
+    for previous in ["100", "101"] {
+        fs::write(root.0.join(".schema-version"), previous).unwrap();
+        assert_eq!(root.open().settings().unwrap(), settings);
+        assert_eq!(
+            fs::read_to_string(root.0.join(".schema-version")).unwrap(),
+            float_view_product_store::STORAGE_VERSION
+        );
+    }
 }
 
 #[test]

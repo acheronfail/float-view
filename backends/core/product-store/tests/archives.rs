@@ -104,6 +104,7 @@ fn setup() -> (TestDirectory, ProductStore, String) {
             latitude: 1.,
             longitude: 2.,
             accuracy_m: Some(3.),
+            altitude_m: Some(-8.),
         },
         LocationObservation {
             observed_at_epoch_ms: 1_002_000,
@@ -111,6 +112,7 @@ fn setup() -> (TestDirectory, ProductStore, String) {
             latitude: 4.,
             longitude: 5.,
             accuracy_m: Some(6.),
+            altitude_m: Some(f64::INFINITY),
         },
     ])
     .unwrap();
@@ -136,6 +138,18 @@ fn sink(store: &ProductStore, path: &std::path::Path) -> ImportSink {
     sink
 }
 
+fn location_altitudes(store: &ProductStore, id: &str) -> Vec<Option<f64>> {
+    let mut reader = SessionReader::open(store.session_path(id).unwrap()).unwrap();
+    let boundary = reader.marker().unwrap();
+    reader
+        .location_page(0, 30_000, 100, None, (&boundary).into())
+        .unwrap()
+        .rows
+        .into_iter()
+        .map(|row| row.altitude_m)
+        .collect()
+}
+
 #[test]
 fn frozen_public_baseline_archive_imports_without_changing_settings() {
     let root = TestDirectory::new();
@@ -154,6 +168,7 @@ fn frozen_public_baseline_archive_imports_without_changing_settings() {
         SessionReader::open(store.session_path(&imported.session_id).unwrap()).unwrap();
     let boundary = reader.marker().unwrap();
     assert_eq!(boundary.recorded_location_count, 1);
+    assert_eq!(location_altitudes(&store, &imported.session_id), [None]);
     assert_eq!(reader.ride_markers((&boundary).into()).unwrap().len(), 1);
     assert!(
         reader
@@ -186,6 +201,15 @@ fn archive_roundtrip_preserves_portable_recording_identity() {
         .run(&cancel)
         .unwrap();
     let db = Connection::open(export.path()).unwrap();
+    assert_eq!(
+        db.query_row(
+            "SELECT value FROM float_view_archive_metadata WHERE key='format_version'",
+            [],
+            |r| r.get::<_, String>(0)
+        )
+        .unwrap(),
+        "5"
+    );
     let manifest: String = db
         .query_row(
             "SELECT value FROM float_view_archive_metadata WHERE key='session'",
@@ -203,6 +227,7 @@ fn archive_roundtrip_preserves_portable_recording_identity() {
     let session = imported.attach_import(value).unwrap();
     assert_eq!(imported.settings().unwrap(), settings_before);
     assert_eq!(session.session_id, id);
+    assert_eq!(location_altitudes(&imported, &id), [Some(-8.), None]);
     let db = Connection::open(imported.session_path(&session.session_id).unwrap()).unwrap();
     assert_eq!(
         db.query_row("SELECT record_json FROM session_diagnostic", [], |r| r
@@ -447,6 +472,7 @@ fn malformed_schema_metadata_and_attachment_failure_leave_no_catalog_changes() {
         "CREATE TRIGGER hostile AFTER INSERT ON sample BEGIN DELETE FROM sample; END",
         "UPDATE float_view_archive_metadata SET value='{}' WHERE key='session'",
         "UPDATE float_view_archive_metadata SET value='99' WHERE key='format_version'",
+        "UPDATE float_view_archive_metadata SET value='4' WHERE key='format_version'",
         "UPDATE float_view_archive_metadata SET value=json_set(value,'$.boardProfileSnapshot.batteryCellProfileId','unknown') WHERE key='session'",
         "UPDATE float_view_archive_metadata SET value=json_set(value,'$.boardProfileSnapshot.batteryMinimumCellVoltageV',4.2) WHERE key='session'",
     ] {
@@ -581,6 +607,7 @@ fn pruned_archives_preserve_recorded_location_boundary_after_rows_are_removed() 
             latitude: 7.,
             longitude: 8.,
             accuracy_m: None,
+            altitude_m: None,
         }])
         .unwrap();
     writer.close().unwrap();
@@ -636,6 +663,7 @@ fn idle_marker_only_session_survives_recovery_and_archive_roundtrip() {
             latitude: 2.,
             longitude: 3.,
             accuracy_m: Some(4.),
+            altitude_m: None,
         }])
         .unwrap();
     let (marker, _) = writer
@@ -1245,6 +1273,7 @@ fn app_transfer_merges_empty_boards_current_profiles_settings_and_stable_session
         9.9
     );
     assert_eq!(destination.session(&id).unwrap().session_id, id);
+    assert_eq!(location_altitudes(&destination, &id), [Some(-8.), None]);
     let settings = destination.settings().unwrap();
     assert_eq!(settings.unit_preference, "imperial");
     assert!(settings.safety_disclaimer_accepted);

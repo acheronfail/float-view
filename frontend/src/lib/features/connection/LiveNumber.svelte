@@ -2,7 +2,14 @@
   import './widget-title.css';
   import { prefersReducedMotion, Tween } from 'svelte/motion';
   import type { BmsState, LiveSample, LiveWidgetField, UnitPreference } from '$lib/backend/contract';
-  import { liveValue, liveValueColor, liveValueText, liveValueStatus, liveValueCatalog } from './live-values';
+  import {
+    liveValue,
+    liveValueColor,
+    liveValueText,
+    liveValueStatus,
+    liveValueCatalog,
+    type LocationElevation,
+  } from './live-values';
 
   let {
     field,
@@ -12,6 +19,7 @@
 
     bms,
     nowMs,
+    location,
     prominent = false,
     compact = false,
     inheritColor = false,
@@ -23,11 +31,22 @@
 
     bms?: BmsState | null;
     nowMs?: number;
+    location?: LocationElevation | null;
     prominent?: boolean;
     compact?: boolean;
     inheritColor?: boolean;
   } = $props();
-  const reading = $derived(liveValue(field, sample, units, estimatedLevel, bms, Math.max(nowMs ?? 0, Date.now())));
+  const reading = $derived(
+    liveValue(
+      field,
+      sample,
+      units,
+      estimatedLevel,
+      bms,
+      field === 'altitudeM' ? nowMs : Math.max(nowMs ?? 0, Date.now()),
+      location
+    )
+  );
   const animated = new Tween(0);
   // These cumulative readings arrive about once a second. Spread their changes
   // across that interval; instantaneous readings retain the short transition.
@@ -40,6 +59,7 @@
       'ampHoursChargedAh',
       'ampHoursNetAh',
       'odometerM',
+      'altitudeM',
     ].includes(field)
   );
   let previousIdentity: string | undefined;

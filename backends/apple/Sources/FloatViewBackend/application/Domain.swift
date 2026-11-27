@@ -90,6 +90,7 @@ public struct LocationProviderObservation: Sendable, Codable, Equatable {
   public let latitude: Double
   public let longitude: Double
   public let accuracyM: Double?
+  public let altitudeM: Double?
   public let speedMps: Double?
   public let speedAccuracyMps: Double?
   public let speedAgeMs: UInt64?
@@ -99,6 +100,7 @@ public struct LocationProviderObservation: Sendable, Codable, Equatable {
     latitude: Double,
     longitude: Double,
     accuracyM: Double?,
+    altitudeM: Double? = nil,
     speedMps: Double? = nil,
     speedAccuracyMps: Double? = nil,
     speedAgeMs: UInt64? = nil
@@ -107,6 +109,7 @@ public struct LocationProviderObservation: Sendable, Codable, Equatable {
     self.latitude = latitude
     self.longitude = longitude
     self.accuracyM = accuracyM
+    self.altitudeM = altitudeM
     self.speedMps = speedMps
     self.speedAccuracyMps = speedAccuracyMps
     self.speedAgeMs = speedAgeMs

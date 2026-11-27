@@ -40,6 +40,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         latitude: 2.,
         longitude: 3.,
         accuracy_m: Some(4.),
+        altitude_m: None,
     }])?;
     writer.append_ride_marker("00000000-0000-4000-8000-000000000001", 500, 501, true)?;
     writer.close()?;

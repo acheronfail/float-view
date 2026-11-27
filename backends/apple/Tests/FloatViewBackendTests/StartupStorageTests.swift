@@ -11,19 +11,20 @@ struct StartupStorageTests {
     defer { try? FileManager.default.removeItem(at: root) }
     let marker = root.appendingPathComponent(".schema-version")
     let catalog = root.appendingPathComponent("catalog.sqlite")
-    try Data("102".utf8).write(to: marker)
+    let unsupported = Data("999999".utf8)
+    try unsupported.write(to: marker)
     try Data("private data".utf8).write(to: catalog)
     #expect(throws: (any Error).self) {
       try SharedService(root: root, bluetooth: InactiveBluetooth(), location: InactiveLocation())
     }
-    #expect(try Data(contentsOf: marker) == Data("102".utf8))
+    #expect(try Data(contentsOf: marker) == unsupported)
     #expect(try Data(contentsOf: catalog) == Data("private data".utf8))
     #expect(try FileManager.default.contentsOfDirectory(atPath: root.path).count == 2)
     // The test restores a recognised disposable version; product UI offers no reset.
     try Data("26".utf8).write(to: marker)
     let service = try SharedService(root: root, bluetooth: InactiveBluetooth(), location: InactiveLocation())
     service.shutdown()
-    #expect(try String(contentsOf: marker, encoding: .utf8) == "101")
+    #expect(try String(contentsOf: marker, encoding: .utf8) == "102")
     let retry = try SharedService(root: root, bluetooth: InactiveBluetooth(), location: InactiveLocation())
     retry.shutdown()
   }

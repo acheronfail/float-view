@@ -47,7 +47,7 @@ The private diagnostic root is beside product storage: Apple
 `Application Support/FloatView/Diagnostics`, Android
 `files/float-view/diagnostics`. Test roots use a unique `.diagnostics` sibling.
 Version 1 diagnostic files are independent of product baseline 100 and recording
-archive format 4. Unknown versions, malformed committed files and unexpected
+portable archive versions. Unknown versions, malformed committed files and unexpected
 layouts remain untouched and make diagnostic storage unavailable. A torn final
 journal append is reported as incomplete; earlier valid data is preserved.
 

@@ -475,6 +475,7 @@ function mockSessionDataResult(request: SessionDataRequest): Record<string, unkn
         latitude: -33.8688,
         longitude: 151.2093,
         accuracyM: 4.5,
+        altitudeM: 24,
         observedAt: '2026-01-01T00:00:10.000Z',
       },
       {
@@ -483,6 +484,7 @@ function mockSessionDataResult(request: SessionDataRequest): Record<string, unkn
         latitude: -33.869,
         longitude: 151.2098,
         accuracyM: null,
+        altitudeM: 28,
         observedAt: '2026-01-01T00:00:20.000Z',
       },
       {
@@ -491,6 +493,7 @@ function mockSessionDataResult(request: SessionDataRequest): Record<string, unkn
         latitude: -33.87,
         longitude: 151.2105,
         accuracyM: 12,
+        altitudeM: -3,
         observedAt: '2026-01-01T00:00:50.000Z',
       },
     ].filter(

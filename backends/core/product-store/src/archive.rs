@@ -3,7 +3,9 @@ use crate::{
     Error, FileCancellation, ImportSink, ProductStore, Result, Session, SessionLease, StagedFile,
     boards, identifier, json, limits, root,
 };
-use float_view_session_sqlite::{CommitMarker, SESSION_SCHEMA, SessionReader};
+use float_view_session_sqlite::{
+    CommitMarker, LOCATION_ALTITUDE_SCHEMA, SESSION_SCHEMA, SessionReader, has_location_altitude,
+};
 use rusqlite::{
     Connection, OpenFlags,
     backup::{Backup, StepResult},
@@ -22,7 +24,9 @@ pub use app_transfer::{AppImport, AppImportSummary};
 
 const META: &str =
     "CREATE TABLE float_view_archive_metadata(key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)";
-const ARCHIVE_FORMAT_VERSION: &str = "4";
+fn archive_format_version(has_altitude: bool) -> &'static str {
+    if has_altitude { "5" } else { "4" }
+}
 const MAX_MANIFEST: usize = 65_536;
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -119,7 +123,8 @@ impl ImportSink {
         let stage = self.finish()?;
         cancel.check()?;
         let db = open(&stage, cancel)?;
-        validate_schema(&db, true)?;
+        let has_altitude = has_location_altitude(&db)?;
+        validate_schema(&db, has_altitude)?;
         let version:String=db.query_row("SELECT value FROM float_view_archive_metadata WHERE key='format_version' AND length(value)=1",[],|r|r.get(0))?;
         let text:String=db.query_row("SELECT value FROM float_view_archive_metadata WHERE key='session' AND length(CAST(value AS BLOB))<=?",[MAX_MANIFEST],|r|r.get(0))?;
         let count: usize = db.query_row(
@@ -127,7 +132,7 @@ impl ImportSink {
             [],
             |r| r.get(0),
         )?;
-        if version != ARCHIVE_FORMAT_VERSION || count != 2 {
+        if version != archive_format_version(has_altitude) || count != 2 {
             return Err(Error::InvalidInput);
         }
         let manifest: Manifest = serde_json::from_str(&text).map_err(|_| Error::InvalidInput)?;
@@ -230,7 +235,8 @@ impl ArchiveExport {
                     }
                 }
                 dest.execute_batch(META)?;
-                dest.execute("INSERT INTO float_view_archive_metadata(key,value) VALUES ('format_version',?),('session',?)",params![ARCHIVE_FORMAT_VERSION,json(&session.manifest,MAX_MANIFEST)?])?;
+                let version = archive_format_version(has_location_altitude(&dest)?);
+                dest.execute("INSERT INTO float_view_archive_metadata(key,value) VALUES ('format_version',?),('session',?)",params![version,json(&session.manifest,MAX_MANIFEST)?])?;
                 dest.execute_batch("PRAGMA wal_checkpoint(TRUNCATE)")?;
                 dest.close().map_err(|(_, e)| Error::from(e))?;
             }
@@ -606,15 +612,16 @@ fn open(stage: &StagedFile, cancel: &FileCancellation) -> Result<Connection> {
     configure(&db, cancel)?;
     Ok(db)
 }
-fn validate_schema(db: &Connection, archive: bool) -> Result<()> {
+fn validate_schema(db: &Connection, has_altitude: bool) -> Result<()> {
     if db.query_row("PRAGMA quick_check(1)", [], |r| r.get::<_, String>(0))? != "ok" {
         return Err(Error::Corrupt);
     }
     let expected = Connection::open_in_memory()?;
     expected.execute_batch(SESSION_SCHEMA)?;
-    if archive {
-        expected.execute_batch(META)?;
+    if has_altitude {
+        expected.execute_batch(LOCATION_ALTITUDE_SCHEMA)?;
     }
+    expected.execute_batch(META)?;
     fn schema(db: &Connection) -> Result<Vec<(String, String, String)>> {
         let mut s=db.prepare("SELECT type,name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type,name LIMIT 65")?;
         let mut rows = s.query([])?;

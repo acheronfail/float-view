@@ -494,6 +494,7 @@ describe('deterministic mock backend', () => {
             latitude: number;
             longitude: number;
             accuracyM: number | null;
+            altitudeM: number | null;
             observedAt: string;
           };
         };
@@ -516,6 +517,7 @@ describe('deterministic mock backend', () => {
       latitude: -33.8688,
       longitude: 151.2093,
       accuracyM: 12,
+      altitudeM: null,
       observedAt: expect.any(String),
     });
     expect(events.at(-1)?.data.activeConnection).toMatchObject({

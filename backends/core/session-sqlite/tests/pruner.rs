@@ -53,6 +53,7 @@ fn dense_database(directory: &TestDirectory, name: &str) -> std::path::PathBuf {
                 latitude: 1.0,
                 longitude: 2.0,
                 accuracy_m: Some(3.0),
+                altitude_m: None,
             },
             LocationObservation {
                 observed_at_epoch_ms: 30_000,
@@ -60,6 +61,7 @@ fn dense_database(directory: &TestDirectory, name: &str) -> std::path::PathBuf {
                 latitude: 2.0,
                 longitude: 3.0,
                 accuracy_m: None,
+                altitude_m: None,
             },
         ])
         .expect("append fixture locations");

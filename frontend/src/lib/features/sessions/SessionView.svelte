@@ -487,6 +487,7 @@
       <div class="mt-3">
         <SessionHistory
           {smoothCharts}
+          locationTrack={track}
           metadata={backendState.sessionMetadata}
           {markers}
           {firmwareFaults}

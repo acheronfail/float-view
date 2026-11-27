@@ -2,7 +2,7 @@ import type { DashboardReading, DashboardWidget } from '$lib/backend/contract';
 import { liveValueCatalog } from './live-values';
 
 export const readingCategories: { name: string; fields: DashboardReading[] }[] = [
-  { name: 'Motion', fields: ['speedKph', 'maxSpeedKph', 'distanceM', 'odometerM', 'elapsedMs', 'erpm'] },
+  { name: 'Motion', fields: ['speedKph', 'maxSpeedKph', 'distanceM', 'odometerM', 'altitudeM', 'elapsedMs', 'erpm'] },
   {
     name: 'Battery',
     fields: [

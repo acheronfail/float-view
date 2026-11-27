@@ -122,7 +122,7 @@ fn inspect_storage(root: &Path) -> Result<StorageAction> {
     }
     let text = read_marker(&marker)?;
     match text.as_deref().map(str::trim) {
-        Some(STORAGE_VERSION | "100") => {
+        Some(STORAGE_VERSION | "101" | "100") => {
             // A missing catalog beside recordings is corruption, not a new root.
             if !root.join("catalog.sqlite").try_exists()? && !initialization_only(root, true)? {
                 return Err(Error::Corrupt);
@@ -350,7 +350,7 @@ pub(crate) fn owned_session_temporary(name: &str) -> bool {
         && sequence.bytes().all(|b| b.is_ascii_digit())
 }
 
-/// The sole published transition: additive catalog ownership, followed by marker publication.
+/// Baseline 100 adds catalog ownership before marker publication.
 /// An interrupted marker publication accepts only the exact committed new schema.
 pub(crate) fn upgrade_baseline(root: &Path, catalog: &Connection, fresh: bool) -> Result<()> {
     if read_marker(&root.join(".schema-version"))?
@@ -376,5 +376,17 @@ pub(crate) fn upgrade_baseline(root: &Path, catalog: &Connection, fresh: bool) -
         }
         catalog.execute_batch("COMMIT")?;
     }
-    write_marker(root)
+    Ok(())
+}
+
+pub(crate) fn publish_altitude_storage_version(root: &Path) -> Result<()> {
+    if matches!(
+        read_marker(&root.join(".schema-version"))?
+            .as_deref()
+            .map(str::trim),
+        Some("100" | "101")
+    ) {
+        write_marker(root)?;
+    }
+    Ok(())
 }

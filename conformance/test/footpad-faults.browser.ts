@@ -44,6 +44,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
             latitude: -33.8 + i * 0.001,
             longitude: 151.2 + i * 0.001,
             accuracyM: 5,
+            altitudeM: null,
             observedAt: '2026-01-01T00:00:00Z',
           }));
           value.gaps = [];

@@ -6,13 +6,14 @@
   import { chartMarkerGroups } from './marker-groups';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-  import type { SessionMetadata, SessionRideMarker } from '$lib/backend/contract';
+  import type { SessionLocationPoint, SessionMetadata, SessionRideMarker } from '$lib/backend/contract';
   import type { SessionReviewController } from '$lib/backend/session-controller';
   import type { SessionSeriesResult } from '$lib/backend/session-data';
   import { backendState } from '$lib/backend/state.svelte';
   import { reportFrontendPerformance } from '$lib/backend/performance-log';
   import { activateFromKeyboardOrAssistiveClick, activateFromPointer } from '$lib/ui/activation';
-  import { axisTicks, zeroReference, type NumericDomain } from './history-geometry';
+  import { axisTicks, formatAxisTick, zeroReference, type NumericDomain } from './history-geometry';
+  import { elevationPath, elevationY, inspectElevation, visibleElevation } from './elevation-history';
   import { historyTrend } from './history-trend';
   import { ENERGY_COUNTERS, loadSessionEnergy } from './session-energy';
   import { sessionSeriesGroups } from './session-series-groups';
@@ -51,6 +52,7 @@
     filterError = null,
     ondataerror = () => {},
     initialViewport = null,
+    locationTrack = null,
   }: {
     smoothCharts?: boolean;
     following?: boolean;
@@ -69,6 +71,7 @@
     filterError?: string | null;
     ondataerror?: (reason: unknown) => void;
     initialViewport?: Viewport | null;
+    locationTrack?: SessionLocationPoint[][] | null;
   } = $props();
   let plot = $state<HTMLElement | null>(null);
   let width = $state(0);
@@ -125,6 +128,21 @@
   const chartGroups = $derived(sessionChartGroups(fields));
   const visibleViewport = $derived(previewViewport ?? viewport);
   const axis = $derived(recordingTimeline(visibleViewport, metadata.recordingBreaks, chartIntervals));
+  const hasElevation = $derived(
+    locationTrack?.some((segment) => segment.some((point) => point.altitudeM !== null)) ?? false
+  );
+  const elevation = $derived(hasElevation ? visibleElevation(locationTrack ?? [], axis) : null);
+  const elevationTicks = $derived(
+    elevation ? [...new Set([elevation.max, elevation.min / 2 + elevation.max / 2, elevation.min])] : []
+  );
+  const imperialElevation = $derived(backendState.settings?.unitPreference === 'imperial');
+  const elevationUnit = $derived(imperialElevation ? 'ft' : 'm');
+  const elevationInspection = $derived.by(() => {
+    if (!inspectionVisible || !elevation) return null;
+    const ratio = axis.ratioAt(inspectionMs);
+    if (ratio === null || ratio < 0 || ratio > 1) return null;
+    return { ratio, point: inspectElevation(elevation.points, inspectionMs, ratio, width) };
+  });
 
   const duration = $derived(Math.max(1, metadata.summary.totalElapsedMs));
   const compactDuration = $derived(Math.max(1, compactElapsed(duration, metadata.recordingBreaks)));
@@ -468,7 +486,7 @@
 
   function queueInspection(elapsedMs: number) {
     oninspect();
-    if (!activeField || (filterByMap && axis.indexAt(elapsedMs) < 0)) return;
+    if ((!activeField && !hasElevation) || (filterByMap && axis.indexAt(elapsedMs) < 0)) return;
     outsideFilter = false;
     const target = Math.max(0, Math.min(duration, Math.round(elapsedMs)));
     queuedInspection = target;
@@ -756,6 +774,10 @@
     exactStatus = 'idle';
   }
 
+  function formatElevation(metres: number): string {
+    return formatAxisTick(imperialElevation ? metres / 0.3048 : metres);
+  }
+
   onMount(() => {
     if (!plot) return;
     const touchMedia = window.matchMedia('(hover: none) and (pointer: coarse)');
@@ -870,6 +892,105 @@
           retryVersion++;
         })}>Retry chart data</button
     >{/if}
+
+  {#if hasElevation}
+    <div class="nonselectable-surface mt-3">
+      <SectionTitle title="Elevation" detail={`${elevationUnit} above WGS84 ellipsoid`} />
+      <div class="telemetry-chart-frame mt-2 flex items-stretch gap-2">
+        {#if elevation}
+          <div
+            class={`flex shrink-0 flex-col py-1 text-right text-[10px] leading-none text-muted ${elevationTicks.length > 1 ? 'justify-between' : 'justify-center'}`}
+            aria-hidden="true"
+          >
+            {#each elevationTicks as tick (tick)}<span>{formatElevation(tick)}</span>{/each}
+          </div>
+        {/if}
+        <div class="relative isolate min-w-0 flex-1">
+          <svg
+            use:chartTouchInspection={filterByMap || interactionMode === 'info'}
+            class="block h-full w-full touch-pan-y rounded bg-canvas"
+            viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+            preserveAspectRatio="none"
+            role="img"
+            aria-label="Elevation over elapsed time"
+            onpointerdown={beginGesture}
+            onpointermove={moveGesture}
+            onpointerup={endGesture}
+            onpointercancel={cancelGesture}
+            oncontextmenu={preventChartContextMenu}
+            onpointerleave={dismissInspection}
+          >
+            {#if elevation}
+              {#each elevationTicks as tick (tick)}
+                {@const y = elevationY(tick, elevation.min, elevation.max, CHART_HEIGHT)}
+                <line
+                  x1="0"
+                  x2={CHART_WIDTH}
+                  y1={y}
+                  y2={y}
+                  stroke="var(--app-muted)"
+                  stroke-opacity="0.35"
+                  stroke-dasharray="2 2"
+                  vector-effect="non-scaling-stroke"
+                />
+              {/each}
+              <path
+                data-elevation-trace
+                class="telemetry-chart-trace"
+                d={elevationPath(elevation, CHART_WIDTH, CHART_HEIGHT)}
+                fill="none"
+                stroke="var(--app-accent)"
+                stroke-linecap="round"
+              />
+            {/if}
+            {#each [...axis.separators, ...axis.recordingSeparators.map((gap) => gap.ratio)] as ratio, index (index)}
+              <line
+                x1={ratio * CHART_WIDTH}
+                x2={ratio * CHART_WIDTH}
+                y1="0"
+                y2={CHART_HEIGHT}
+                stroke="var(--app-muted)"
+                stroke-dasharray="4 3"
+                vector-effect="non-scaling-stroke"
+              />
+            {/each}
+            {#if selectionRange}
+              <rect
+                x={selectionRange.leftX}
+                y="0"
+                width={selectionRange.rightX - selectionRange.leftX}
+                height={CHART_HEIGHT}
+                fill="var(--app-accent)"
+                fill-opacity="0.18"
+              />
+            {/if}
+            {#if elevationInspection}
+              {@const x = elevationInspection.ratio * CHART_WIDTH}
+              <line
+                x1={x}
+                x2={x}
+                y1="0"
+                y2={CHART_HEIGHT}
+                stroke="var(--app-muted)"
+                stroke-dasharray="4 3"
+                vector-effect="non-scaling-stroke"
+              />
+            {/if}
+          </svg>
+          {#if elevationInspection?.point}
+            <p
+              class="pointer-events-none absolute top-1 z-10 max-w-full rounded border border-outline bg-elevated px-2 py-1 text-xs text-foreground"
+              style={tooltipStyle(elevationInspection.ratio * CHART_WIDTH)}
+            >
+              {formatElevation(elevationInspection.point.altitude)}
+              {elevationUnit} · {formatChartElapsedTime(elevationInspection.point.elapsedMs)}
+            </p>
+          {/if}
+        </div>
+      </div>
+      {#if !elevation}<p class="mt-1 text-xs text-muted">No altitude readings in this range.</p>{/if}
+    </div>
+  {/if}
 
   <!-- Keep chart frames mounted while range queries replace their data. Removing
        them clamps the page scroll and interrupts captured touch gestures. -->

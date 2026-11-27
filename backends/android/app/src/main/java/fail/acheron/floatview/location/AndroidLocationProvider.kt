@@ -89,6 +89,7 @@ class AndroidLocationProvider(
                         latitude = location.latitude,
                         longitude = location.longitude,
                         accuracyM = location.accuracy.takeIf { location.hasAccuracy() && it >= 0f }?.toDouble(),
+                        altitudeM = location.altitude.takeIf { location.hasAltitude() && it.isFinite() },
                         speedMps = location.speed.takeIf { location.hasSpeed() && it.isFinite() && it >= 0f }?.toDouble(),
                         speedAccuracyMps = if (Build.VERSION.SDK_INT >= 26 && location.hasSpeedAccuracy()) location.speedAccuracyMetersPerSecond.takeIf { it.isFinite() && it >= 0f }?.toDouble() else null,
                         speedAgeMs = ((SystemClock.elapsedRealtimeNanos() - location.elapsedRealtimeNanos) / 1_000_000L).takeIf { it >= 0L },

@@ -1096,6 +1096,7 @@ mod tests {
                 latitude: -33.86,
                 longitude: 151.20,
                 accuracy_m: Some(5.0),
+                altitude_m: None,
             }]))
             .expect("location");
         assert!(
@@ -1122,6 +1123,7 @@ mod tests {
                 latitude: f64::NAN,
                 longitude: 151.20,
                 accuracy_m: Some(5.0),
+                altitude_m: None,
             }]))
             .expect("contained failure");
         assert_eq!(
@@ -1137,6 +1139,7 @@ mod tests {
                 latitude: -33.86,
                 longitude: 151.20,
                 accuracy_m: Some(5.0),
+                altitude_m: None,
             }]))
             .expect("recovered location");
         runtime.apply(Command::DetachSession).expect("detach");

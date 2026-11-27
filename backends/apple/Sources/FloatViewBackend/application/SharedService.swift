@@ -388,6 +388,7 @@ public final class SharedService: @unchecked Sendable {
           }
           service.fact(["fact": "location", "capture_id": capture, "latitude": observation.latitude,
                         "longitude": observation.longitude, "accuracy_m": observation.accuracyM as Any? ?? NSNull(),
+                        "altitude_m": observation.altitudeM as Any? ?? NSNull(),
                         "observed_at_ms": Int64(observation.observedAt.timeIntervalSince1970 * 1000)])
         }
       }

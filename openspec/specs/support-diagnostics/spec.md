@@ -190,7 +190,7 @@ After export, the flow SHALL explain where and how users can manually report a r
 
 ### Requirement: Supported data compatibility
 
-Diagnostic storage and report versions SHALL be independent of product storage baseline 100 and archive format 4. New collection SHALL NOT rewrite supported catalogs, session schemas, historical diagnostic rows or archives. Frozen baseline fixtures and existing imports SHALL remain supported without a reset or pre-baseline recovery path.
+Diagnostic storage and report versions SHALL be independent of owned product storage and portable session archive versions. New collection SHALL NOT rewrite supported catalogs, session schemas, historical diagnostic rows or archives. Frozen baseline fixtures and existing imports SHALL remain supported without a reset or pre-baseline recovery path.
 
 #### Scenario: Upgrade and reopen
 

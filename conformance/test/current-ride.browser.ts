@@ -96,6 +96,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
                     latitude: -33.86,
                     longitude: 151.2,
                     accuracyM: 5,
+                    altitudeM: null,
                     observedAt: '2026-01-01T00:00:00.000Z',
                   },
                   {
@@ -104,6 +105,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
                     latitude: -33.87,
                     longitude: lastLongitude,
                     accuracyM: 5,
+                    altitudeM: null,
                     observedAt: '2026-01-01T00:00:00.100Z',
                   },
                 ],
@@ -142,6 +144,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
         await page.waitForFunction(() => document.querySelectorAll('[data-history-group] svg').length > 0);
         const riderPosition = page.locator('.location-marker[title="Last known rider position"]');
         await riderPosition.waitFor();
+        assert.equal(await page.getByRole('img', { name: 'Elevation over elapsed time' }).count(), 0);
         assert.equal(await riderPosition.getAttribute('aria-label'), 'Last known rider position');
         assert.equal(await riderPosition.locator('svg path').count(), 4);
         async function markerStyle() {

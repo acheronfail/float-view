@@ -5,8 +5,8 @@ TestFlight testing. A marketing version, Git tag or installation channel does no
 authorize deletion. From baseline 100 onward, incompatible storage changes need
 an incremented marker and an explicit, tested, crash-safe upgrade for supported
 data. Do not add a migration framework until there is an actual supported
-transition. Portable archive format remains **4**; SQLite PRAGMA user_version and
-individual SQL schemas are independently numbered.
+transition. Portable archives use format **4** or **5**. SQLite PRAGMA
+user_version and individual SQL schemas are independently numbered.
 
 ## Supported transition 100 → 101
 
@@ -16,6 +16,15 @@ then atomically publishes the marker. A restart between commit and marker public
 recognizes the exact upgraded schema and finishes publication. Existing settings gain
 `rideResumeWindowMinutes` with a default of 60; baseline recordings and format-4
 archives remain unchanged. Corruption and schema drift fail without deleting data.
+
+## Supported transition 101 → 102
+
+Marker **102** is published atomically after catalog validation. Existing
+recordings remain readable in place. Recording a point with valid altitude adds
+the nullable altitude column in the same transaction that stores the point.
+Archives with that column use format 5. Format 4 is supported for import and for
+exporting sessions without the altitude column. A marker-100 root still completes
+the existing catalog transition before marker 102 is published.
 
 ## Owned state and reset boundary
 

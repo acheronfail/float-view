@@ -38,6 +38,17 @@ describe('live value selection', () => {
     expect(liveValue('estimatedBatteryLevel', sample, 'metric', 0.56).value).toBeCloseTo(56);
     expect(liveValue('batteryLevel', sample, 'metric').value).toBeNull();
   });
+  it('uses a fresh GPS fix for elevation with signed values and distance units', () => {
+    const fix = { altitudeM: -30.48, observedAt: new Date(20_000).toISOString() };
+    const reading = (units: 'metric' | 'imperial', nowMs: number, location = fix) =>
+      liveValue('altitudeM', sample, units, undefined, null, nowMs, location);
+    expect(reading('metric', 20_000)).toMatchObject({ value: -30.48, unit: 'm' });
+    expect(reading('imperial', 20_000)).toMatchObject({ value: -100, unit: 'ft' });
+    expect(reading('metric', 30_001).value).toBeNull();
+    expect(reading('metric', 18_999).value).toBeNull();
+    expect(reading('metric', 20_000, { ...fix, altitudeM: 0 }).value).toBe(0);
+    expect(liveValue('altitudeM', sample, 'metric').value).toBeNull();
+  });
   it('formats power direction, time and unavailable readings', () => {
     expect(liveValueText('powerW', 900, 0)).toBe('+900');
     expect(liveValueText('powerW', -0.1, 0)).toBe('0');

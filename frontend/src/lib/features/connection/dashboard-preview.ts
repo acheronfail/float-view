@@ -1,4 +1,4 @@
-import type { ActiveConnection, LiveSample } from '$lib/backend/contract';
+import type { ActiveConnection, LiveLocation, LiveSample } from '$lib/backend/contract';
 import type { LiveHistory } from './live-history';
 import type { LightingControl } from './lighting';
 
@@ -14,6 +14,7 @@ export type DashboardConnection = Pick<
   | 'savedDeviceId'
   | 'state'
   | 'latestSample'
+  | 'latestLocation'
   | 'batteryEstimate'
   | 'batteryWarning'
   | 'bms'
@@ -26,6 +27,13 @@ export type DashboardConnection = Pick<
 
 // Deliberately fixed: these examples never enter authoritative backend state.
 export const previewNowMs = Date.UTC(2026, 0, 1, 12);
+export const previewLocation: LiveLocation = {
+  altitudeM: 128,
+  latitude: 0,
+  longitude: 0,
+  accuracyM: null,
+  observedAt: new Date(previewNowMs).toISOString(),
+};
 const sample: LiveSample = {
   load: { duty: 0.42, motor: 0.3, battery: 0.2, winner: { source: 'duty', fraction: 0.42 } },
   sequence: 1,
@@ -96,6 +104,7 @@ export function dashboardPreview(savedDeviceId: string): DashboardConnection {
     deviceKind: 'board',
     trackingMode: 'saved',
     latestSample: sample,
+    latestLocation: previewLocation,
     liveWidgetSlots: ['empty', 'powerW', 'elapsedMs', 'odometerM', 'distanceM'],
     activeSession: null,
     batteryWarning: null,
@@ -139,5 +148,9 @@ export const previewHistory: LiveHistory = {
     sample: { ...sample, speedKph: 22 + Math.sin(i / 5) * 3, motorCurrentA: 18 + Math.sin(i / 3) * 6 },
     estimatedLevel: 0.76,
     bms: null,
+    location: {
+      altitudeM: 128 + Math.sin(i / 5) * 6,
+      observedAt: new Date(previewNowMs - (30 - i) * 1000).toISOString(),
+    },
   })),
 };

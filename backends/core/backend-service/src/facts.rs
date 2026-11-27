@@ -124,7 +124,7 @@ record!(CurrentLimits {
     motor_current_max_a: f64, motor_current_min_a: f64, battery_current_max_a: f64,
     battery_current_min_a: f64, battery_series_cells: Option<u8>,
 });
-record!(LiveLocation { latitude: f64, longitude: f64, accuracy_m: Option<f64>, observed_at: String });
+record!(LiveLocation { latitude: f64, longitude: f64, accuracy_m: Option<f64>, altitude_m: Option<f64>, observed_at: String });
 record!(TransportFirmware { vesc_version: String, hardware_name: Option<String>, firmware_name: Option<String>, test_version: u8 });
 record!(ControllerCandidate { can_id: u8, hardware_name: Option<String>, firmware_name: Option<String>, vesc_version: String, vesc_supported: bool });
 record!(RefloatCompatibility { reported_version: String, supported_versions: Vec<String> });
@@ -218,7 +218,7 @@ record!(Snapshot {
 record!(HistoryPoint { elapsed_ms: u64, sequence: u64, values: BTreeMap<String, Option<f64>> });
 record!(HistoryEvent { event_id: String, elapsed_ms: u64, source_sample_sequence: Option<u64>, kind: String, details_json: String });
 record!(SeriesColumn { elapsed_ms: Vec<u64>, sequence: Vec<u64>, values: Vec<Option<f64>>, generations: Vec<u32> });
-record!(LocationPoint { location_sequence: u64, elapsed_ms: u64, latitude: f64, longitude: f64, accuracy_m: Option<f64>, observed_at: String });
+record!(LocationPoint { location_sequence: u64, elapsed_ms: u64, latitude: f64, longitude: f64, accuracy_m: Option<f64>, altitude_m: Option<f64>, observed_at: String });
 record!(LocationGap {
     start_elapsed_ms: u64,
     end_elapsed_ms: u64,

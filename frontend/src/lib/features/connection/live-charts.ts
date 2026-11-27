@@ -1,7 +1,7 @@
 import type { BmsState, LiveSample, LiveWidgetField, UnitPreference } from '$lib/backend/contract';
 import { driveLoadComponents } from './gauge';
 import { freshBmsSnapshot } from './bms';
-import { liveValue } from './live-values';
+import { liveValue, type LocationElevation } from './live-values';
 export const liveChartWindowMs = 30_000;
 export const liveChartPointLimit = 1_500;
 export type LiveChartField = LiveWidgetField | 'bmsCircuitryTempC' | 'motorLoad' | 'batteryLoad';
@@ -10,6 +10,7 @@ export interface LiveChartPoint {
   sample: LiveSample;
   estimatedLevel?: number | null;
   bms?: BmsState | null;
+  location?: LocationElevation;
   capturedAtMs?: number;
   bmsTemperatures?: { circuitryC: number | null; cellsC: number | null };
 }
@@ -83,7 +84,8 @@ export function liveChartGeometry(
             units,
             point.estimatedLevel,
             point.bms,
-            point.capturedAtMs ?? Date.parse(point.sample.observedAt)
+            point.capturedAtMs ?? Date.parse(point.sample.observedAt),
+            point.location
           ).value
         : field === 'bmsCircuitryTempC'
           ? displayTemperature(point.bmsTemperatures?.circuitryC, units)

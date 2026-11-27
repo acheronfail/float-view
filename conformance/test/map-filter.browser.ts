@@ -84,6 +84,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
                     latitude: 0,
                     longitude: [-0.02, 0, 0.02, 0, -0.02, 0, 0.02][index],
                     accuracyM: 5,
+                    altitudeM: [10, 20, null, -5, 0, 30, 40][index],
                     observedAt: '2026-01-01T00:00:00Z',
                   },
                 ],
@@ -165,6 +166,17 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
           await page.mouse.up();
           assert.equal(await toggle.getAttribute('aria-checked'), 'false');
           assert.equal(locationPages, 7);
+          const elevation = page.getByRole('img', { name: 'Elevation over elapsed time' });
+          const elevationTrace = elevation.locator('[data-elevation-trace]');
+          await elevationTrace.waitFor({ state: 'attached' });
+          assert.equal((await elevationTrace.getAttribute('d'))?.match(/M/g)?.length, 2);
+          if (!hasTouch) {
+            await elevation.scrollIntoViewIfNeeded();
+            const elevationBox = await elevation.boundingBox();
+            assert.ok(elevationBox);
+            await elevation.hover({ position: { x: elevationBox.width * 0.1, y: elevationBox.height / 2 } });
+            await page.getByText('20 m · 6s', { exact: true }).waitFor();
+          }
           let ordinaryRange = { startElapsedMs: 0, endElapsedMs: 60000 };
           if (hasTouch) {
             await page.getByRole('img', { name: 'Speed over elapsed time' }).waitFor();

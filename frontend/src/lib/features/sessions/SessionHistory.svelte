@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { RideFault } from '$lib/features/faults/faults';
-  import type { SessionMetadata, SessionRideMarker } from '$lib/backend/contract';
+  import type { SessionLocationPoint, SessionMetadata, SessionRideMarker } from '$lib/backend/contract';
   import type { Viewport } from './viewport';
   import SessionHistoryChart from './SessionHistoryChart.svelte';
 
@@ -22,6 +22,7 @@
     filterError = null,
     ondataerror,
     initialViewport = null,
+    locationTrack = null,
   }: {
     smoothCharts?: boolean;
     following?: boolean;
@@ -40,6 +41,7 @@
     filterError?: string | null;
     ondataerror?: (reason: unknown) => void;
     initialViewport?: Viewport | null;
+    locationTrack?: SessionLocationPoint[][] | null;
   } = $props();
 </script>
 
@@ -62,5 +64,6 @@
     {filterError}
     {ondataerror}
     {initialViewport}
+    {locationTrack}
   />
 </section>

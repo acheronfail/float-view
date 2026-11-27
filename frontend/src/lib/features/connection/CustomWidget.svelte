@@ -41,6 +41,7 @@
   );
   const compact = $derived(dashboardDimensions(widget.size).rows === 1);
   const sample = $derived(connection.latestSample);
+  const location = $derived(connection.state === 'ready' ? connection.latestLocation : null);
   const lighting = $derived(
     widget.kind === 'control'
       ? preview && previewInteractions
@@ -50,7 +51,7 @@
   );
   const reading = $derived(
     widget.kind === 'reading'
-      ? liveValue(widget.field, sample, units, connection.batteryEstimate.level, connection.bms, nowMs)
+      ? liveValue(widget.field, sample, units, connection.batteryEstimate.level, connection.bms, nowMs, location)
       : null
   );
   const color = $derived(
@@ -199,6 +200,7 @@
         {sample}
         {units}
         {nowMs}
+        {location}
         bms={connection.bms}
         estimatedLevel={connection.batteryEstimate.level}
         prominent={!compact}

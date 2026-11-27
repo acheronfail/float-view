@@ -68,6 +68,7 @@ data class LocationProviderObservation(
     val speedMps: Double? = null,
     val speedAccuracyMps: Double? = null,
     val speedAgeMs: Long? = null,
+    val altitudeM: Double? = null,
 )
 
 object LocationUpdated

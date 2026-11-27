@@ -49,9 +49,12 @@ class RustApplicationRuntimeTest {
         val result = exchange("""{"command":"fact","envelope":{"lifetime":$lifetime,"sequence":1,"monotonic_ms":1,"epoch_ms":1700000000001,"fact":{"fact":"location_speed","capture_id":123,"speed_mps":5.0,"accuracy_mps":null,"age_ms":200}}}""")
         assertEquals(0, result.getJSONArray("effects").length())
         val missing = LocationProviderObservation(java.time.Instant.EPOCH, 1.0, 2.0, null)
+        assertNull(missing.altitudeM)
         assertNull(missing.speedMps)
         assertNull(missing.speedAccuracyMps)
         assertNull(missing.speedAgeMs)
+        val location = exchange("""{"command":"fact","envelope":{"lifetime":$lifetime,"sequence":2,"monotonic_ms":2,"epoch_ms":1700000000002,"fact":{"fact":"location","capture_id":123,"latitude":1.0,"longitude":2.0,"accuracy_m":null,"altitude_m":-12.0,"observed_at_ms":1700000000002}}}""")
+        assertEquals(0, location.getJSONArray("effects").length())
     }
     @Test fun listenerBorrowsServiceAndDestructionInvalidatesHandle() = withService { handle ->
         val server = RustApplicationRuntime.serviceServerCreate(handle, 2, "<html/>".toByteArray())

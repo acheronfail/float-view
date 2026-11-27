@@ -66,6 +66,7 @@ fn markers_use_only_recent_committed_fixes_and_enforce_capacity() {
         latitude: 1.,
         longitude: 2.,
         accuracy_m: Some(5.),
+        altitude_m: None,
     }])
     .unwrap();
     assert!(
@@ -138,6 +139,7 @@ fn pruning_preserves_marker_location_and_duration() {
         latitude: 1.,
         longitude: 2.,
         accuracy_m: None,
+        altitude_m: None,
     }])
     .unwrap();
     let (marker, _) = w
@@ -167,6 +169,7 @@ fn disabled_and_future_fixes_produce_time_only_markers() {
         latitude: 1.,
         longitude: 2.,
         accuracy_m: Some(1.),
+        altitude_m: None,
     }])
     .unwrap();
     for (n, elapsed, wall, enabled) in [

@@ -13,9 +13,16 @@
     type UnitPreference,
   } from '$lib/backend/contract';
   import { activateFromPointer, activateFromKeyboardOrAssistiveClick } from '$lib/ui/activation';
-  import { liveValue, liveValueCatalog, liveValueColor, liveValueText, liveValueStatus } from './live-values';
+  import {
+    liveValue,
+    liveValueCatalog,
+    liveValueColor,
+    liveValueText,
+    liveValueStatus,
+    type LocationElevation,
+  } from './live-values';
 
-  import type { PreviewInteractions } from './dashboard-preview';
+  import { previewNowMs, type PreviewInteractions } from './dashboard-preview';
 
   const motion = createMotion();
 
@@ -30,6 +37,7 @@
 
     bms,
     nowMs,
+    location,
     busy,
     error,
     onselect,
@@ -45,6 +53,7 @@
 
     bms?: BmsState | null;
     nowMs?: number;
+    location?: LocationElevation | null;
     busy: boolean;
     error: string | null;
     onselect: (field: LiveWidgetField, keyboard: boolean) => void;
@@ -130,7 +139,8 @@
             estimatedLevel,
 
             bms,
-            Math.max(nowMs ?? 0, Date.now())
+            preview ? previewNowMs : Math.max(nowMs ?? 0, Date.now()),
+            location
           )}
           {@const lighting = isLighting(field)
             ? preview && previewInteractions

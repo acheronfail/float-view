@@ -32,6 +32,7 @@ export class LiveHistoryBuffer {
       return;
     this.sequence = sample.sequence;
     const snapshot = freshBmsSnapshot(connection.bms, wallMs);
+    const fix = connection.latestLocation;
     this.points = retainLivePoints(
       [
         ...this.points,
@@ -41,6 +42,7 @@ export class LiveHistoryBuffer {
           capturedAtMs: wallMs,
           estimatedLevel: connection.batteryEstimate?.level,
           bms: snapshot ? connection.bms : null,
+          location: fix ? { altitudeM: fix.altitudeM, observedAt: fix.observedAt } : undefined,
           bmsTemperatures: snapshot
             ? { circuitryC: snapshot.highestCircuitryTemperatureC, cellsC: snapshot.highestCellTemperatureC }
             : undefined,

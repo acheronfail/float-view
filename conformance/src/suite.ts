@@ -454,7 +454,8 @@ export async function runConformance(target: Target) {
       client,
       restored,
       ['android', 'ios', 'macos', 'direct'].includes(target.name),
-      target.recreateFrontend
+      target.recreateFrontend,
+      target.name === 'direct'
     );
     if (['android', 'ios', 'macos', 'direct'].includes(target.name)) {
       await exerciseTransport(await target.endpoint(), target.verifyFilePresentation?.bind(target));
@@ -562,7 +563,8 @@ async function exerciseProductMethods(
   client: ConformanceClient,
   state: AppState,
   expectSoftwareBms: boolean,
-  recreateFrontend?: () => Promise<void>
+  recreateFrontend?: () => Promise<void>,
+  verifyRouteAltitude = false
 ) {
   const device = required(state.discoveredDevices[0], 'scan did not create a discovered device');
   const settings = await client.request('settings.update', {
@@ -660,7 +662,7 @@ async function exerciseProductMethods(
     patch: { minimumSessionDistance: 0 },
   });
 
-  await createCompletedSession(client, device.deviceId, expectSoftwareBms, recreateFrontend);
+  await createCompletedSession(client, device.deviceId, expectSoftwareBms, recreateFrontend, verifyRouteAltitude);
   await createCompletedSession(client, device.deviceId, expectSoftwareBms);
 
   const prepared = await client.request('state.get', {});
@@ -1152,7 +1154,8 @@ async function createCompletedSession(
   client: ConformanceClient,
   deviceId: string,
   expectSoftwareBms: boolean,
-  recreateFrontend?: () => Promise<void>
+  recreateFrontend?: () => Promise<void>,
+  verifyRouteAltitude = false
 ) {
   await client.request('bluetooth.scan', { timeoutMs: 100 });
   const before = await client.request('state.get', {});
@@ -1353,6 +1356,12 @@ async function createCompletedSession(
   await expectError(client.request('controller.shutdown', {}), 'invalid_state');
   await expectError(client.request('device.connect', { deviceId, trackingMode: 'saved' }), 'invalid_state');
   const markerSession = required(ridingState.activeConnection?.activeSession, 'No saved marker session');
+  if (verifyRouteAltitude) {
+    const located = await client.waitForState((state) => Boolean(state.activeConnection?.latestLocation), {
+      afterRevision: ridingState.revision - 1,
+    });
+    assert.equal(required(located.activeConnection?.latestLocation, 'No route fix').altitudeM, -12);
+  }
   const markerOperation = '00000000-0000-4000-8000-000000000001';
   await expectError(
     client.request('session.marker.add', { sessionId: 'missing-session', operationId: markerOperation }),
@@ -1402,6 +1411,7 @@ async function createCompletedSession(
     if (result.kind === 'locations') {
       assert.equal(result.locationBoundary.lastSequence, savedMarker.snapshot.committedLocationSequence);
       assert.equal(result.locationBoundary.lastElapsedMs, savedMarker.snapshot.committedLocationElapsedMs);
+      if (verifyRouteAltitude) assert.ok(result.points.some((point) => point.altitudeM === -12));
     }
   }
   await assert.rejects(
@@ -1954,7 +1964,13 @@ export function assertState(state: AppState) {
   }
   const latestLocation = active.latestLocation;
   if (latestLocation) {
-    assert.deepEqual(Object.keys(latestLocation).sort(), ['accuracyM', 'latitude', 'longitude', 'observedAt']);
+    assert.deepEqual(Object.keys(latestLocation).sort(), [
+      'accuracyM',
+      'altitudeM',
+      'latitude',
+      'longitude',
+      'observedAt',
+    ]);
     assert.ok(Number.isFinite(latestLocation.latitude));
     assert.ok(latestLocation.latitude >= -90 && latestLocation.latitude <= 90);
     assert.ok(Number.isFinite(latestLocation.longitude));
@@ -1962,6 +1978,7 @@ export function assertState(state: AppState) {
     assert.ok(
       latestLocation.accuracyM === null || (Number.isFinite(latestLocation.accuracyM) && latestLocation.accuracyM >= 0)
     );
+    assert.ok(latestLocation.altitudeM === null || Number.isFinite(latestLocation.altitudeM));
     assert.ok(typeof latestLocation.observedAt === 'string' && Number.isFinite(Date.parse(latestLocation.observedAt)));
   }
   assert.ok(active.transportFirmware === null || typeof active.transportFirmware === 'object');

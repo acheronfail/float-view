@@ -13,6 +13,7 @@ import {
   MAX_SESSION_SERIES_BUCKETS,
   MAX_SESSION_SERIES_OBSERVATIONS,
   type SessionFieldDescriptor,
+  type SessionLocationPoint,
   type SessionPublishedSnapshot,
 } from './contract.ts';
 
@@ -154,14 +155,7 @@ export interface SessionLocationsResult {
   sessionId: string;
   snapshot: SessionPublishedSnapshot;
   range: SessionDataRange;
-  points: Array<{
-    locationSequence: number;
-    elapsedMs: number;
-    latitude: number;
-    longitude: number;
-    accuracyM: number | null;
-    observedAt: string;
-  }>;
+  points: SessionLocationPoint[];
   gaps: Array<{
     startElapsedMs: number;
     endElapsedMs: number;
@@ -633,6 +627,7 @@ function validateLocationsResult(value: Partial<SessionLocationsResult>): Sessio
       point.longitude < -180 ||
       point.longitude > 180 ||
       (point.accuracyM !== null && (!finiteNumber(point.accuracyM) || point.accuracyM < 0)) ||
+      (point.altitudeM !== null && !finiteNumber(point.altitudeM)) ||
       typeof point.observedAt !== 'string' ||
       point.observedAt.length === 0
     ) {

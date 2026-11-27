@@ -1724,6 +1724,7 @@ export class MockBackend {
             latitude: -33.8688,
             longitude: 151.2093,
             accuracyM: 12,
+            altitudeM: 24,
             observedAt: latestSample.observedAt,
           }
         : null;
@@ -2778,6 +2779,14 @@ export class MockBackend {
         activeConnection: {
           ...next.activeConnection,
           batteryEstimate: estimate,
+          latestLocation:
+            next.activeConnection.latestLocation &&
+            (!next.settings.locationRecordingEnabled ||
+              !['authorized', 'foregroundOnly'].includes(next.location.status) ||
+              next.activeConnection.state !== 'ready' ||
+              next.activeConnection.latestSample?.rideState !== 'riding')
+              ? { ...next.activeConnection.latestLocation, altitudeM: null }
+              : next.activeConnection.latestLocation,
           liveWidgetSlots:
             next.activeConnection.trackingMode === 'saved'
               ? ((this.profiles.get(next.activeConnection.savedDeviceId ?? '')?.values.liveWidgetSlots as

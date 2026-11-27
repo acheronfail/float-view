@@ -176,6 +176,7 @@ describe('session-data protocol', () => {
             latitude: -33.8,
             longitude: 151.2,
             accuracyM: null,
+            altitudeM: null,
             observedAt: '2026-01-01T00:00:00.100Z',
           },
           {
@@ -184,6 +185,7 @@ describe('session-data protocol', () => {
             latitude: -33.9,
             longitude: 151.3,
             accuracyM: 5,
+            altitudeM: -8,
             observedAt: '2026-01-01T00:00:00.900Z',
           },
         ],
@@ -195,6 +197,7 @@ describe('session-data protocol', () => {
     );
     if (result.kind !== 'locations') throw new Error('Expected location result');
     expect(result.points).toHaveLength(2);
+    expect(result.points.map((point) => point.altitudeM)).toEqual([null, -8]);
     expect(result.gaps[0]?.reason).toBe('noFix');
     expect(() =>
       validateSessionDataRequest({ kind: 'locations', sessionId: 'session-1', snapshot, range, limit: 0 })

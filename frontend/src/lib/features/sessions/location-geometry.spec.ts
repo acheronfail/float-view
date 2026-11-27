@@ -14,6 +14,7 @@ const point = (locationSequence: number, elapsedMs: number): SessionLocationPoin
   latitude: -33.86 + locationSequence / 1000,
   longitude: 151.2 + locationSequence / 1000,
   accuracyM: null,
+  altitudeM: null,
   observedAt: `2026-01-01T00:00:0${locationSequence}Z`,
 });
 

@@ -204,6 +204,8 @@ public final class CoreLocationAdapter: NSObject, LocationProviderPort, CLLocati
       latitude: location.coordinate.latitude,
       longitude: location.coordinate.longitude,
       accuracyM: location.horizontalAccuracy >= 0 ? location.horizontalAccuracy : nil,
+      altitudeM: location.verticalAccuracy > 0 && location.verticalAccuracy.isFinite && location.ellipsoidalAltitude.isFinite
+        ? location.ellipsoidalAltitude : nil,
       speedMps: location.speed >= 0 ? location.speed : nil,
       speedAccuracyMps: location.speedAccuracy >= 0 ? location.speedAccuracy : nil,
       speedAgeMs: location.timestamp.timeIntervalSinceNow <= 0 ? UInt64(min(

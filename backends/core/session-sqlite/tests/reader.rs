@@ -707,7 +707,43 @@ fn location(elapsed_ms: u64, latitude: f64, longitude: f64) -> LocationObservati
         latitude,
         longitude,
         accuracy_m: Some(4.0),
+        altitude_m: None,
     }
+}
+
+#[test]
+fn an_open_reader_keeps_the_old_prefix_when_a_resumed_track_adds_altitude() {
+    let directory = TestDirectory::new();
+    let path = directory.file("altitude.sqlite3");
+    let mut writer = SessionWriter::create(&path, metadata()).unwrap();
+    let old = writer.append_locations(&[location(1000, 1., 2.)]).unwrap();
+    writer.close().unwrap();
+    let mut reader = SessionReader::open(&path).unwrap();
+    assert_eq!(
+        reader
+            .location_page(0, 1000, 1, None, (&old).into())
+            .unwrap()
+            .rows[0]
+            .altitude_m,
+        None
+    );
+
+    let mut writer = SessionWriter::open(&path).unwrap();
+    let new = writer
+        .append_locations(&[LocationObservation {
+            altitude_m: Some(0.),
+            ..location(2000, 3., 4.)
+        }])
+        .unwrap();
+    let prefix = reader
+        .location_page(0, 2000, 2, None, (&old).into())
+        .unwrap();
+    assert_eq!(prefix.rows.len(), 1);
+    assert_eq!(prefix.rows[0].altitude_m, None);
+    let continuation = reader
+        .location_page(0, 2000, 1, Some(1), (&new).into())
+        .unwrap();
+    assert_eq!(continuation.rows[0].altitude_m, Some(0.));
 }
 
 fn data_lines(input: &str) -> Vec<&str> {

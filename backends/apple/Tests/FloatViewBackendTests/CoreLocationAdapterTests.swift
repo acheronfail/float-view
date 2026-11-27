@@ -52,6 +52,27 @@ func coreLocationObservationDeliveryLeavesTheDelegateThread() {
   adapter.stopUpdates()
 }
 
+@Test
+func coreLocationDeliversAltitudeOnlyWithValidVerticalAccuracy() {
+  for accuracy in [5.0, 0.0, -1.0] {
+    let adapter = CoreLocationAdapter()
+    let capture = CalibrationLocationCapture()
+    adapter.startUpdates { capture.save($0) }
+    let fix = CLLocation(
+      coordinate: CLLocationCoordinate2D(latitude: 1, longitude: 2),
+      altitude: -12,
+      horizontalAccuracy: 5,
+      verticalAccuracy: accuracy,
+      timestamp: Date()
+    )
+    adapter.locationManager(CLLocationManager(), didUpdateLocations: [fix])
+    #expect(capture.wait() == .success)
+    #expect(capture.value?.latitude == 1)
+    #expect(capture.value?.altitudeM == (accuracy > 0 ? fix.ellipsoidalAltitude : nil))
+    adapter.stopUpdates()
+  }
+}
+
 private final class LocationDeliveryCapture: @unchecked Sendable {
   private let lock = NSLock()
   private let semaphore = DispatchSemaphore(value: 0)

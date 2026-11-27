@@ -223,6 +223,7 @@ fn real_session(store: &mut ProductStore, count: u64) -> String {
             latitude: -34.9,
             longitude: 138.6,
             accuracy_m: Some(3.),
+            altitude_m: None,
         })
         .collect::<Vec<_>>();
     for batch in locations.chunks(1000) {

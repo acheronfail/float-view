@@ -73,6 +73,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
                 latitude: -33.8688 - i * 0.001,
                 longitude: 151.2093 + i * 0.001,
                 accuracyM: 5,
+                altitudeM: null,
                 observedAt: new Date(Date.UTC(2026, 0, 1) + elapsedMs).toISOString(),
               })),
               gaps: [],
@@ -110,16 +111,16 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       });
       await page.goto(`${endpoint.origin}/#/live`);
       await page.getByRole('button', { name: 'Board actions', exact: true }).tap();
-      const action = page.getByRole('button', { name: 'Fault history…', exact: true });
+      const action = page.getByRole('button', { name: 'Faults and errors…', exact: true });
       await action.click({ button: 'right' });
-      assert.equal(await page.getByRole('dialog', { name: 'Fault history', exact: true }).count(), 0);
+      assert.equal(await page.getByRole('dialog', { name: 'Faults and errors', exact: true }).count(), 0);
       await action.tap();
-      const dialog = page.getByRole('dialog', { name: 'Fault history', exact: true });
+      const dialog = page.getByRole('dialog', { name: 'Faults and errors', exact: true });
       await dialog.waitFor();
       await dialog.getByText('Absolute overcurrent', { exact: true }).waitFor();
       assert.equal(await dialog.getByRole('listitem').count(), 3);
       await dialog.getByText('Controller fault 255', { exact: true }).waitFor();
-      await dialog.getByText('Time unavailable', { exact: true }).waitFor();
+      await dialog.getByText(/Time unavailable\s*Observed/).waitFor();
       assert.equal((await client.request('uiState.get', {}))?.surface?.kind, 'faultHistory');
       await page.reload();
       await dialog.getByText('Absolute overcurrent', { exact: true }).waitFor();
@@ -128,7 +129,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await dialog.waitFor({ state: 'hidden' });
       await client.request('device.disconnect', {});
       await page.goto(`${endpoint.origin}/#/sessions/${sessionId}`);
-      const list = page.getByRole('region', { name: 'Ride faults', exact: true });
+      const list = page.getByRole('region', { name: 'Ride faults and errors', exact: true });
       await list.getByText('Absolute overcurrent', { exact: true }).waitFor();
       const chartMarker = page
         .getByRole('button', { name: 'Inspect fault: Absolute overcurrent', exact: true })

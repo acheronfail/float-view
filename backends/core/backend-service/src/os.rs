@@ -127,6 +127,7 @@ pub enum Fact {
         latitude: f64,
         longitude: f64,
         accuracy_m: Option<f64>,
+        altitude_m: Option<f64>,
         observed_at_ms: i64,
     },
     Foreground {

@@ -17,7 +17,7 @@
   import ThemeToggleDisplay from './ThemeToggleDisplay.svelte';
   import LightingDisplay from './LightingDisplay.svelte';
 
-  import type { PreviewInteractions } from './dashboard-preview';
+  import { previewLocation, previewNowMs, type PreviewInteractions } from './dashboard-preview';
 
   const appearance = createThemeToggle();
 
@@ -36,6 +36,9 @@
   } = $props();
   const preview = $derived(!!previewSlots);
   const connection = $derived(preview ? null : backendState.snapshot?.activeConnection);
+  const location = $derived(
+    preview ? previewLocation : connection?.state === 'ready' ? connection.latestLocation : null
+  );
   const slots = $derived(previewSlots ?? connection?.liveWidgetSlots ?? defaultLiveWidgetSlots);
   const savedField = $derived(slots[slot]);
   let exampleField = $state<LiveWidgetField | null>(null);
@@ -213,7 +216,7 @@
       {:else if lighting}
         <LightingDisplay field={field === 'headlights' ? 'headlights' : 'leds'} {lighting} {toggling} />
       {:else}
-        <LiveNumber {field} {sample} {units} {estimatedLevel} {bms} {nowMs} />
+        <LiveNumber {field} {sample} {units} {estimatedLevel} {bms} nowMs={preview ? previewNowMs : nowMs} {location} />
       {/if}
     </div>
   </button>
@@ -245,6 +248,7 @@
     {estimatedLevel}
     {bms}
     {nowMs}
+    {location}
     {busy}
     {error}
     onselect={select}

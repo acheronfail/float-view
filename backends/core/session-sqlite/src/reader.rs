@@ -18,7 +18,7 @@ use rusqlite::{Connection, OpenFlags, Transaction, TransactionBehavior, params_f
 
 use super::{
     CommitMarker, MAX_EXTENSION_NAME_BYTES, MAX_EXTENSIONS, MAX_PERSISTENCE_CADENCE_MS,
-    WriterError, read_marker, validate_database,
+    WriterError, has_location_altitude, read_marker, validate_database,
 };
 
 pub const MAX_QUERY_FIELDS: usize = 16;
@@ -185,6 +185,7 @@ pub struct LocationRecord {
     pub latitude: f64,
     pub longitude: f64,
     pub accuracy_m: Option<f64>,
+    pub altitude_m: Option<f64>,
 }
 
 impl Debug for LocationRecord {
@@ -615,8 +616,9 @@ impl SessionReader {
         // Continuations seek directly by their sequence cursor. Valid location
         // streams have nondecreasing elapsed times; validate that invariant below
         // rather than rescanning the elapsed index from the beginning of the range.
-        let sql = location_page_sql(after_location_sequence.is_some());
-        let mut statement = transaction.prepare_cached(sql).map_err(map_sqlite)?;
+        let altitude = has_location_altitude(&transaction).map_err(map_sqlite)?;
+        let sql = location_page_sql(after_location_sequence.is_some(), altitude);
+        let mut statement = transaction.prepare_cached(&sql).map_err(map_sqlite)?;
         let mapped = statement
             .query_map(
                 rusqlite::params![
@@ -634,6 +636,7 @@ impl SessionReader {
                         row.get::<_, f64>(3)?,
                         row.get::<_, f64>(4)?,
                         row.get::<_, Option<f64>>(5)?,
+                        row.get::<_, Option<f64>>(6)?,
                     ))
                 },
             )
@@ -642,7 +645,7 @@ impl SessionReader {
         let mut previous_location_sequence = after;
         let mut previous_elapsed = None;
         for row in mapped {
-            let (sequence, elapsed, observed, latitude, longitude, accuracy) =
+            let (sequence, elapsed, observed, latitude, longitude, accuracy, altitude) =
                 row.map_err(map_sqlite)?;
             if observed < 0
                 || !latitude.is_finite()
@@ -650,6 +653,7 @@ impl SessionReader {
                 || !(-90.0..=90.0).contains(&latitude)
                 || !(-180.0..=180.0).contains(&longitude)
                 || accuracy.is_some_and(|value| !value.is_finite() || value < 0.0)
+                || altitude.is_some_and(|value| !value.is_finite())
             {
                 return Err(ReaderError::Incompatible);
             }
@@ -668,6 +672,7 @@ impl SessionReader {
                 latitude,
                 longitude,
                 accuracy_m: accuracy,
+                altitude_m: altitude,
             });
         }
         drop(statement);
@@ -739,12 +744,16 @@ impl SessionReader {
     }
 }
 
-fn location_page_sql(continued: bool) -> &'static str {
-    if continued {
-        "SELECT location_sequence, monotonic_elapsed_ms, observed_at_ms, latitude, longitude, accuracy_m FROM location WHERE monotonic_elapsed_ms BETWEEN ?1 AND ?2 AND location_sequence <= ?3 AND location_sequence > ?4 ORDER BY location_sequence LIMIT ?5"
+fn location_page_sql(continued: bool, altitude: bool) -> String {
+    let altitude = if altitude { "altitude_m" } else { "NULL" };
+    let order = if continued {
+        "location_sequence"
     } else {
-        "SELECT location_sequence, monotonic_elapsed_ms, observed_at_ms, latitude, longitude, accuracy_m FROM location WHERE monotonic_elapsed_ms BETWEEN ?1 AND ?2 AND location_sequence <= ?3 AND location_sequence > ?4 ORDER BY monotonic_elapsed_ms, location_sequence LIMIT ?5"
-    }
+        "monotonic_elapsed_ms, location_sequence"
+    };
+    format!(
+        "SELECT location_sequence, monotonic_elapsed_ms, observed_at_ms, latitude, longitude, accuracy_m, {altitude} FROM location WHERE monotonic_elapsed_ms BETWEEN ?1 AND ?2 AND location_sequence <= ?3 AND location_sequence > ?4 ORDER BY {order} LIMIT ?5"
+    )
 }
 
 fn stream_series(
@@ -1244,7 +1253,10 @@ mod location_query_tests {
         let db = Connection::open_in_memory().unwrap();
         db.execute_batch(super::super::SESSION_SCHEMA).unwrap();
         let mut statement = db
-            .prepare(&format!("EXPLAIN QUERY PLAN {}", location_page_sql(true)))
+            .prepare(&format!(
+                "EXPLAIN QUERY PLAN {}",
+                location_page_sql(true, false)
+            ))
             .unwrap();
         let plan = statement
             .query_map([0, 1000000, 1000000, 900000, 101], |row| {

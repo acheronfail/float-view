@@ -9,6 +9,7 @@ const point = (elapsedMs: number, longitude: number, latitude = 0): SessionLocat
   locationSequence: elapsedMs,
   observedAt: '2026-01-01T00:00:00Z',
   accuracyM: null,
+  altitudeM: null,
 });
 const bounds = { west: -1, east: 1, south: -1, north: 1 };
 describe('map intervals', () => {

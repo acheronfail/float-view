@@ -245,6 +245,7 @@ class SharedService(
                     }
                     fact(json("fact" to "location", "capture_id" to capture, "latitude" to observation.latitude,
                         "longitude" to observation.longitude, "accuracy_m" to observation.accuracyM,
+                        "altitude_m" to observation.altitudeM,
                         "observed_at_ms" to observation.observedAt.toEpochMilli()))
                 } }
             }

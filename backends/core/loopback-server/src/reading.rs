@@ -268,6 +268,7 @@ pub async fn read(
                             latitude: row.latitude,
                             longitude: row.longitude,
                             accuracy_m: row.accuracy_m,
+                            altitude_m: row.altitude_m,
                             observed_at: time::OffsetDateTime::from_unix_timestamp_nanos(
                                 i128::from(row.observed_at_epoch_ms) * 1_000_000,
                             )

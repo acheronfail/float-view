@@ -41,7 +41,7 @@ pub use tunes::{
     Tune, TuneIdentity, TunePage, TuneValue, TuneValues, is_tune_field, validate_tune_values,
 };
 
-pub const STORAGE_VERSION: &str = "101";
+pub const STORAGE_VERSION: &str = "102";
 pub const CATALOG_SCHEMA: &str = include_str!("../../../sql/catalog.sql");
 
 /// Errors intentionally exclude SQL, paths, identifiers and other private data.
@@ -115,6 +115,7 @@ impl ProductStore {
         root::validate_catalog(&catalog, fresh)?;
         catalog.execute_batch(CATALOG_SCHEMA)?;
         root::validate_catalog(&catalog, false)?;
+        root::publish_altitude_storage_version(&root)?;
         let mut store = Self {
             root,
             root_lock,

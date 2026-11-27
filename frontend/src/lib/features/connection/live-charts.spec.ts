@@ -62,6 +62,19 @@ describe('live chart window', () => {
     expect(first.paths[0]).toContain('M1000.00,');
     expect(liveChartGeometry(points, ['speedKph'], 'metric', 7000).paths[0]).toContain('M900.00,');
   });
+  it('leaves a break in an elevation trend when a GPS fix has no altitude', () => {
+    const points = [-12, 0, null, 8].map((altitudeM, index) => ({
+      time: 1_000 * index,
+      sample: {} as LiveSample,
+      capturedAtMs: 1_000 * index,
+      location: { altitudeM, observedAt: new Date(1_000 * index).toISOString() },
+    }));
+    const trend = liveChartGeometry(points, ['altitudeM'], 'metric', 3_000, { rawReadings: true });
+    expect(trend.low).toBeLessThan(-12);
+    expect(trend.high).toBeGreaterThan(8);
+    expect(trend.paths[0].match(/M/g)).toHaveLength(2);
+    expect(trend.paths[0].match(/L/g)).toHaveLength(1);
+  });
   it('converts display units and keeps signed current with a shared axis', () => {
     const sample = { speedKph: 16.09344, motorCurrentA: -12, batteryCurrentA: 20 } as LiveSample;
     const metric = liveChartGeometry([{ time: 0, sample }], ['speedKph'], 'metric', 0);

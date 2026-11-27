@@ -419,6 +419,7 @@ fn parse_location_fixture() -> Vec<LocationObservation> {
                 latitude: fields[2].parse().expect("latitude"),
                 longitude: fields[3].parse().expect("longitude"),
                 accuracy_m: parse_optional(fields[4]),
+                altitude_m: None,
             }
         })
         .collect()
@@ -452,6 +453,7 @@ fn location(
         latitude,
         longitude,
         accuracy_m,
+        altitude_m: None,
     }
 }
 
@@ -532,6 +534,7 @@ fn short_recording_gap_survives_gps_pagination_and_pruning() {
                 latitude: 1.,
                 longitude: 1.,
                 accuracy_m: None,
+                altitude_m: None,
             },
             LocationObservation {
                 observed_at_epoch_ms: 1_001_100,
@@ -539,6 +542,7 @@ fn short_recording_gap_survives_gps_pagination_and_pruning() {
                 latitude: 1.001,
                 longitude: 1.001,
                 accuracy_m: None,
+                altitude_m: None,
             },
         ])
         .unwrap();

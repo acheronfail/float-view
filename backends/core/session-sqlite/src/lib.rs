@@ -47,6 +47,16 @@ pub use reader::{
 };
 
 pub const SESSION_SCHEMA: &str = include_str!("../../../sql/session.sql");
+pub const LOCATION_ALTITUDE_SCHEMA: &str =
+    include_str!("../../../sql/session-location-altitude.sql");
+
+pub fn has_location_altitude(connection: &Connection) -> rusqlite::Result<bool> {
+    connection.query_row(
+        "SELECT EXISTS(SELECT 1 FROM pragma_table_xinfo('location') WHERE name = 'altitude_m')",
+        [],
+        |row| row.get(0),
+    )
+}
 pub const MAX_SAMPLE_BATCH: usize = 1_024;
 pub const MAX_LOCATION_BATCH: usize = 1_024;
 // Firmware extensions plus product-owned load fractions and the battery estimate.
@@ -118,6 +128,7 @@ pub struct LocationObservation {
     pub latitude: f64,
     pub longitude: f64,
     pub accuracy_m: Option<f64>,
+    pub altitude_m: Option<f64>,
 }
 
 impl Debug for LocationObservation {
@@ -567,6 +578,7 @@ impl SessionWriter {
             .and_then(|value| u64::try_from(value).map_err(|_| WriterError::Incompatible))?;
         let mut accepted = 0_u64;
         let mut committed_elapsed = marker.committed_location_elapsed_ms;
+        let mut altitude_ready = false;
         for observation in ordered {
             let exists: bool = transaction
                 .query_row(
@@ -598,6 +610,22 @@ impl SessionWriter {
                     ],
                 )
                 .map_err(map_sqlite)?;
+            if let Some(altitude) = observation.altitude_m.filter(|value| value.is_finite()) {
+                if !altitude_ready {
+                    if !has_location_altitude(&transaction).map_err(map_sqlite)? {
+                        transaction
+                            .execute_batch(LOCATION_ALTITUDE_SCHEMA)
+                            .map_err(map_sqlite)?;
+                    }
+                    altitude_ready = true;
+                }
+                transaction
+                    .execute(
+                        "UPDATE location SET altitude_m = ? WHERE location_sequence = ?",
+                        params![altitude, sqlite_integer(next_sequence)?],
+                    )
+                    .map_err(map_sqlite)?;
+            }
             accepted = accepted.checked_add(1).ok_or(WriterError::InvalidInput)?;
             committed_elapsed = observation.elapsed_ms;
         }
@@ -1497,6 +1525,7 @@ mod tests {
                     latitude: 3.0,
                     longitude: 4.0,
                     accuracy_m: Some(5.0),
+                    altitude_m: None,
                 }
             ),
             "LocationObservation([redacted])"

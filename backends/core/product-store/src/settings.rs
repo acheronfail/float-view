@@ -272,6 +272,7 @@ pub(crate) const LIVE_WIDGET_FIELDS: &[&str] = &[
     "maxSpeedKph",
     "distanceM",
     "odometerM",
+    "altitudeM",
     "elapsedMs",
     "erpm",
     "controllerTempC",

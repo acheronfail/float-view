@@ -658,6 +658,7 @@ impl BackendService {
                 latitude,
                 longitude,
                 accuracy_m,
+                altitude_m,
                 observed_at_ms,
             } => {
                 if let Some(capture) = self.policy.capture.as_ref().filter(|c| c.id == capture_id) {
@@ -672,6 +673,7 @@ impl BackendService {
                     if !persist {
                         return Ok(());
                     }
+                    let altitude_m = altitude_m.filter(|value| value.is_finite());
                     let elapsed_ms = capture
                         .offset
                         .saturating_add(envelope.monotonic_ms.saturating_sub(capture.start));
@@ -682,12 +684,14 @@ impl BackendService {
                             latitude,
                             longitude,
                             accuracy_m,
+                            altitude_m,
                         },
                     ]))?;
                     self.policy.latest_location = Some(crate::facts::LiveLocation {
                         latitude,
                         longitude,
                         accuracy_m,
+                        altitude_m,
                         observed_at: crate::projection::date(observed_at_ms),
                     });
                 }
@@ -1990,6 +1994,9 @@ impl BackendService {
         let enabled = allowed
             && (recording
                 || (calibrating && self.runtime.snapshot().application.phase == c::Phase::Ready));
+        if !allowed || !recording {
+            self.policy.latest_location = None;
+        }
         if self
             .policy
             .capture
@@ -1997,6 +2004,7 @@ impl BackendService {
             .is_some_and(|c| c.high_accuracy != calibrating)
         {
             self.policy.capture = None;
+            self.policy.latest_location = None;
             self.policy.exchange.request_stop_location();
         }
         if enabled && self.policy.capture.is_none() {
@@ -2024,7 +2032,6 @@ impl BackendService {
             })?;
         } else if !enabled && self.policy.capture.take().is_some() {
             self.policy.exchange.request_stop_location();
-            self.policy.latest_location = None;
         }
         Ok(())
     }
@@ -2140,6 +2147,7 @@ mod tests {
                 latitude: -33.8,
                 longitude: 151.2,
                 accuracy_m: Some(5.),
+                altitude_m: None,
                 observed_at_ms: 1_700_000_000_100,
             },
             100,
@@ -3349,6 +3357,7 @@ mod tests {
                 latitude: -33.8,
                 longitude: 151.2,
                 accuracy_m: Some(5.),
+                altitude_m: Some(-8.),
                 observed_at_ms: 1_700_000_000_110,
             },
             110,
@@ -3363,7 +3372,15 @@ mod tests {
                 .recorded_location_count,
             1
         );
-        assert!(t.service.policy.latest_location.is_some());
+        assert_eq!(
+            t.service
+                .policy
+                .latest_location
+                .as_ref()
+                .unwrap()
+                .altitude_m,
+            Some(-8.)
+        );
         let session_id = t
             .service
             .policy
@@ -3418,6 +3435,7 @@ mod tests {
                 latitude: -33.81,
                 longitude: 151.21,
                 accuracy_m: Some(5.),
+                altitude_m: None,
                 observed_at_ms: 1_700_000_000_111,
             },
             111,
@@ -3457,6 +3475,7 @@ mod tests {
                 latitude: -33.9,
                 longitude: 151.3,
                 accuracy_m: None,
+                altitude_m: Some(42.),
                 observed_at_ms: 1_700_000_000_113,
             },
             113,

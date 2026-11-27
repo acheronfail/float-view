@@ -12,6 +12,7 @@ import type { Target } from '../src/suite.ts';
 type Effect = {
   effect: string;
   capture_id?: number;
+  high_accuracy?: boolean;
   speech?: SpeechEffect;
   id?: number;
   delay_ms?: number;
@@ -180,6 +181,17 @@ export function makeDirectTarget(options?: {
       case 'start_location':
         clearInterval(locationTimer);
         locationObservations = 0;
+        if (!e.high_accuracy) {
+          await fact({
+            fact: 'location',
+            capture_id: e.capture_id,
+            latitude: -33.87,
+            longitude: 151.21,
+            accuracy_m: 5,
+            altitude_m: -12,
+            observed_at_ms: Date.now(),
+          });
+        }
         if (options?.calibrationSpeedMps !== undefined)
           locationTimer = setInterval(() => {
             void fact({
@@ -282,13 +294,13 @@ export function makeDirectTarget(options?: {
           platform: 'macos',
           bluetooth_scan: granted,
           bluetooth_connect: granted,
-          location: options?.calibrationSpeedMps === undefined ? unknown : granted,
+          location: granted,
           background_location: unknown,
           notifications: null,
           live_updates: null,
-          accuracy: options?.calibrationSpeedMps === undefined ? 'unknown' : 'precise',
-          scope: options?.calibrationSpeedMps === undefined ? 'unknown' : 'always',
-          location_services: options?.calibrationSpeedMps === undefined ? null : true,
+          accuracy: 'precise',
+          scope: 'always',
+          location_services: true,
           bluetooth_service: true,
           bluetooth_supported: true,
           background_option_label: null,

@@ -1,7 +1,10 @@
 import { driveLoad } from './gauge';
 import { freshBmsSnapshot } from './bms';
 import { footpadPresentation } from './footpads';
-import type { BmsState, LiveSample, LiveWidgetField, UnitPreference } from '$lib/backend/contract';
+import type { BmsState, LiveLocation, LiveSample, LiveWidgetField, UnitPreference } from '$lib/backend/contract';
+
+export type LocationElevation = Pick<LiveLocation, 'altitudeM' | 'observedAt'>;
+const maxElevationAgeMs = 10_000;
 
 export const liveValueCatalog = {
   empty: { name: 'Empty', label: 'Hold to set', unit: '', digits: 0 },
@@ -21,6 +24,7 @@ export const liveValueCatalog = {
   maxSpeedKph: { name: 'Max speed', label: 'Max speed', unit: 'km/h', digits: 1 },
   distanceM: { name: 'Ride distance', label: 'Distance', unit: 'km', digits: 2 },
   odometerM: { name: 'Odometer', label: 'Odometer', unit: 'km', digits: 2 },
+  altitudeM: { name: 'Elevation', label: 'Elevation', unit: 'm', digits: 0 },
   elapsedMs: { name: 'Ride time', label: 'Ride time', unit: '', digits: 0 },
   erpm: { name: 'Electrical RPM', label: 'ERPM', unit: 'ERPM', digits: 0 },
   controllerTempC: { name: 'Controller temperature', label: 'ESC temp', unit: '°C', digits: 1 },
@@ -77,7 +81,8 @@ export function liveValue(
   estimatedLevel?: number | null,
 
   bms?: BmsState | null,
-  nowMs: number = Date.now()
+  nowMs: number = Date.now(),
+  location?: LocationElevation | null
 ) {
   const load = field === 'driveLoad' ? driveLoad(sample) : null;
   const snapshot = freshBmsSnapshot(bms, nowMs);
@@ -106,33 +111,43 @@ export function liveValue(
     ...(load ? { label: { duty: 'Duty', motor: 'Motor', battery: 'Battery' }[load.source] } : {}),
   };
   let value =
-    field in netValues
-      ? netValues[field as keyof typeof netValues]
-      : field === 'elapsedMs'
-        ? sample?.ridingElapsedMs
-        : field === 'highestTempC'
-          ? hottest?.value
-          : field in bmsValues
-            ? bmsValues[field as keyof typeof bmsValues]
-            : field === 'driveLoad'
-              ? load?.percentage
-              : field === 'powerW'
-                ? sample?.packVoltageV == null || sample.batteryCurrentA == null
-                  ? null
-                  : sample.packVoltageV * sample.batteryCurrentA
-                : field === 'estimatedBatteryLevel'
-                  ? estimatedLevel
-                  : field === 'empty' || field === 'headlights' || field === 'leds' || field === 'themeToggle'
+    field === 'altitudeM'
+      ? currentAltitude(location, nowMs)
+      : field in netValues
+        ? netValues[field as keyof typeof netValues]
+        : field === 'elapsedMs'
+          ? sample?.ridingElapsedMs
+          : field === 'highestTempC'
+            ? hottest?.value
+            : field in bmsValues
+              ? bmsValues[field as keyof typeof bmsValues]
+              : field === 'driveLoad'
+                ? load?.percentage
+                : field === 'powerW'
+                  ? sample?.packVoltageV == null || sample.batteryCurrentA == null
                     ? null
-                    : (sample?.[field as keyof LiveSample] as number | null | undefined);
+                    : sample.packVoltageV * sample.batteryCurrentA
+                  : field === 'estimatedBatteryLevel'
+                    ? estimatedLevel
+                    : field === 'empty' || field === 'headlights' || field === 'leds' || field === 'themeToggle'
+                      ? null
+                      : (sample?.[field as keyof LiveSample] as number | null | undefined);
   let unit: string = definition.unit;
   if (value == null || !Number.isFinite(value)) return { ...definition, value: null, unit: displayUnit(unit, units) };
   if (field === 'batteryLevel' || field === 'estimatedBatteryLevel' || field === 'dutyCycle') value *= 100;
   if (unit === 'km') value /= units === 'metric' ? 1000 : 1609.344;
+  if (unit === 'm' && units === 'imperial') value /= 0.3048;
   if (unit === 'km/h') value = Math.abs(value) * (units === 'metric' ? 1 : 0.621371);
   if (unit === '°C' && units === 'imperial') value = value * 1.8 + 32;
   unit = displayUnit(unit, units);
   return { ...definition, value, unit };
+}
+
+function currentAltitude(location: LocationElevation | null | undefined, nowMs: number) {
+  if (location?.altitudeM == null) return null;
+  const age = nowMs - Date.parse(location.observedAt);
+  // A fix can arrive between the dashboard's one-second clock ticks.
+  return age >= -1_000 && age <= maxElevationAgeMs ? location.altitudeM : null;
 }
 
 function netCounter(drawn: number | null | undefined, charged: number | null | undefined) {
@@ -143,7 +158,7 @@ function netCounter(drawn: number | null | undefined, charged: number | null | u
 
 function displayUnit(unit: string, units: UnitPreference) {
   if (units === 'metric') return unit;
-  return ({ 'km/h': 'mph', km: 'mi', '°C': '°F' } as Record<string, string>)[unit] ?? unit;
+  return ({ 'km/h': 'mph', km: 'mi', m: 'ft', '°C': '°F' } as Record<string, string>)[unit] ?? unit;
 }
 
 export function liveValueText(field: LiveWidgetField, value: number | null, digits: number) {

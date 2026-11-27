@@ -131,5 +131,6 @@ function interpolateLocationPoint(
     latitude: left.latitude + (right.latitude - left.latitude) * ratio,
     longitude: left.longitude + (right.longitude - left.longitude) * ratio,
     accuracyM: left.accuracyM ?? right.accuracyM,
+    altitudeM: null,
   };
 }
